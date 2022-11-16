@@ -6,7 +6,7 @@ Created on Sun Jul 18 18:44:37 2021
 """
 
 #This Script incorporates the Comprehensive LOONE Model!
-Working_Path = 'C:/Work/Research/LOONE/Model To be Published/LOONE_Model'
+Working_Path = 'C:/Osama_PC/LOONE-main'
 import os
 import pandas as pd
 from datetime import datetime
@@ -56,7 +56,7 @@ def LOONE_Nut(LOONE_Q_Outputs):
     LO_BL = 0.5 # m (Bed Elevation of LO)
     # LO_WD = pd.to_numeric(Stage_Storage['Stage_m'])-LO_BL
     g = 9.8 #m/s2 gravitational acceleration
-    Cal_Res = pd.read_csv('C:/Work/Research/LOONE/Model To be Published/LOONE_Model/Data/nondominated_Sol_var.csv')
+    Cal_Res = pd.read_csv('C:/Osama_PC/LOONE-main/Data/nondominated_Sol_var.csv')
     Par = Cal_Res['Par']
     d_c = Par[20] # m (particle diameter 10 microm /1E6 to convert to m) clay
     d_s = Par[21] # m sand
@@ -209,8 +209,8 @@ def LOONE_Nut(LOONE_Q_Outputs):
     Storage[0] = StartStorage #ac-ft
     Storage[1] = Stg_Sto_Ar.stg2sto(Stage_LO[1],0) #ac-ft
     #TP_MassBalanceModel Initial Values.
-    TP_Lake_N[0] = 225 #mg/m3
-    TP_Lake_S[0] = 275 #mg/m3
+    TP_Lake_N[0] = 299 #mg/m3
+    TP_Lake_S[0] = 340 #mg/m3
     TP_Lake_Mean[0] = (TP_Lake_N[0] + TP_Lake_S[0])/2
     Γ_M_N[0] = 25 #mg/kg 
     Γ_S_N[0] = 25 #mg/kg 
