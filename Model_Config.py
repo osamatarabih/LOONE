@@ -6,4 +6,6 @@ Created on Thu May 26 13:24:35 2022
 """
 
 class Model_Config:
+    Working_Path = 'C:/Work/Research/LOONE/Model To be Published\LOONE_Model'
     Sim_type = 0 # 0:Scenario_Simulation 1:Optimization_Validation 2:Optimization 
+    

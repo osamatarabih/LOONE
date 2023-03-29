@@ -10,7 +10,9 @@ from datetime import datetime
 import numpy as np
 from scipy import interpolate
 import os
-os.chdir('C:/Work/Research/LOONE/Model To be Published/LOONE_Model') 
+from Model_Config import Model_Config 
+Working_Path = Model_Config.Working_Path
+os.chdir('%s'%Working_Path) 
 from Pre_defined_Variables import Pre_defined_Variables 
 from Data import Data
 

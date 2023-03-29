@@ -6,10 +6,11 @@ Created on Wed May 25 19:31:41 2022
 """
 
 #This Script incorporates the Comprehensive LOONE Model!
-Working_Path = 'C:/Osama_PC/LOONE-main'
 import os
 import pandas as pd
 import numpy as np
+from Model_Config import Model_Config
+Working_Path = Model_Config.Working_Path
 os.chdir('./Packages/Platypus-1.0.4')   
 from platypus import NSGAII, Problem, Real, nondominated
 os.chdir('%s'%Working_Path) 
@@ -76,69 +77,69 @@ problem.types[:] = Var_value
 # problem.constraints[(n_rows-2)+1:(n_rows-2)*2] = "<=0"  #Lake Okeechobee stage must be less than Maximum stage(15.2)!
 problem.function = Opt
 algorithm = NSGAII(problem)
-algorithm.run(20)
+algorithm.run(5)
 results = algorithm.result
 feasible_solutions = [s for s in results if s.feasible]
 nondominated_solutions = nondominated(results)
 
 
-np.savetxt("./Outputs/optimization_objectives_feasible_Scen2_1101.txt",[s.objectives[:] for s in feasible_solutions],fmt="%s")
-np.savetxt("./Outputs/optimization_variables_feasible_Scen2_1101.txt",[s.variables[:] for s in feasible_solutions],fmt="%s")
-np.savetxt("./Outputs/optimization_objectives_nondominated_Scen2_1101.txt",[s.objectives[:] for s in nondominated_solutions],fmt="%s")
-np.savetxt("./Outputs/optimization_variables_nondominated_Scen2_1101.txt",[s.variables[:] for s in nondominated_solutions],fmt="%s")
+np.savetxt("./Outputs/optimization_objectives_feasible_LORS2008_0529.txt",[s.objectives[:] for s in feasible_solutions],fmt="%s")
+np.savetxt("./Outputs/optimization_variables_feasible_LORS2008_0529.txt",[s.variables[:] for s in feasible_solutions],fmt="%s")
+np.savetxt("./Outputs/optimization_objectives_nondominated_LORS2008_0529.txt",[s.objectives[:] for s in nondominated_solutions],fmt="%s")
+np.savetxt("./Outputs/optimization_variables_nondominated_LORS2008_0529.txt",[s.variables[:] for s in nondominated_solutions],fmt="%s")
 ###################/##############################################################################################
 #Read Opt Results (Feasible and Non-dominant Solutions)
-# Feasible_Obj = pd.read_csv('./Outputs/optimization_objectives_feasible_Scen2_1101.csv')
-# Feasible_Var = pd.read_csv('./Outputs/optimization_variables_feasible_Scen2_1101.csv')
-# Nondominant_Obj = pd.read_csv('./Outputs/optimization_objectives_nondominated_Scen2_1101.csv')
-# Nondominant_Var = pd.read_csv('./Outputs/optimization_variables_nondominated_Scen2_1101.csv')
+Feasible_Obj = pd.read_csv('./Outputs/optimization_objectives_feasible_LORS2008_0529.csv')
+Feasible_Var = pd.read_csv('./Outputs/optimization_variables_feasible_LORS2008_0529.csv')
+Nondominant_Obj = pd.read_csv('./Outputs/optimization_objectives_nondominated_LORS2008_0529.csv')
+Nondominant_Var = pd.read_csv('./Outputs/optimization_variables_nondominated_LORS2008_0529.csv')
 
-# # Open operation file
-# totalobs = 0
-# objs = [0 for x in range(3)]
-# labels = []
-# for i in range(3):
-#     objs[i] = int(i+1)
-#     if (objs[i]>=1):
-#         totalobs+=1
-#     if (i==0): 
-#         labels.append('StL P')
-#     elif (i==1): 
-#         labels.append('Cal P')
-#     elif (i==2): 
-#         labels.append('Water deficit')
+# Open operation file
+totalobs = 0
+objs = [0 for x in range(3)]
+labels = []
+for i in range(3):
+    objs[i] = int(i+1)
+    if (objs[i]>=1):
+        totalobs+=1
+    if (i==0): 
+        labels.append('StL P')
+    elif (i==1): 
+        labels.append('Cal P')
+    elif (i==2): 
+        labels.append('Water deficit')
 
-# # Plot data 2D
-# if (totalobs>=2):
-#     for i in range(totalobs-1):
-#         for j in range(i+1,totalobs):
-#             x = np.array(Nondominant_Obj)[:,i]
-#             y = np.array(Nondominant_Obj)[:,j]
-#             plt.subplots(figsize=(10, 10))
-#             plt.grid(alpha=0.8, c="gray")
-#             plt.scatter(x, y, s=100, c="g", alpha=0.6667, edgecolors='black', linewidths=0.6667)
-#             plt.xlabel(labels[i], size=18, labelpad=5)
-#             plt.ylabel(labels[j], size=18, labelpad=5)
-#             plt.tick_params(axis='x', labelsize=18, pad=5)
-#             plt.tick_params(axis='y', labelsize=18, pad=5)
-#             plt.show()
+# Plot data 2D
+if (totalobs>=2):
+    for i in range(totalobs-1):
+        for j in range(i+1,totalobs):
+            x = np.array(Nondominant_Obj)[:,i]
+            y = np.array(Nondominant_Obj)[:,j]
+            plt.subplots(figsize=(10, 10))
+            plt.grid(alpha=0.8, c="gray")
+            plt.scatter(x, y, s=100, c="g", alpha=0.6667, edgecolors='black', linewidths=0.6667)
+            plt.xlabel(labels[i], size=18, labelpad=5)
+            plt.ylabel(labels[j], size=18, labelpad=5)
+            plt.tick_params(axis='x', labelsize=18, pad=5)
+            plt.tick_params(axis='y', labelsize=18, pad=5)
+            plt.show()
 
-# # Plot data 3D
-# if (totalobs>=3):
-#      fig = plt.figure(figsize=(20, 20))
-#      ax = fig.add_subplot(111, projection='3d')
-#      for i in range(totalobs-2):
-#          for j in range(i+1,totalobs-1):
-#               for k in range(i+2,totalobs):
-#                   x = np.array(Feasible_Obj)[:,i]
-#                   y = np.array(Feasible_Obj)[:,j]
-#                   z = np.array(Feasible_Obj)[:,k]
-#                   ax.scatter(x, y, z, s=100, c="g", alpha=0.6667, edgecolors='black', linewidths=0.6667)
-#                   ax.view_init(20, 20)
-#                   ax.tick_params(axis='x', labelsize=18, pad=5)
-#                   ax.tick_params(axis='y', labelsize=18, pad=5)
-#                   ax.tick_params(axis='z', labelsize=18, pad=5) 
-#                   ax.set_xlabel(labels[i], size=18, labelpad=20)
-#                   ax.set_ylabel(labels[j], size=18, labelpad=20)
-#                   ax.set_zlabel(labels[k], size=18, labelpad=20)
-#                   plt.show()
+# Plot data 3D
+if (totalobs>=3):
+     fig = plt.figure(figsize=(20, 20))
+     ax = fig.add_subplot(111, projection='3d')
+     for i in range(totalobs-2):
+         for j in range(i+1,totalobs-1):
+              for k in range(i+2,totalobs):
+                  x = np.array(Feasible_Obj)[:,i]
+                  y = np.array(Feasible_Obj)[:,j]
+                  z = np.array(Feasible_Obj)[:,k]
+                  ax.scatter(x, y, z, s=100, c="g", alpha=0.6667, edgecolors='black', linewidths=0.6667)
+                  ax.view_init(20, 20)
+                  ax.tick_params(axis='x', labelsize=18, pad=5)
+                  ax.tick_params(axis='y', labelsize=18, pad=5)
+                  ax.tick_params(axis='z', labelsize=18, pad=5) 
+                  ax.set_xlabel(labels[i], size=18, labelpad=20)
+                  ax.set_ylabel(labels[j], size=18, labelpad=20)
+                  ax.set_zlabel(labels[k], size=18, labelpad=20)
+                  plt.show()

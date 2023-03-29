@@ -5,16 +5,16 @@ Created on Sun Jul 18 18:44:37 2021
 @author: osama
 """
 
-Working_Path = 'C:/Osama_PC/LOONE-main'
 import os
 import pandas as pd
 from datetime import datetime
 import numpy as np
 from calendar import monthrange  
+from Model_Config import Model_Config 
+Working_Path = Model_Config.Working_Path
 os.chdir('%s'%Working_Path) 
 from Pre_defined_Variables import Pre_defined_Variables 
 from Model_variables import M_var
-from Model_Config import Model_Config
 from LO_FNs import LO_FNs
 from Stg_Sto_Ar import Stg_Sto_Ar 
 from LONINO_FNs import LONINO_FNs
@@ -300,21 +300,10 @@ def LOONE_Q(P_1,P_2,S77_DV,S308_DV,TP_Lake_S):
         M_var.Outlet2USRG_Code[i+2] = LO_FNs.Outlet2USRG_Code(M_var.Outlet2USRG1[i+2],M_var.Outlet2USBS[i+2],Data.SFWMM_Daily_Outputs.at[i+2, 'S308RG'],Data.SFWMM_Daily_Outputs.at[i+2, 'STEST'],Pre_defined_Variables.Option_RegS77S308)
         if Model_Config.Sim_type == 0:
             M_var.Outlet2USRG[i+2] = LO_FNs.Outlet2USRG(M_var.Outlet2USRG_Code[i+2],Data.SFWMM_Daily_Outputs.at[i+2, 'S308RG'],Data.SFWMM_Daily_Outputs.at[i+2, 'STEST'],Pre_defined_Variables.Opt_S308,Pre_defined_Variables.S308RG_Const)
-        # else:
-        #     if M_var.Lake_Stage[i+1] >= 18:
-        #         M_var.Outlet2USRG[i+2] = 7200
-        #     elif M_var.Lake_Stage[i+1] <= 8:
-        #         M_var.Outlet2USRG[i+2] = 0
-        #     elif (TP_Lake_S[i] <= P_1) and (date_rng_6[i+2].month in [1,2,3,4,11,12]):
-        #         M_var.Outlet2USRG[i+2] = S308_DV[(date_rng_6[i+2].month)-1]
-        #     elif (TP_Lake_S[i] <= P_2) and (date_rng_6[i+2].month in [5,6,7,8,9,10]):
-        #         M_var.Outlet2USRG[i+2] = S308_DV[(date_rng_6[i+2].month)-1]
-        #     else:
-        #         M_var.Outlet2USRG[i+2] = 0
         else:
-            if M_var.Zone_Code[i+1] == 9:
+            if M_var.Lake_Stage[i+1] >= 18:
                 M_var.Outlet2USRG[i+2] = 7200
-            elif M_var.Zone_Code[i+1] <= 1:
+            elif M_var.Lake_Stage[i+1] <= 8:
                 M_var.Outlet2USRG[i+2] = 0
             elif (TP_Lake_S[i] <= P_1) and (date_rng_6[i+2].month in [1,2,3,4,11,12]):
                 M_var.Outlet2USRG[i+2] = S308_DV[(date_rng_6[i+2].month)-1]
@@ -350,21 +339,10 @@ def LOONE_Q(P_1,P_2,S77_DV,S308_DV,TP_Lake_S):
         M_var.Outlet1USEWS[i+2] = LO_FNs.Outlet1USEWS(M_var.Post_AP_EWS[i],Data.SFWMM_Daily_Outputs.at[i+2, 'CAEST'],Pre_defined_Variables.Outlet1USEWS_Switch,Pre_defined_Variables.Opt_AdapProt)
         if Model_Config.Sim_type == 0:
             M_var.Outlet1USREG[i+2] = LO_FNs.Outlet1USREG(M_var.Outlet1USRS[i+2],M_var.Outlet1USBSAP[i+2],Data.SFWMM_Daily_Outputs.at[i+2, 'S77RG'],Pre_defined_Variables.Outlet1USREG_Switch,Pre_defined_Variables.Option_RegS77S308)
-        # else:
-        #     if M_var.Lake_Stage[i+1] >= 18:
-        #         M_var.Outlet1USREG[i+2] = 7800
-        #     elif M_var.Lake_Stage[i+1] <= 8:
-        #         M_var.Outlet1USREG[i+2] = 0
-        #     elif (TP_Lake_S[i] <= P_1) and (date_rng_6[i+2].month in [1,2,3,4,11,12]):
-        #         M_var.Outlet1USREG[i+2] = S77_DV[(date_rng_6[i+2].month)-1]
-        #     elif (TP_Lake_S[i] <= P_2) and (date_rng_6[i+2].month in [5,6,7,8,9,10]):
-        #         M_var.Outlet1USREG[i+2] = S77_DV[(date_rng_6[i+2].month)-1]
-        #     else:
-        #         M_var.Outlet1USREG[i+2] = 0
         else:
-            if M_var.Zone_Code[i+1] == 9:
+            if M_var.Lake_Stage[i+1] >= 18:
                 M_var.Outlet1USREG[i+2] = 7800
-            elif M_var.Zone_Code[i+1] <= 1:
+            elif M_var.Lake_Stage[i+1] <= 8:
                 M_var.Outlet1USREG[i+2] = 0
             elif (TP_Lake_S[i] <= P_1) and (date_rng_6[i+2].month in [1,2,3,4,11,12]):
                 M_var.Outlet1USREG[i+2] = S77_DV[(date_rng_6[i+2].month)-1]

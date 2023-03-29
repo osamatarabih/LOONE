@@ -6,14 +6,14 @@ Created on Sun Jul 18 18:44:37 2021
 """
 
 #This Script incorporates the Comprehensive LOONE Model!
-Working_Path = 'C:/Osama_PC/LOONE-main'
 import os
 import pandas as pd
 from datetime import datetime
 import numpy as np
+from Model_Config import Model_Config
+Working_Path = Model_Config.Working_Path
 os.chdir('%s'%Working_Path) 
 from Pre_defined_Variables import Pre_defined_Variables 
-from Model_Config import Model_Config
 from Stg_Sto_Ar import Stg_Sto_Ar 
 from Data import Data
 from TP_Variables_Regions import TP_Variables
@@ -56,7 +56,7 @@ def LOONE_Nut(LOONE_Q_Outputs):
     LO_BL = 0.5 # m (Bed Elevation of LO)
     # LO_WD = pd.to_numeric(Stage_Storage['Stage_m'])-LO_BL
     g = 9.8 #m/s2 gravitational acceleration
-    Cal_Res = pd.read_csv('C:/Osama_PC/LOONE-main/Data/nondominated_Sol_var.csv')
+    Cal_Res = pd.read_csv('./Data/nondominated_Sol_var.csv')
     Par = Cal_Res['Par']
     d_c = Par[20] # m (particle diameter 10 microm /1E6 to convert to m) clay
     d_s = Par[21] # m sand
@@ -209,8 +209,8 @@ def LOONE_Nut(LOONE_Q_Outputs):
     Storage[0] = StartStorage #ac-ft
     Storage[1] = Stg_Sto_Ar.stg2sto(Stage_LO[1],0) #ac-ft
     #TP_MassBalanceModel Initial Values.
-    TP_Lake_N[0] = 299 #mg/m3
-    TP_Lake_S[0] = 340 #mg/m3
+    TP_Lake_N[0] = 225 #mg/m3
+    TP_Lake_S[0] = 275 #mg/m3
     TP_Lake_Mean[0] = (TP_Lake_N[0] + TP_Lake_S[0])/2
     Γ_M_N[0] = 25 #mg/kg 
     Γ_S_N[0] = 25 #mg/kg 
@@ -411,16 +411,16 @@ def LOONE_Nut(LOONE_Q_Outputs):
     P_Loads_M = P_Loads_M.reset_index()
     P_Lake_df = P_Lake_df.set_index('Date')
     P_Lake_M = P_Lake_df.resample('M').mean()
-
-    Smr_Mnth_StL = []
-    Smr_Mnth_Cal = []
-    for i in range(len(P_Loads_M.index)):
-        if P_Loads_M['Date'].iloc[i].month in [5,6,7,8,9,10]:
-            Smr_Mnth_StL.append(P_Loads_M['P_Load_StL'].iloc[i])
-            Smr_Mnth_Cal.append(P_Loads_M['P_Load_Cal'].iloc[i])
-    Smr_Mnth_StL_arr = np.asarray(Smr_Mnth_StL)
-    Smr_Mnth_Cal_arr = np.asarray(Smr_Mnth_Cal)
-    if Model_Config.Sim_type == 0 or Model_Config.Sim_type == 1 :
-        return[P_Loads_M,P_Lake_M,Smr_Mnth_StL_arr,Smr_Mnth_Cal_arr]
-    else:
-        return[Smr_Mnth_StL_arr,Smr_Mnth_Cal_arr,P_Lake_df]
+    return(P_Lake_M)
+    # Smr_Mnth_StL = []
+    # Smr_Mnth_Cal = []
+    # for i in range(len(P_Loads_M.index)):
+    #     if P_Loads_M['Date'].iloc[i].month in [5,6,7,8,9,10]:
+    #         Smr_Mnth_StL.append(P_Loads_M['P_Load_StL'].iloc[i])
+    #         Smr_Mnth_Cal.append(P_Loads_M['P_Load_Cal'].iloc[i])
+    # Smr_Mnth_StL_arr = np.asarray(Smr_Mnth_StL)
+    # Smr_Mnth_Cal_arr = np.asarray(Smr_Mnth_Cal)
+    # if Model_Config.Sim_type == 0 or Model_Config.Sim_type == 1 :
+    #     return[P_Loads_M,P_Lake_M,Smr_Mnth_StL_arr,Smr_Mnth_Cal_arr]
+    # else:
+    #     return[Smr_Mnth_StL_arr,Smr_Mnth_Cal_arr,P_Lake_df]

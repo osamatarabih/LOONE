@@ -12,7 +12,9 @@ def WCA_Stages_Cls(TC_LONINO_df):
     from scipy import interpolate
     from calendar import monthrange  
     import os
-    os.chdir('C:/Work/Research/LOONE/Model To be Published/LOONE_Model') 
+    from Model_Config import Model_Config 
+    Working_Path = Model_Config.Working_Path
+    os.chdir('%s'%Working_Path) 
     from Pre_defined_Variables import Pre_defined_Variables 
     from Additional_Fncs import Add_Fn
     

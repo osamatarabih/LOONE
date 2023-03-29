@@ -8,11 +8,12 @@ Created on Fri Jul 29 18:01:45 2022
     # I determine daily values for the Tributary conditions and Seasonal/Multi-Seasonal LONINO classes 
     #using a weekly Trib. Condition data and Monthly LONINO data. 
 def Trib_HC():
-    Working_Path = 'C:/Work/Research/LOONE/Model To be Published/LOONE_Model'
     import os
     import pandas as pd
     import numpy as np
     from datetime import datetime
+    from Model_Config import Model_Config 
+    Working_Path = Model_Config.Working_Path
     os.chdir('%s'%Working_Path) 
     from Pre_defined_Variables import Pre_defined_Variables 
     from Model_variables import M_var

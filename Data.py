@@ -7,7 +7,9 @@ Created on Fri Apr 29 01:19:24 2022
 # READ All Required Data Inputs
 import pandas as pd
 import os
-os.chdir('C:/Work/Research/LOONE/Model To be Published/LOONE_Model')   
+from Model_Config import Model_Config 
+Working_Path = Model_Config.Working_Path
+os.chdir('%s'%Working_Path) 
 from Pre_defined_Variables import Pre_defined_Variables 
 
 class Data:

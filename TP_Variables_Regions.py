@@ -36,6 +36,23 @@ class TP_Variables:
     A_N = A_Mud_N + A_Sand_N + A_Rock_N + A_Peat_N
     A_S = A_Mud_S + A_Sand_S + A_Rock_S + A_Peat_S
     A_tot = A_N + A_S
+    Per_M_N = A_Mud_N/A_tot
+    Per_M_S = A_Mud_S/A_tot
+    Per_S_N = A_Sand_N/A_tot
+    Per_S_S = A_Sand_S/A_tot
+    Per_R_N = A_Rock_N/A_tot
+    Per_R_S = A_Rock_S/A_tot
+    Per_P_N = A_Peat_N/A_tot
+    Per_P_S = A_Peat_S/A_tot
+    
+    Per_M_NN = A_Mud_N/A_N
+    Per_M_SS = A_Mud_S/A_S
+    Per_S_NN = A_Sand_N/A_N
+    Per_S_SS = A_Sand_S/A_S
+    Per_R_NN = A_Rock_N/A_N
+    Per_R_SS = A_Rock_S/A_S
+    Per_P_NN = A_Peat_N/A_N
+    Per_P_SS = A_Peat_S/A_S
     Γ_inf = 91 #(mg/kg)
     #####Monthly
     v_burial_M = 0.0000003#1.0e-05 #(m/day)#0.00017333#(m/month)# 0.00208 (m/yr)
@@ -88,4 +105,5 @@ class TP_Variables:
     K_ads_R = Par[14]
     K_ads_P = Par[15]
     # v_settle = Par[16]
+
 

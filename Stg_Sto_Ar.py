@@ -8,7 +8,9 @@ Created on Wed Oct 21 16:37:03 2020
 # To return storage or surface area given stage (i=0) else (i = any number) will return stage given storage or surface area.
 class Stg_Sto_Ar:
     import sys,os
-    os.chdir('C:/Work/Research/LOONE/Model To be Published/LOONE_Model')
+    from Model_Config import Model_Config 
+    Working_Path = Model_Config.Working_Path
+    os.chdir('%s'%Working_Path) 
     def stg2sto(v, i):
         import pandas as pd
         from scipy import interpolate

@@ -7,8 +7,9 @@ Created on Wed May 25 23:53:16 2022
 import numpy as np
 import pandas as pd
 from datetime import datetime
-Working_Path = 'C:/Work/Research/LOONE/Model To be Published/LOONE_Model'
 import os
+from Model_Config import Model_Config 
+Working_Path = Model_Config.Working_Path
 os.chdir('%s'%Working_Path) 
 from Pre_defined_Variables import Pre_defined_Variables 
 
