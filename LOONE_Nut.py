@@ -30,15 +30,23 @@ def LOONE_Nut(LOONE_Q_Outputs):
     enddate = datetime(year, month, day).date()
         
     date_rng_0 = pd.date_range(start = startdate, end = enddate, freq ='D')
-    Load_ext = pd.read_csv('./Data/LO_External_Loadings_3MLag_%s.csv'%Pre_defined_Variables.Schedule)
-    Q_in = pd.read_csv('./Data/LO_Inflows_BK_%s.csv'%Pre_defined_Variables.Schedule)
-    Q_O = (LOONE_Q_Outputs['S77EW'] *0.028316847 + ((LOONE_Q_Outputs['TotRegEW'] + LOONE_Q_Outputs['TotRegSo'])/70.0456)) * 3600 * 24
-    S77_Q = LOONE_Q_Outputs['S77_Q']
-    S308_Q = LOONE_Q_Outputs['S308_Q']
-    TotRegSo = LOONE_Q_Outputs['TotRegSo']
-    Stage_LO = LOONE_Q_Outputs['Stage']
-    Storage = LOONE_Q_Outputs['Storage']
-    n_rows = len(Load_ext.index)
+    Load_ext = pd.read_csv('./Data/%s/ts_data/LO_External_Loadings_3MLag_%s.csv'% (Pre_defined_Variables.Schedule,Pre_defined_Variables.Schedule))
+    Q_in = pd.read_csv('./Data/%s/ts_data/LO_Inflows_BK_%s.csv'% (Pre_defined_Variables.Schedule,Pre_defined_Variables.Schedule))
+    Flow_df = pd.read_csv('./Data/%s/ts_data/Flow_df_%s.csv'% (Pre_defined_Variables.Schedule,Pre_defined_Variables.Schedule))
+    # Q_O = (LOONE_Q_Outputs['S77EW'] *0.028316847 + ((LOONE_Q_Outputs['TotRegEW'] + LOONE_Q_Outputs['TotRegSo'])/70.0456)) * 3600 * 24
+    Q_O = Flow_df['Outflows'].values #cmd
+    # S77_Q = LOONE_Q_Outputs['S77_Q']
+    S77_Q = Flow_df['S77_Out'].values/(0.0283168466 * 86400) #cmd to cfs
+    # S308_Q = LOONE_Q_Outputs['S308_Q']
+    S308_Q = Flow_df['S308_Out'].values/(0.0283168466 * 86400) #cmd to cfs
+    # TotRegSo = LOONE_Q_Outputs['TotRegSo'] #acft/day
+    TotRegSo = Flow_df[['S351_Out','S352_Out','S354_Out','L8_Out']].sum(axis=1) * (70.0456/86400)
+    Sto_Stage = pd.read_csv('./Data/%s/ts_data/Average_LO_Sto_Stg_%s.csv'% (Pre_defined_Variables.Schedule,Pre_defined_Variables.Schedule))
+    # Stage_LO = LOONE_Q_Outputs['Stage']
+    Stage_LO = Sto_Stage['Stage_ft'].values
+    # Storage = LOONE_Q_Outputs['Storage']
+    Storage = Sto_Stage['Storage_acft'].values
+    n_rows = len(Q_in.index)
     Storage_dev = Data.Stroage_dev_df['DS_dev'] 
     L_ext = Load_ext['TP_Loads_In_mg'] #mg
     Atm_Dep_N = TP_Variables.N_Per * Load_ext['Atm_Loading_mg']
@@ -50,13 +58,13 @@ def LOONE_Nut(LOONE_Q_Outputs):
     # Atm_Dep_N = TP_Variables.N_Per*(18/365)*LO_Area*4046.85642 #Based on data presented by Curtis Pollman, the Lake Okeechobee Technical Advisory Committee (2000) recommended that 18 mgP/m2-yr is an appropriate atmospheric loading of phosphorus over the open lake. 
     # Atm_Dep_S = TP_Variables.S_Per*(18/365)*LO_Area*4046.85642
     #Read Shear Stress driven by Wind Speed
-    Wind_ShearStr = pd.read_csv('./Data/WindShearStress_%s.csv'%Pre_defined_Variables.Schedule)
+    Wind_ShearStr = pd.read_csv('./Data/%s/ts_data/WindShearStress_%s.csv'% (Pre_defined_Variables.Schedule,Pre_defined_Variables.Schedule))
     W_SS = Wind_ShearStr['ShearStress'] #Dyne/cm2
-    nu_ts = pd.read_csv('./Data/nu_%s.csv'%Pre_defined_Variables.Schedule)
+    nu_ts = pd.read_csv('./Data/%s/ts_data/nu_%s.csv'% (Pre_defined_Variables.Schedule,Pre_defined_Variables.Schedule))
     LO_BL = 0.5 # m (Bed Elevation of LO)
     # LO_WD = pd.to_numeric(Stage_Storage['Stage_m'])-LO_BL
     g = 9.8 #m/s2 gravitational acceleration
-    Cal_Res = pd.read_csv('./Data/nondominated_Sol_var.csv')
+    Cal_Res = pd.read_csv('./Data/%s/nondominated_Sol_var.csv'%Pre_defined_Variables.Schedule)
     Par = Cal_Res['Par']
     d_c = Par[20] # m (particle diameter 10 microm /1E6 to convert to m) clay
     d_s = Par[21] # m sand

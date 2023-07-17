@@ -28,10 +28,10 @@ def WCA_Stages_Cls(TC_LONINO_df):
     date_rng_5 = pd.date_range(start = startdate, end = enddate, freq ='D')
     
     #Read the WCA Stage data
-    WCA_Stages = pd.read_csv('./Data/WCA_Stages_Inputs_%s.csv'%Pre_defined_Variables.Schedule)
+    WCA_Stages = pd.read_csv('./Data/%s/%s/WCA_Stages_Inputs_%s.csv'% (Pre_defined_Variables.Schedule,'ts_data',Pre_defined_Variables.Schedule))
     #Read WCA3A_REG inputs 
     #Note that I added a date column in the first column and I copied values of Feb28 to the Feb29!
-    WCA3A_REG = pd.read_csv('./Data/WCA3A_REG_Inputs_%s.csv'%Pre_defined_Variables.Schedule)
+    WCA3A_REG = pd.read_csv('./Data/%s/%s/WCA3A_REG_Inputs_%s.csv'% (Pre_defined_Variables.Schedule,'fixed_data',Pre_defined_Variables.Schedule))
 
     #generate WCA Stage dataframe 
     WCA_Stages_df = pd.DataFrame(date_rng_5, columns = ['Date'])

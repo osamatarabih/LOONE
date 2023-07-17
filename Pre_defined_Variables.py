@@ -7,14 +7,17 @@ Created on Thu Oct 15 12:29:27 2020
 #A Class contains all the pre-defined variables
 #I will include different values for variables in this class.
 class Pre_defined_Variables:
-    Schedule = 'LORS2008'
+    Schedule = 'LORS20082023'
     startyear = 2008
-    endyear = 2018
+    endyear = 2023
     startdate_entry = startyear,1,1 
     begdateCS_entry = startyear,1,1 
-    enddate_entry = endyear,12,31
-    enddate_TC = endyear+1,1,1
-    Month_N = (endyear-startyear+1)*12
+    enddate_entry = endyear,3,31
+    # enddate_TC = endyear+1,1,1
+    enddate_TC = endyear,4,1
+    # Month_N = (endyear-startyear+1)*12
+    Month_N = (endyear-startyear)*12 + 3
+
     Opt_NewTree = 1 #if New Tree Decision is used enter 1 else enter 0.
     Code = 6
     Multiplier = 100
