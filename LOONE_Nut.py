@@ -12,9 +12,11 @@ from TP_Variables_Regions import TP_Variables
 import TP_Mass_Balance_Functions_Regions as TP_MBFR
 
 
-def LOONE_Nut(loone_q: pd.DataFrame) -> pd.DataFrame:
+def LOONE_Nut(
+    loone_q: pd.DataFrame, data_dir: str | None = None
+) -> pd.DataFrame:
     print("LOONE Nut Module is Running!")
-    data_dir = Model_Config.Working_Path
+    data_dir = data_dir if data_dir else Model_Config.Working_Path
     # Based on the defined Start and End year, month, and day on the
     # Pre_defined_Variables File, Startdate and enddate are defined.
     year, month, day = map(int, Pre_defined_Variables.startdate_entry)
