@@ -5,17 +5,17 @@ Created on Fri Jul 29 18:01:45 2022
 @author: osamatarabih
 """
 
-    # I determine daily values for the Tributary conditions and Seasonal/Multi-Seasonal LONINO classes 
-    #using a weekly Trib. Condition data and Monthly LONINO data. 
+    # I determine daily values for the Tributary conditions and Seasonal/Multi-Seasonal LONINO classes
+    #using a weekly Trib. Condition data and Monthly LONINO data.
 def Trib_HC():
     import os
     import pandas as pd
     import numpy as np
     from datetime import datetime
-    from Model_Config import Model_Config 
+    from Model_Config import Model_Config
     Working_Path = Model_Config.Working_Path
-    os.chdir('%s'%Working_Path) 
-    from Pre_defined_Variables import Pre_defined_Variables 
+    os.chdir('%s'%Working_Path)
+    from Pre_defined_Variables import Pre_defined_Variables
     from Model_variables import M_var
     from LONINO_FNs import LONINO_FNs
     from Data import Data
@@ -23,11 +23,11 @@ def Trib_HC():
     #Generate weekly time step date column where frequency is 'W-Fri' to start on 01/01/2008.
     #FIXME: Always check here for start date, end date, and frequency to match with the Trib. Condition weekly data obtained.
     year, month, day = map(int, Pre_defined_Variables.startdate_entry)
-    startdate = datetime(year, month, day).date() 
+    startdate = datetime(year, month, day).date()
     year, month, day = map(int, Pre_defined_Variables.enddate_entry)
     enddate = datetime(year, month, day).date()
     year, month, day = map(int, Pre_defined_Variables.enddate_TC)
-    enddate_TC = datetime(year, month, day).date() 
+    enddate_TC = datetime(year, month, day).date()
     date_rng_3 = pd.date_range(start=startdate, end = enddate_TC, freq= 'W-Fri')
     #Generate the Tributary Condition Dataframe.
     Trib_Cond_df = pd.DataFrame(date_rng_3, columns =['date'])
@@ -61,7 +61,7 @@ def Trib_HC():
     #Generate a daily date range
     date_rng_5 = pd.date_range(start = startdate, end = enddate, freq ='D')
     TC_LONINO_df = pd.DataFrame(date_rng_5, columns = ['Date'])
-    row_nm = len(TC_LONINO_df.index)        
+    row_nm = len(TC_LONINO_df.index)
     Trib_Cond = np.zeros(row_nm)
     for i in range(row_nm):
         Trib_Cond[i] = Trib_Cond_df['TCI'].iloc[int(i/7)]

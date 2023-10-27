@@ -6,6 +6,5 @@ Created on Thu May 26 13:24:35 2022
 """
 
 class Model_Config:
-    Working_Path = 'C:/LOONE-main'
-    Sim_type = 0 # 0:Scenario_Simulation 1:Optimization_Validation 2:Optimization 
-    
+    Working_Path = '/home/tethys/tethysdev/LOONE/Data/test'
+    Sim_type = 0 # 0:Scenario_Simulation 1:Optimization_Validation 2:Optimization

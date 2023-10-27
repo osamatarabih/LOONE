@@ -7,12 +7,12 @@ Created on Thu Oct 15 12:29:27 2020
 #A Class contains all the pre-defined variables
 #I will include different values for variables in this class.
 class Pre_defined_Variables:
-    Schedule = 'LORS20082023'
-    startyear = 2008
+    Schedule = 'predicted'
+    startyear = 2023
     endyear = 2023
-    startdate_entry = startyear,1,1 
-    begdateCS_entry = startyear,1,1 
-    enddate_entry = endyear,3,31
+    startdate_entry = startyear,10,16
+    begdateCS_entry = startyear,10,16
+    enddate_entry = endyear,10,31
     # enddate_TC = endyear+1,1,1
     enddate_TC = endyear,4,1
     # Month_N = (endyear-startyear+1)*12
@@ -37,7 +37,7 @@ class Pre_defined_Variables:
     WCA3NWmin = 11
     WCA217min = 11.1
     Opt_WCAlimitWSA = 2
-    CSflag = 1 
+    CSflag = 1
     PlsDay_Switch = 0 #0: pulse day counter continues to 10 even if release level increases, 1: pulse day counter is set to zero if release level increases during the 10-day pulse.
     MaxQstgTrigger = 20 # the maximum stage trigger for maximum discharge if Trib_cond. = XWet.
     Opt_QregMult = 0 #option for using multipliers 0: don't use, 1: apply only during dry season (Nov-May), 2: apply year-round.
@@ -92,13 +92,13 @@ class Pre_defined_Variables:
     NNRcap1 = 900
     NNRcap2 = 1800
     Option_Stage = 0
-    #Water demand cutback for each WSM Zone 
+    #Water demand cutback for each WSM Zone
     Z1_cutback = 0.15
     Z2_cutback = 0.3
     Z3_cutback = 0.45
     Z4_cutback = 0.6
-##################################################################################    
-    dstar_B = 99        
+##################################################################################
+    dstar_B = 99
     dstar_C = 99
     dstar_D3 = 99
     dstar_D2 = 99
@@ -108,7 +108,7 @@ class Pre_defined_Variables:
     astar_D3 = 1
     astar_D2 = 1
     astar_D1 = 1
-    bstar_S77_B = 1 
+    bstar_S77_B = 1
     bstar_S77_C = 1
     bstar_S77_D3 = 0.5
     bstar_S77_D2 = 0.5
@@ -119,5 +119,4 @@ class Pre_defined_Variables:
     bstar_S80_D2 = 0.5
     bstar_S80_D1 = 0.5
 
-    
-    
+

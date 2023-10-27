@@ -4,6 +4,10 @@ Created on Fri Jun 18 17:04:54 2021
 
 @author: osama
 """
+import os
+from Model_Config import Model_Config
+Working_Path = Model_Config.Working_Path
+
 
 class TP_Variables:
     import pandas as pd
@@ -44,7 +48,7 @@ class TP_Variables:
     Per_R_S = A_Rock_S/A_tot
     Per_P_N = A_Peat_N/A_tot
     Per_P_S = A_Peat_S/A_tot
-    
+
     Per_M_NN = A_Mud_N/A_N
     Per_M_SS = A_Mud_S/A_S
     Per_S_NN = A_Sand_N/A_N
@@ -80,10 +84,10 @@ class TP_Variables:
     # K_ads_R = 0.0000351158788363223 #(m3/mg.day)#6.000418535050426e-05#(m3/mg.month)
     # K_ads_P = 0.0000151884647904376  #(m3/mg.day)#6.000418535050426e-05#(m3/mg.month)
     ###
-    # v_settle = 0.03024 #0.004 #(m/day)#0.12732776837140575 #(m/month) 
-    
+    # v_settle = 0.03024 #0.004 #(m/day)#0.12732776837140575 #(m/month)
+
     # Read Calibration Outputs
-    Cal_Res = pd.read_csv('C:/Work/Research/LOONE/Model To be Published/LOONE_Model/Data/nondominated_Sol_var.csv')
+    Cal_Res = pd.read_csv(os.path.join(Working_Path, 'nondominated_Sol_var.csv'))
     Par = Cal_Res['Par']
     v_diff_M = Par[0]
     v_diff_S = Par[1]

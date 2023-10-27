@@ -1,31 +1,28 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Wed May 25 19:35:15 2022
-
-@author: osamatarabih
-"""
-
-import os
+import argparse
 import pandas as pd
-from Model_Config import Model_Config 
-Working_Path = Model_Config.Working_Path
-os.chdir('%s'%Working_Path) 
-from LOONE_Q import LOONE_Q
 from LOONE_Nut import LOONE_Nut
-# Read Decision Variable Values out ot Optimization
-# Dec_Var = pd.read_csv('./Outputs/Opt_Decision_Var.csv')
-# Dec_Var_Val = Dec_Var['Value']
-# LOONE_Q_Outputs = LOONE_Q(Dec_Var_Val[0],Dec_Var_Val[1],Dec_Var_Val[2:14],Dec_Var_Val[14:26],P_Lake_df['TP_Lake_S'])
 
-LOONE_Q_Outputs = LOONE_Q(0,0,0,0,0)
-LOONE_Q_Outputs_df = pd.DataFrame(LOONE_Q_Outputs[0])
-# LOONE_Q_Outputs_df.to_csv('./Outputs/LOONE_Q_Outputs_2023.csv')
-LOONE_Nut_out = LOONE_Nut(LOONE_Q_Outputs_df)
-LOONE_Nut_Lds_out_df = pd.DataFrame(LOONE_Nut_out)
-LOONE_Nut_Lds_out_df.to_csv('./Outputs/LOONE_Nut_Lds_Outputs_2023.csv')
-# LOONE_Nut_Lake_out_df = pd.DataFrame(LOONE_Nut_out[1])
-# LOONE_Nut_Lake_out_df.to_csv('./Outputs/LOONE_Nut_Lake_Outputs.csv')
-# LOONE_Nut_Smr_StL_df = pd.DataFrame(LOONE_Nut_out[2])
-# LOONE_Nut_Smr_StL_df.to_csv('./Outputs/LOONE_Nut_Smr_StL.csv')
-# LOONE_Nut_Smr_Calo_df = pd.DataFrame(LOONE_Nut_out[3])
-# LOONE_Nut_Smr_Calo_df.to_csv('./Outputs/LOONE_Nut_Smr_Calo.csv')
+
+def main(loone_q_path: str, nut_out_path: str) -> None:
+    """Run LOONE_Nut_Lds_out.csv
+
+    Args:
+        loone_q_path (str): Path to LOONE Q CSV file.
+        nut_out_path (str): Path to LOONE nutrient file to be created.
+    """
+
+    LOONE_Nut_out = LOONE_Nut(loone_q_path)
+    LOONE_Nut_Lds_out_df = pd.DataFrame(LOONE_Nut_out)
+    LOONE_Nut_Lds_out_df.to_csv(nut_out_path)
+
+
+if __name__ == "__main__":
+    argparser = argparse.ArgumentParser()
+    argparser.add_argument(
+        "nut_out_path",
+        nargs=1,
+        help="Path to LOONE nutrient file to be created.",
+    )
+    args = argparser.parse_args()
+    nut_out_path = args.nut_out_path[0]
+    main(nut_out_path)
