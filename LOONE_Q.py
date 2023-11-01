@@ -6,6 +6,7 @@ Created on Sun Jul 18 18:44:37 2021
 """
 
 import os
+import sys
 import pandas as pd
 from datetime import datetime
 import numpy as np
@@ -52,7 +53,7 @@ def LOONE_Q(P_1,P_2,S77_DV,S308_DV,TP_Lake_S):
     Wk = []
     #Generate a count list
     for i in Water_dmd['date']:
-        if i.month == 1 and i.day == 1:
+        if i.month == startdate.month and i.day == startdate.day:
             n = 0
         else:
             n = n + 1
@@ -101,7 +102,7 @@ def LOONE_Q(P_1,P_2,S77_DV,S308_DV,TP_Lake_S):
     LO_Model['Net_Inflow'] = Data.NetInf_Input['Netflows_acft']
     n_rows = len(LO_Model.index)
     LO_Model['LOSA_dmd_SFWMM'] = Data.SFWMM_W_dmd['LOSA_dmd'] * (Pre_defined_Variables.Mult_LOSA/100)
-    LO_Model['C44RO'] = Data.C44_Runoff['C44RO']
+    LO_Model['C44RO'] = Data.C44_Runoff['C44RO']  # CHECK ME
     ##################################
     DecTree_df = pd.DataFrame(date_rng_5, columns = ['Date'])
     DecTree_df['Zone_B_MetFcast'] = TC_LONINO_df['LONINO_Seasonal_Classes']
@@ -122,25 +123,31 @@ def LOONE_Q(P_1,P_2,S77_DV,S308_DV,TP_Lake_S):
     Num_days = np.zeros(num_B_R)
     for i in range(num_B_R) :
         Num_days[i] = monthrange(Basin_RO['date'].iloc[i].year, Basin_RO['date'].iloc[i].month)[1] #no. of days in each time step month.
-        BS_C43RO[i] = max(0, (Outlet1_baseflow - Data.C43RO['C43RO'].iloc[i]))
-        BS_C44RO[i] = max(0, (Outlet2_baseflow - Data.C44RO['C44RO'].iloc[i]))
+        BS_C43RO[i] = max(0, (Outlet1_baseflow - Data.C43RO['C43RO'].iloc[i]))  # CHECK ME
+        BS_C44RO[i] = max(0, (Outlet2_baseflow - Data.C44RO['C44RO'].iloc[i]))  # CHECK ME
         C44RO_SLTRIB[i] = BS_C44RO[i] + Data.SLTRIB['SLTRIB_cfs'].iloc[i]
-        C44RO_BS[i] = max(0, Data.C44RO['C44RO'].iloc[i] - Outlet2_baseflow)*Num_days[i]
+        C44RO_BS[i] = max(0, Data.C44RO['C44RO'].iloc[i] - Outlet2_baseflow)*Num_days[i]    # CHECK ME 'C44RO_cmd'
     Basin_RO['Ndays'] = Num_days
-    Basin_RO['C43RO'] = Data.C43RO['C43RO']
+    Basin_RO['C43RO'] = Data.C43RO['C43RO'] # CHECK ME
     Basin_RO['BS-C43RO'] = BS_C43RO
-    Basin_RO['C44RO'] = Data.C44RO['C44RO']
+    Basin_RO['C44RO'] = Data.C44RO['C44RO'] # CHECK ME
     Basin_RO['BS-C44RO'] = BS_C44RO
     Basin_RO['SLTRIB'] = Data.SLTRIB['SLTRIB_cfs']
     Basin_RO['C44RO_SLTRIB'] = C44RO_SLTRIB
     Basin_RO['C44RO-BS'] = C44RO_BS
-    LO_Model['C43RO'] = Data.C43RO_Daily['C43RO']
-    S80avgL1 = Data.Pulses['S-80_L1_%s'%Pre_defined_Variables.Schedule].mean()
-    S80avgL2 = Data.Pulses['S-80_L2_%s'%Pre_defined_Variables.Schedule].mean()
-    S80avgL3 = Data.Pulses['S-80_L3_%s'%Pre_defined_Variables.Schedule].mean()
-    S77avgL1 = Data.Pulses['S-77_L1_%s'%Pre_defined_Variables.Schedule].mean() #LORS
-    S77avgL2 = Data.Pulses['S-77_L2_%s'%Pre_defined_Variables.Schedule].mean() #LORS
-    S77avgL3 = Data.Pulses['S-77_L3_%s'%Pre_defined_Variables.Schedule].mean()
+    LO_Model['C43RO'] = Data.C43RO_Daily['C43RO']   # CHECK ME
+    filter_col = [col for col in Data.Pulses.columns if col.startswith('S-80_L1')]
+    S80avgL1 = Data.Pulses[filter_col].mean()
+    filter_col = [col for col in Data.Pulses.columns if col.startswith('S-80_L2')]
+    S80avgL2 = Data.Pulses[filter_col].mean()
+    filter_col = [col for col in Data.Pulses.columns if col.startswith('S-77_L2')]
+    S77avgL2 = Data.Pulses[filter_col].mean() #LORS
+    filter_col = [col for col in Data.Pulses.columns if col.startswith('S-77_L1')]
+    S77avgL1 = Data.Pulses[filter_col].mean() #LORS
+    filter_col = [col for col in Data.Pulses.columns if col.startswith('S-77_L3')]
+    S77avgL3 = Data.Pulses[filter_col].mean()
+    filter_col = [col for col in Data.Pulses.columns if col.startswith('S-80_L3')]
+    S80avgL3 = Data.Pulses[filter_col].mean()
     Basin_RO = Basin_RO.set_index(['date'])
     Basin_RO.index = pd.to_datetime(Basin_RO.index)
     Basin_RO_Daily = Basin_RO.reindex(date_rng_11d, method='ffill')
@@ -290,7 +297,8 @@ def LOONE_Q(P_1,P_2,S77_DV,S308_DV,TP_Lake_S):
         M_var.Outlet2DS_Mult[i+2] = LO_FNs.Outlet2DS_Mult(Seasons.at[i, 'Season'],Seasons.at[i, 'Month'],M_var.dh_7days[i+1],M_var.ReLevelCode_1[i+2],M_var.Fraction_of_Zone_height[i+1],M_var.ReLevelCode_2[i+2],M_var.ReLevelCode_3_S80[i+2],Pre_defined_Variables.Opt_QregMult)
         M_var.Outlet2DS_Mult_2[i+2] = LO_FNs.Outlet2DS_Mult_2(LO_Model.at[i+2, 'date'].month,LO_Model.at[i+2, 'date'].day,M_var.PlsDay[i+2],M_var.Outlet2DS_Mult[i+2-M_var.PlsDay[i+2]],M_var.Outlet2DS_Mult[i+2],Pre_defined_Variables.Opt_QregMult)
         M_var.Outlet2DSRS[i+2] = LO_FNs.Outlet2DSRS(M_var.Release_Level[i+2],Data.S80_RegRelRates.at[0, 'Zone_D1'],S80avgL1,Data.Pulses.at[M_var.PlsDay[i+2]-1 if M_var.PlsDay[i+2]-1>=0 else len(Data.Pulses)-1, 'S-80_L1_%s'%Pre_defined_Variables.Schedule],M_var.Outlet2DS_Mult_2[i+2],Data.CE_SLE_turns.at[LO_Model.at[i+2, 'date'].year-Pre_defined_Variables.startyear, 'SLEturn'],Data.S80_RegRelRates.at[0, 'Zone_D2'],S80avgL2,Data.Pulses.at[M_var.PlsDay[i+2]-1 if M_var.PlsDay[i+2]-1>=0 else len(Data.Pulses)-1, 'S-80_L2_%s'%Pre_defined_Variables.Schedule],Data.S80_RegRelRates.at[0, 'Zone_D3'],S80avgL3,Data.Pulses.at[M_var.PlsDay[i+2]-1 if M_var.PlsDay[i+2]-1>=0 else len(Data.Pulses)-1, 'S-80_L3_%s'%Pre_defined_Variables.Schedule],Data.S80_RegRelRates.at[0, 'Zone_C'],Data.S80_RegRelRates.at[0, 'Zone_B'],Data.S80_RegRelRates.at[0, 'Zone_A'])
-        M_var.Outlet2USRG1[i+2] = max(0,M_var.Outlet2DSRS[i+2]-LO_Model.at[i+2, 'C44RO'])
+        diff = M_var.Outlet2DSRS[i+2]-LO_Model.at[i+2, 'C44RO']
+        M_var.Outlet2USRG1[i+2] = max(0,diff.values[0] if isinstance(diff, pd.Series) else diff)
         M_var.Sum_Outlet2USRG1[i+2] = LO_FNs.Sum_Outlet2USRG1(LO_Model.at[i+2, 'date'].day,M_var.Outlet2USRG1[i+2])
         M_var.Outlet2DSBS[i+2] = LO_FNs.Outlet2DSBS(M_var.Release_Level[i+2],M_var.Sum_Outlet2USRG1[i+2],VLOOKUP1_c[i],Outlet2_baseflow,Pre_defined_Variables.Option_S80Baseflow)
         M_var.Outlet2USBK[i+2] = LO_FNs.Outlet2USBK(M_var.Lake_Stage[i+1],df_WSMs.at[i+1, 'D1'],M_var.Outlet2USRG[i+1],LO_Model.at[i+2, 'C44RO'],Data.SFWMM_Daily_Outputs.at[i+2, 'S308BK'],Pre_defined_Variables.Opt_S308,Pre_defined_Variables.S308BK_Const,Pre_defined_Variables.S308_BK_Thr)
@@ -315,7 +323,10 @@ def LOONE_Q(P_1,P_2,S77_DV,S308_DV,TP_Lake_S):
         M_var.ReLevelCode_3_S77[i+2] = LO_FNs.ReLevelCode_3_S77(M_var.Release_Level[i+2],Pre_defined_Variables.bstar_S77_D1,Pre_defined_Variables.bstar_S77_D2,Pre_defined_Variables.bstar_S77_D3,Pre_defined_Variables.bstar_S77_C,Pre_defined_Variables.bstar_S77_B)
         M_var.Outlet1US_Mult[i+2] = LO_FNs.Outlet1US_Mult(Seasons.at[i, 'Season'],Seasons.at[i, 'Month'],M_var.dh_7days[i+1],M_var.ReLevelCode_1[i+2],M_var.Fraction_of_Zone_height[i+1],M_var.ReLevelCode_2[i+2],M_var.ReLevelCode_3_S77[i+2],Pre_defined_Variables.Opt_QregMult)
         M_var.Outlet1US_Mult_2[i+2] = LO_FNs.Outlet1US_Mult_2(LO_Model.at[i+2, 'date'].month,LO_Model.at[i+2, 'date'].day,M_var.PlsDay[i+2],M_var.Outlet1US_Mult[i+2-M_var.PlsDay[i+2]],M_var.Outlet1US_Mult[i+2],Pre_defined_Variables.Opt_QregMult)
-        M_var.Outlet1USRS[i+2] = LO_FNs.Outlet1USRS(M_var.Release_Level[i+2],Data.S77_RegRelRates.at[0, 'Zone_D1'],S77avgL1,Data.Pulses.at[M_var.PlsDay[i+2]-1 if M_var.PlsDay[i+2]-1>=0 else len(Data.Pulses)-1, 'S-77_L1_%s'%Pre_defined_Variables.Schedule],M_var.Outlet1US_Mult_2[i+2],LO_Model.at[i+2, 'C43RO'],Data.CE_SLE_turns.at[LO_Model.at[i+2, 'date'].year-Pre_defined_Variables.startyear, 'CEturn'],Data.S77_RegRelRates.at[0, 'Zone_D2'],S77avgL2,Data.Pulses.at[M_var.PlsDay[i+2]-1 if M_var.PlsDay[i+2]-1>=0 else len(Data.Pulses)-1, 'S-77_L2_%s'%Pre_defined_Variables.Schedule],M_var.Zone_Code[i+1],Data.S77_RegRelRates.at[0, 'Zone_D3'],S77avgL3,Data.Pulses.at[M_var.PlsDay[i+2]-1 if M_var.PlsDay[i+2]-1>=0 else len(Data.Pulses)-1, 'S-77_L3_%s'%Pre_defined_Variables.Schedule],Data.S77_RegRelRates.at[0, 'Zone_C'],Data.S77_RegRelRates.at[0, 'Zone_B'],Data.S77_RegRelRates.at[0, 'Zone_A'],Pre_defined_Variables.Opt_Outlet1DSRG)
+        try:
+            M_var.Outlet1USRS[i+2] = LO_FNs.Outlet1USRS(M_var.Release_Level[i+2],Data.S77_RegRelRates.at[0, 'Zone_D1'],S77avgL1,Data.Pulses.at[M_var.PlsDay[i+2]-1 if M_var.PlsDay[i+2]-1>=0 else len(Data.Pulses)-1, 'S-77_L1_%s'%Pre_defined_Variables.Schedule],M_var.Outlet1US_Mult_2[i+2],LO_Model.at[i+2, 'C43RO'],Data.CE_SLE_turns.at[LO_Model.at[i+2, 'date'].year-Pre_defined_Variables.startyear, 'CEturn'],Data.S77_RegRelRates.at[0, 'Zone_D2'],S77avgL2,Data.Pulses.at[M_var.PlsDay[i+2]-1 if M_var.PlsDay[i+2]-1>=0 else len(Data.Pulses)-1, 'S-77_L2_%s'%Pre_defined_Variables.Schedule],M_var.Zone_Code[i+1],Data.S77_RegRelRates.at[0, 'Zone_D3'],S77avgL3,Data.Pulses.at[M_var.PlsDay[i+2]-1 if M_var.PlsDay[i+2]-1>=0 else len(Data.Pulses)-1, 'S-77_L3_%s'%Pre_defined_Variables.Schedule],Data.S77_RegRelRates.at[0, 'Zone_C'],Data.S77_RegRelRates.at[0, 'Zone_B'],Data.S77_RegRelRates.at[0, 'Zone_A'],Pre_defined_Variables.Opt_Outlet1DSRG)
+        except Exception as e:
+            breakpoint()
         M_var.Sum_Outlet1USRS[i+2] = LO_FNs.Sum_Outlet1USRS(LO_Model.at[i+2, 'date'].day,M_var.Outlet1USRS[i+2])
         M_var.Outlet1USBK[i+2] = LO_FNs.Outlet1USBK(M_var.Lake_Stage[i+1],M_var.Outlet1USRS[i+2],M_var.Outlet1USBSAP[i+1],M_var.Outlet1USEWS[i+1],LO_Model.at[i+2, 'C43RO'],Data.SFWMM_Daily_Outputs.at[i+2, 'S77BK'],Pre_defined_Variables.Outlet1USBK_Switch,Pre_defined_Variables.Outlet1USBK_Threshold)
         M_var.ROwest[i+2] = LO_Model.at[i+2, 'C43RO'] - M_var.Outlet1USBK[i+2]
@@ -359,7 +370,7 @@ def LOONE_Q(P_1,P_2,S77_DV,S308_DV,TP_Lake_S):
         M_var.TotRegSo[i+2] = (M_var.RegWCA[i+2] + M_var.RegL8C51[i+2]) * 1.9835
         M_var.Stage2ar[i+2] = Stg_Sto_Ar.stg2ar(M_var.Lake_Stage[i+1],0)
         M_var.Stage2marsh[i+2] = Stg_Sto_Ar.stg2mar(M_var.Lake_Stage[i+1],0)
-        M_var.RF[i+2] = Data.RF_Vol.at[i+2, 'RF_acft']
+        M_var.RF[i+2] = Data.RF_Vol.at[i+2, 'RFVol_acft']
         M_var.ET[i+2] = LO_FNs.ET(Data.SFWMM_Daily_Outputs.at[i+2, 'et_dry'],M_var.Stage2ar[i+2],Data.SFWMM_Daily_Outputs.at[i+2, 'et_litoral'],M_var.Stage2marsh[i+2],Data.SFWMM_Daily_Outputs.at[i+2, 'et_open'],Data.ET_Vol.at[i+2, 'ETVol_acft'],Pre_defined_Variables.ET_Switch)
         M_var.Choose_WSA_1[i+2] = LO_FNs.Choose_WSA_1(df_WSMs.at[i+2, 'WSM1'],Pre_defined_Variables.Opt_WSA,Pre_defined_Variables.WSAtrig2,Pre_defined_Variables.WSAoff2)
         M_var.Choose_WSA_2[i+2] = LO_FNs.Choose_WSA_2(df_WSMs.at[i+2, 'WSM1'],Pre_defined_Variables.Opt_WSA,Pre_defined_Variables.WSAtrig1,Pre_defined_Variables.WSAoff1)
@@ -384,3 +395,8 @@ def LOONE_Q(P_1,P_2,S77_DV,S308_DV,TP_Lake_S):
         LO_Model['TotRegSo'] = M_var.TotRegSo
 
     return[LO_Model]
+
+if __name__ == "__main__":
+    args = sys.argv
+    args.pop(0)
+    LOONE_Q(*args)

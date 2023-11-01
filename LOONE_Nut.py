@@ -1,6 +1,6 @@
 import os
 import pandas as pd
-from datetime import datetime
+from datetime import datetime, timedelta
 from glob import glob
 import numpy as np
 
@@ -17,13 +17,14 @@ def LOONE_Nut(
 ) -> pd.DataFrame:
     print("LOONE Nut Module is Running!")
     data_dir = data_dir if data_dir else Model_Config.Working_Path
+    print(data_dir)
     # Based on the defined Start and End year, month, and day on the
     # Pre_defined_Variables File, Startdate and enddate are defined.
     year, month, day = map(int, Pre_defined_Variables.startdate_entry)
-    startdate = datetime(year, month, day).date()
+    startdate = datetime.now() #datetime(year, month, day).date()
     year, month, day = map(int, Pre_defined_Variables.startdate_entry)
     year, month, day = map(int, Pre_defined_Variables.enddate_entry)
-    enddate = datetime(year, month, day).date()
+    enddate = datetime.now() + timedelta(days=15) #datetime(year, month, day).date()
     schedule = Pre_defined_Variables.Schedule
 
     date_rng_0 = pd.date_range(start=startdate, end=enddate, freq="D")

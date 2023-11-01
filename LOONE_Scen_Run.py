@@ -11,8 +11,7 @@ def main(loone_q_path: str, nut_out_path: str, data_dir: str) -> None:
         nut_out_path (str): Path to LOONE nutrient file to be created.
         data_dir (str): Path to data directory.
     """
-
-    LOONE_Nut_out = LOONE_Nut(loone_q_path)
+    LOONE_Nut_out = LOONE_Nut(loone_q_path, data_dir)
     LOONE_Nut_Lds_out_df = pd.DataFrame(LOONE_Nut_out)
     LOONE_Nut_Lds_out_df.to_csv(nut_out_path)
 
