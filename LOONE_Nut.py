@@ -13,11 +13,11 @@ import TP_Mass_Balance_Functions_Regions as TP_MBFR
 
 
 def LOONE_Nut(
-    loone_q: pd.DataFrame, data_dir: str | None = None
+    loone_q_path: str, data_dir: str | None = None
 ) -> pd.DataFrame:
     print("LOONE Nut Module is Running!")
     data_dir = data_dir if data_dir else Model_Config.Working_Path
-    print(data_dir)
+    loone_q = pd.read_csv(loone_q_path)
     # Based on the defined Start and End year, month, and day on the
     # Pre_defined_Variables File, Startdate and enddate are defined.
     year, month, day = map(int, Pre_defined_Variables.startdate_entry)
@@ -31,19 +31,19 @@ def LOONE_Nut(
     Load_ext = pd.read_csv(
         os.path.join(
             data_dir,
-            f"LO_External_Loadings_3MLag_{schedule}.csv"
+            f"LO_External_Loadings_3MLag.csv"
         )
     )
     Q_in = pd.read_csv(
         os.path.join(
             data_dir,
-            f"LO_Inflows_BK_{schedule}.csv"
+            f"LO_Inflows_BK.csv"
         )
     )
     Flow_df = pd.read_csv(
         glob(os.path.join(
             data_dir,
-            f"geoglows_flow_df*{schedule}.csv"
+            f"geoglows_flow_df*predicted.csv"
         ))[0]
     )
     Q_O = Flow_df["Outflows"].values
@@ -55,7 +55,7 @@ def LOONE_Nut(
     Sto_Stage = pd.read_csv(
         os.path.join(
             data_dir,
-            f"Average_LO_Sto_Stg_{schedule}.csv"
+            f"Average_LO_Storage_3MLag.csv"
         )
     )
     Stage_LO = Sto_Stage["Stage_ft"].values
@@ -70,14 +70,14 @@ def LOONE_Nut(
     Wind_ShearStr = pd.read_csv(
         os.path.join(
             data_dir,
-            f"WindShearStress_{schedule}.csv"
+            f"WindShearStress.csv"
         )
     )
     W_SS = Wind_ShearStr["ShearStress"]  # Dyne/cm2
     nu_ts = pd.read_csv(
         os.path.join(
             data_dir,
-            f"nu_{schedule}.csv"
+            "nu.csv"
         )
     )
     LO_BL = 0.5  # m (Bed Elevation of LO)
@@ -1588,6 +1588,7 @@ def LOONE_Nut(
         P_Load_StL[i] = (
             S308_Q[i] * 0.028316847 * 3600 * 24 * TP_Lake_S[i]
         )  # mg/d P
+        #breakpoint()
         P_Load_South[i] = TotRegSo[i] * 1233.48 * TP_Lake_S[i]  # mg/d P
 
     P_Loads_df = pd.DataFrame(
