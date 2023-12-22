@@ -3,15 +3,17 @@ import pandas as pd
 from LOONE_Nut import LOONE_Nut
 
 
-def main(loone_q_path: str, nut_out_path: str, data_dir: str, external_load: str) -> None:
+def main(loone_q_path: str, nut_out_path: str, data_dir: str, ensemble_number: str) -> None:
     """Run LOONE_Nut_Lds_out.csv
 
     Args:
         loone_q_path (str): Path to LOONE Q CSV file.
         nut_out_path (str): Path to LOONE nutrient file to be created.
         data_dir (str): Path to data directory.
+        ensemble_number (str): The ensemble number of the ensemble that the input data is for. Ex: '1'.
     """
-    LOONE_Nut_out = LOONE_Nut(loone_q_path, external_load, data_dir)
+    ensemble_number = int(ensemble_number)
+    LOONE_Nut_out = LOONE_Nut(loone_q_path, ensemble_number, data_dir)
     LOONE_Nut_Lds_out_df = pd.DataFrame(LOONE_Nut_out)
     LOONE_Nut_Lds_out_df.to_csv(nut_out_path)
 
@@ -34,14 +36,14 @@ if __name__ == "__main__":
         help="Path to data directory.",
     )
     argparser.add_argument(
-        "external_load",
+        "ensemble_number",
         nargs=1,
-        help="Path to LO_External_Loadings_3MLag_*.csv.",
+        help="The ensemble number of the ensemble that the input data is for. Ex: '1'.",
     )
     args = argparser.parse_args()
     loone_q_path = args.loone_q_path[0]
     nut_out_path = args.nut_out_path[0]
     data_dir = args.data_dir[0]
-    external_load = args.external_load[0]
+    ensemble_number = args.ensemble_number[0]
 
-    main(loone_q_path, nut_out_path, data_dir, external_load)
+    main(loone_q_path, nut_out_path, data_dir, ensemble_number)

@@ -13,7 +13,7 @@ import TP_Mass_Balance_Functions_Regions as TP_MBFR
 
 
 def LOONE_Nut(
-    loone_q_path: str, loads_external: str, data_dir: str | None = None,
+    loone_q_path: str, ensemble_number: int, data_dir: str | None = None
 ) -> pd.DataFrame:
     print("LOONE Nut Module is Running!")
     data_dir = data_dir if data_dir else Model_Config.Working_Path
@@ -31,7 +31,7 @@ def LOONE_Nut(
     Load_ext = pd.read_csv(
         os.path.join(
             data_dir,
-            loads_external
+            f"LO_External_Loadings_3MLag_{ensemble_number:02d}.csv"
         )
     )
     Q_in = pd.read_csv(
