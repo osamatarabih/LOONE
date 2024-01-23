@@ -21,10 +21,10 @@ def LOONE_Nut(
     # Based on the defined Start and End year, month, and day on the
     # Pre_defined_Variables File, Startdate and enddate are defined.
     year, month, day = map(int, Pre_defined_Variables.startdate_entry)
-    startdate = datetime.now() #datetime(year, month, day).date()
+    startdate = datetime.now().date() # datetime(year, month, day).date()
     year, month, day = map(int, Pre_defined_Variables.startdate_entry)
     year, month, day = map(int, Pre_defined_Variables.enddate_entry)
-    enddate = datetime.now() + timedelta(days=15) #datetime(year, month, day).date()
+    enddate = startdate + timedelta(days=15) # datetime(year, month, day).date()
     schedule = Pre_defined_Variables.Schedule
 
     date_rng_0 = pd.date_range(start=startdate, end=enddate, freq="D")
@@ -1588,7 +1588,6 @@ def LOONE_Nut(
         P_Load_StL[i] = (
             S308_Q[i] * 0.028316847 * 3600 * 24 * TP_Lake_S[i]
         )  # mg/d P
-        #breakpoint()
         P_Load_South[i] = TotRegSo[i] * 1233.48 * TP_Lake_S[i]  # mg/d P
 
     P_Loads_df = pd.DataFrame(
