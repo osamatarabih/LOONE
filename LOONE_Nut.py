@@ -40,12 +40,7 @@ def LOONE_Nut(
             f"LO_Inflows_BK.csv"
         )
     )
-    Flow_df = pd.read_csv(
-        glob(os.path.join(
-            data_dir,
-            f"geoglows_flow_df*predicted.csv"
-        ))[0]
-    )
+    Flow_df = pd.read_csv(os.path.join(data_dir, f"geoglows_flow_df_ens_{ensemble_number:02d}_predicted.csv"))
     Q_O = Flow_df["Outflows"].values
     S77_Q = loone_q["S77_Q"].values
     S308_Q = loone_q["S308_Q"].values
