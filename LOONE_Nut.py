@@ -13,7 +13,7 @@ import TP_Mass_Balance_Functions_Regions as TP_MBFR
 
 
 def LOONE_Nut(
-    loone_q_path: str, ensemble_number: int, data_dir: str | None = None
+    loone_q_path: str, loads_external_filename: str, flow_df_filename: str, data_dir: str | None = None
 ) -> pd.DataFrame:
     print("LOONE Nut Module is Running!")
     data_dir = data_dir if data_dir else Model_Config.Working_Path
@@ -31,7 +31,7 @@ def LOONE_Nut(
     Load_ext = pd.read_csv(
         os.path.join(
             data_dir,
-            f"LO_External_Loadings_3MLag_{ensemble_number:02d}.csv"
+            loads_external_filename
         )
     )
     Q_in = pd.read_csv(
@@ -40,7 +40,7 @@ def LOONE_Nut(
             f"LO_Inflows_BK.csv"
         )
     )
-    Flow_df = pd.read_csv(os.path.join(data_dir, f"geoglows_flow_df_ens_{ensemble_number:02d}_predicted.csv"))
+    Flow_df = pd.read_csv(os.path.join(data_dir, flow_df_filename))
     Q_O = Flow_df["Outflows"].values
     S77_Q = loone_q["S77_Q"].values
     S308_Q = loone_q["S308_Q"].values
