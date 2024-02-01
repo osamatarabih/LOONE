@@ -45,7 +45,7 @@ class Stg_Sto_Ar:
     def stg2mar(v, i):
         import pandas as pd
         from scipy import interpolate
-        stgmar_data = pd.read_csv('./Data/Stgmar_data.csv')
+        stgmar_data = pd.read_csv(os.path.join(Working_Path, 'Stgmar_data.csv'))
         #NOTE: We Can use cubic interpolation instead of linear
         x = stgmar_data['Stage']
         y = stgmar_data['Marsh_Ar']

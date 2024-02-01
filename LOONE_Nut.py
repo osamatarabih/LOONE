@@ -1,6 +1,6 @@
 import os
 import pandas as pd
-from datetime import datetime
+from datetime import datetime, timedelta
 from glob import glob
 import numpy as np
 
@@ -13,38 +13,34 @@ import TP_Mass_Balance_Functions_Regions as TP_MBFR
 
 
 def LOONE_Nut(
-    loone_q: pd.DataFrame, data_dir: str | None = None
+    loone_q_path: str, loads_external_filename: str, flow_df_filename: str, data_dir: str | None = None
 ) -> pd.DataFrame:
     print("LOONE Nut Module is Running!")
     data_dir = data_dir if data_dir else Model_Config.Working_Path
+    loone_q = pd.read_csv(loone_q_path)
     # Based on the defined Start and End year, month, and day on the
     # Pre_defined_Variables File, Startdate and enddate are defined.
     year, month, day = map(int, Pre_defined_Variables.startdate_entry)
-    startdate = datetime(year, month, day).date()
+    startdate = datetime.now().date() # datetime(year, month, day).date()
     year, month, day = map(int, Pre_defined_Variables.startdate_entry)
     year, month, day = map(int, Pre_defined_Variables.enddate_entry)
-    enddate = datetime(year, month, day).date()
+    enddate = startdate + timedelta(days=15) # datetime(year, month, day).date()
     schedule = Pre_defined_Variables.Schedule
 
     date_rng_0 = pd.date_range(start=startdate, end=enddate, freq="D")
     Load_ext = pd.read_csv(
         os.path.join(
             data_dir,
-            f"LO_External_Loadings_3MLag_{schedule}.csv"
+            loads_external_filename
         )
     )
     Q_in = pd.read_csv(
         os.path.join(
             data_dir,
-            f"LO_Inflows_BK_{schedule}.csv"
+            f"LO_Inflows_BK.csv"
         )
     )
-    Flow_df = pd.read_csv(
-        glob(os.path.join(
-            data_dir,
-            f"geoglows_flow_df*{schedule}.csv"
-        ))[0]
-    )
+    Flow_df = pd.read_csv(os.path.join(data_dir, flow_df_filename))
     Q_O = Flow_df["Outflows"].values
     S77_Q = loone_q["S77_Q"].values
     S308_Q = loone_q["S308_Q"].values
@@ -54,7 +50,7 @@ def LOONE_Nut(
     Sto_Stage = pd.read_csv(
         os.path.join(
             data_dir,
-            f"Average_LO_Sto_Stg_{schedule}.csv"
+            f"Average_LO_Storage_3MLag.csv"
         )
     )
     Stage_LO = Sto_Stage["Stage_ft"].values
@@ -69,14 +65,14 @@ def LOONE_Nut(
     Wind_ShearStr = pd.read_csv(
         os.path.join(
             data_dir,
-            f"WindShearStress_{schedule}.csv"
+            f"WindShearStress.csv"
         )
     )
     W_SS = Wind_ShearStr["ShearStress"]  # Dyne/cm2
     nu_ts = pd.read_csv(
         os.path.join(
             data_dir,
-            f"nu_{schedule}.csv"
+            "nu.csv"
         )
     )
     LO_BL = 0.5  # m (Bed Elevation of LO)
