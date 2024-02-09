@@ -3,7 +3,13 @@ import pandas as pd
 from LOONE_Nut import LOONE_Nut
 
 
-def main(loone_q_path: str, nut_out_path: str, data_dir: str, loads_external_filename: str, flow_df_filename: str) -> None:
+def main(
+    loone_q_path: str,
+    nut_out_path: str,
+    data_dir: str,
+    loads_external_filename: str,
+    flow_df_filename: str,
+) -> None:
     """Run LOONE_Nut_Lds_out.csv
 
     Args:
@@ -13,7 +19,9 @@ def main(loone_q_path: str, nut_out_path: str, data_dir: str, loads_external_fil
         loads_external_filename (str): The name of the file that holds the external loads for the model.
         flow_df_filename (str): The name of the file that holds the flow data for the model.
     """
-    LOONE_Nut_out = LOONE_Nut(loone_q_path, loads_external_filename, flow_df_filename, data_dir)
+    LOONE_Nut_out = LOONE_Nut(
+        loone_q_path, loads_external_filename, flow_df_filename, data_dir
+    )
     LOONE_Nut_Lds_out_df = pd.DataFrame(LOONE_Nut_out)
     LOONE_Nut_Lds_out_df.to_csv(nut_out_path)
 
@@ -52,4 +60,6 @@ if __name__ == "__main__":
     loads_external_filename = args.loads_external_filename[0]
     flow_df_filename = args.flow_df_filename[0]
 
-    main(loone_q_path, nut_out_path, data_dir, loads_external_filename, flow_df_filename)
+    main(
+        loone_q_path, nut_out_path, data_dir, loads_external_filename, flow_df_filename
+    )

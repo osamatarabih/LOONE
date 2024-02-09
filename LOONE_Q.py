@@ -150,12 +150,12 @@ def LOONE_Q(P_1, P_2, S77_DV, S308_DV, TP_Lake_S):
     Basin_RO["C44RO_SLTRIB"] = C44RO_SLTRIB
     Basin_RO["C44RO-BS"] = C44RO_BS
     LO_Model["C43RO"] = Data.C43RO_Daily["C43RO"]
-    S80avgL1 = Data.Pulses['S-80_L1_LORS20082023'].mean()
-    S80avgL2 = Data.Pulses['S-80_L2_LORS20082023'].mean()
-    S80avgL3 = Data.Pulses['S-80_L3_LORS20082023'].mean()
-    S77avgL1 = Data.Pulses['S-77_L1_LORS20082023'].mean() #LORS
-    S77avgL2 = Data.Pulses['S-77_L2_LORS20082023'].mean() #LORS
-    S77avgL3 = Data.Pulses['S-77_L3_LORS20082023'].mean()
+    S80avgL1 = Data.Pulses["S-80_L1_LORS20082023"].mean()
+    S80avgL2 = Data.Pulses["S-80_L2_LORS20082023"].mean()
+    S80avgL3 = Data.Pulses["S-80_L3_LORS20082023"].mean()
+    S77avgL1 = Data.Pulses["S-77_L1_LORS20082023"].mean()  # LORS
+    S77avgL2 = Data.Pulses["S-77_L2_LORS20082023"].mean()  # LORS
+    S77avgL3 = Data.Pulses["S-77_L3_LORS20082023"].mean()
     Basin_RO = Basin_RO.set_index(["date"])
     Basin_RO.index = pd.to_datetime(Basin_RO.index)
     Basin_RO_Daily = Basin_RO.reindex(date_rng_11d, method="ffill")
@@ -530,9 +530,11 @@ def LOONE_Q(P_1, P_2, S77_DV, S308_DV, TP_Lake_S):
             Data.S80_RegRelRates.at[0, "Zone_D1"],
             S80avgL1,
             Data.Pulses.at[
-                M_var.PlsDay[i + 2] - 1
-                if M_var.PlsDay[i + 2] - 1 >= 0
-                else len(Data.Pulses) - 1,
+                (
+                    M_var.PlsDay[i + 2] - 1
+                    if M_var.PlsDay[i + 2] - 1 >= 0
+                    else len(Data.Pulses) - 1
+                ),
                 "S-80_L1_%s" % Pre_defined_Variables.Schedule,
             ],
             M_var.Outlet2DS_Mult_2[i + 2],
@@ -543,17 +545,21 @@ def LOONE_Q(P_1, P_2, S77_DV, S308_DV, TP_Lake_S):
             Data.S80_RegRelRates.at[0, "Zone_D2"],
             S80avgL2,
             Data.Pulses.at[
-                M_var.PlsDay[i + 2] - 1
-                if M_var.PlsDay[i + 2] - 1 >= 0
-                else len(Data.Pulses) - 1,
+                (
+                    M_var.PlsDay[i + 2] - 1
+                    if M_var.PlsDay[i + 2] - 1 >= 0
+                    else len(Data.Pulses) - 1
+                ),
                 "S-80_L2_%s" % Pre_defined_Variables.Schedule,
             ],
             Data.S80_RegRelRates.at[0, "Zone_D3"],
             S80avgL3,
             Data.Pulses.at[
-                M_var.PlsDay[i + 2] - 1
-                if M_var.PlsDay[i + 2] - 1 >= 0
-                else len(Data.Pulses) - 1,
+                (
+                    M_var.PlsDay[i + 2] - 1
+                    if M_var.PlsDay[i + 2] - 1 >= 0
+                    else len(Data.Pulses) - 1
+                ),
                 "S-80_L3_%s" % Pre_defined_Variables.Schedule,
             ],
             Data.S80_RegRelRates.at[0, "Zone_C"],
@@ -661,10 +667,12 @@ def LOONE_Q(P_1, P_2, S77_DV, S308_DV, TP_Lake_S):
             Data.S77_RegRelRates.at[0, "Zone_D1"],
             S77avgL1,
             Data.Pulses.at[
-                M_var.PlsDay[i + 2] - 1
-                if M_var.PlsDay[i + 2] - 1 >= 0
-                else len(Data.Pulses) - 1,
-                'S-77_L1_LORS20082023',
+                (
+                    M_var.PlsDay[i + 2] - 1
+                    if M_var.PlsDay[i + 2] - 1 >= 0
+                    else len(Data.Pulses) - 1
+                ),
+                "S-77_L1_LORS20082023",
             ],
             M_var.Outlet1US_Mult_2[i + 2],
             LO_Model.at[i + 2, "C43RO"],
@@ -675,19 +683,23 @@ def LOONE_Q(P_1, P_2, S77_DV, S308_DV, TP_Lake_S):
             Data.S77_RegRelRates.at[0, "Zone_D2"],
             S77avgL2,
             Data.Pulses.at[
-                M_var.PlsDay[i + 2] - 1
-                if M_var.PlsDay[i + 2] - 1 >= 0
-                else len(Data.Pulses) - 1,
-                'S-77_L2_LORS20082023',
+                (
+                    M_var.PlsDay[i + 2] - 1
+                    if M_var.PlsDay[i + 2] - 1 >= 0
+                    else len(Data.Pulses) - 1
+                ),
+                "S-77_L2_LORS20082023",
             ],
             M_var.Zone_Code[i + 1],
             Data.S77_RegRelRates.at[0, "Zone_D3"],
             S77avgL3,
             Data.Pulses.at[
-                M_var.PlsDay[i + 2] - 1
-                if M_var.PlsDay[i + 2] - 1 >= 0
-                else len(Data.Pulses) - 1,
-                'S-77_L3_LORS20082023',
+                (
+                    M_var.PlsDay[i + 2] - 1
+                    if M_var.PlsDay[i + 2] - 1 >= 0
+                    else len(Data.Pulses) - 1
+                ),
+                "S-77_L3_LORS20082023",
             ],
             Data.S77_RegRelRates.at[0, "Zone_C"],
             Data.S77_RegRelRates.at[0, "Zone_B"],
@@ -966,8 +978,8 @@ def LOONE_Q(P_1, P_2, S77_DV, S308_DV, TP_Lake_S):
         LO_Model["TotRegSo"] = M_var.TotRegSo
 
     # Write out the results to a file - Needed because execute_loone.py calls this script as a subprocess and can't get this data.
-    LO_Model.to_csv(os.path.join(Working_Path, 'LOONE_Q_Outputs.csv'))
-    
+    LO_Model.to_csv(os.path.join(Working_Path, "LOONE_Q_Outputs.csv"))
+
     return [LO_Model]
 
 

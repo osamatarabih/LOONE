@@ -4,6 +4,8 @@ Created on Mon Oct 26 16:51:22 2020
 
 @author: osama
 """
+
+
 class LONINO_FNs:
     def RF_Cls(Wkly_Trib_Cond_NetRF):
         if Wkly_Trib_Cond_NetRF >= 8:
@@ -22,7 +24,8 @@ class LONINO_FNs:
             Cls = 3
         else:
             Cls = 0
-        return(Cls)
+        return Cls
+
     def MainTrib_Cls(Wkly_Trib_Cond_S65E):
         if Wkly_Trib_Cond_S65E >= 9000:
             Cls = 6
@@ -40,7 +43,8 @@ class LONINO_FNs:
             Cls = 1
         else:
             Cls = 0
-        return(Cls)
+        return Cls
+
     def Palmer_Cls(Wkly_Trib_Cond_Palmer):
         if Wkly_Trib_Cond_Palmer >= 4:
             Cls = 6
@@ -58,7 +62,8 @@ class LONINO_FNs:
             Cls = 1
         else:
             Cls = 0
-        return(Cls)
+        return Cls
+
     def NetInflow_Cls(Wkly_Trib_Cond_NetInf):
         if Wkly_Trib_Cond_NetInf >= 15000:
             Cls = 6
@@ -76,7 +81,8 @@ class LONINO_FNs:
             Cls = 1
         else:
             Cls = 0
-        return(Cls)
+        return Cls
+
     def LONINO_Seas_cls(LONINO_df_LONINO_Seas):
         if LONINO_df_LONINO_Seas >= 2.0001:
             Cls = 4
@@ -90,7 +96,8 @@ class LONINO_FNs:
             Cls = 1
         else:
             Cls = 0
-        return(Cls)
+        return Cls
+
     def LONINO_M_Seas_cls(LONINO_df_LONINO_Mult_Seas):
         if LONINO_df_LONINO_Mult_Seas >= 2.0001:
             Cls = 4
@@ -104,4 +111,4 @@ class LONINO_FNs:
             Cls = 1
         else:
             Cls = 0
-        return(Cls)
+        return Cls

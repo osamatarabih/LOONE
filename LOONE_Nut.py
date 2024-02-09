@@ -13,7 +13,10 @@ import TP_Mass_Balance_Functions_Regions as TP_MBFR
 
 
 def LOONE_Nut(
-    loone_q_path: str, loads_external_filename: str, flow_df_filename: str, data_dir: str | None = None
+    loone_q_path: str,
+    loads_external_filename: str,
+    flow_df_filename: str,
+    data_dir: str | None = None,
 ) -> pd.DataFrame:
     print("LOONE Nut Module is Running!")
     data_dir = data_dir if data_dir else Model_Config.Working_Path
@@ -21,25 +24,15 @@ def LOONE_Nut(
     # Based on the defined Start and End year, month, and day on the
     # Pre_defined_Variables File, Startdate and enddate are defined.
     year, month, day = map(int, Pre_defined_Variables.startdate_entry)
-    startdate = datetime.now().date() # datetime(year, month, day).date()
+    startdate = datetime.now().date()  # datetime(year, month, day).date()
     year, month, day = map(int, Pre_defined_Variables.startdate_entry)
     year, month, day = map(int, Pre_defined_Variables.enddate_entry)
-    enddate = startdate + timedelta(days=15) # datetime(year, month, day).date()
+    enddate = startdate + timedelta(days=15)  # datetime(year, month, day).date()
     schedule = Pre_defined_Variables.Schedule
 
     date_rng_0 = pd.date_range(start=startdate, end=enddate, freq="D")
-    Load_ext = pd.read_csv(
-        os.path.join(
-            data_dir,
-            loads_external_filename
-        )
-    )
-    Q_in = pd.read_csv(
-        os.path.join(
-            data_dir,
-            f"LO_Inflows_BK.csv"
-        )
-    )
+    Load_ext = pd.read_csv(os.path.join(data_dir, loads_external_filename))
+    Q_in = pd.read_csv(os.path.join(data_dir, f"LO_Inflows_BK.csv"))
     Flow_df = pd.read_csv(os.path.join(data_dir, flow_df_filename))
     Q_O = Flow_df["Outflows"].values
     S77_Q = loone_q["S77_Q"].values
@@ -47,12 +40,7 @@ def LOONE_Nut(
     TotRegSo = Flow_df[["S351_Out", "S352_Out", "S354_Out"]].sum(axis=1) * (
         70.0456 / 86400
     )
-    Sto_Stage = pd.read_csv(
-        os.path.join(
-            data_dir,
-            f"Average_LO_Storage_3MLag.csv"
-        )
-    )
+    Sto_Stage = pd.read_csv(os.path.join(data_dir, f"Average_LO_Storage_3MLag.csv"))
     Stage_LO = Sto_Stage["Stage_ft"].values
     Storage = Sto_Stage["Storage_acft"].values
     n_rows = len(Q_in.index)
@@ -62,27 +50,12 @@ def LOONE_Nut(
     Atm_Dep_S = TP_Variables.S_Per * Load_ext["Atm_Loading_mg"]
 
     # Read Shear Stress driven by Wind Speed
-    Wind_ShearStr = pd.read_csv(
-        os.path.join(
-            data_dir,
-            f"WindShearStress.csv"
-        )
-    )
+    Wind_ShearStr = pd.read_csv(os.path.join(data_dir, f"WindShearStress.csv"))
     W_SS = Wind_ShearStr["ShearStress"]  # Dyne/cm2
-    nu_ts = pd.read_csv(
-        os.path.join(
-            data_dir,
-            "nu.csv"
-        )
-    )
+    nu_ts = pd.read_csv(os.path.join(data_dir, "nu.csv"))
     LO_BL = 0.5  # m (Bed Elevation of LO)
     g = 9.8  # m/s2 gravitational acceleration
-    Cal_Res = pd.read_csv(
-        os.path.join(
-            data_dir,
-            f"nondominated_Sol_var.csv"
-        )
-    )
+    Cal_Res = pd.read_csv(os.path.join(data_dir, f"nondominated_Sol_var.csv"))
     Par = Cal_Res["Par"]
     d_c = Par[20]  # m (particle diameter 10 microm /1E6 to convert to m) clay
     d_s = Par[21]  # m sand
@@ -352,12 +325,8 @@ def LOONE_Nut(
         Q_N2S[i] = (Q_I_M[i] + Q_O_M[i]) / 2
         Stage2ar[i + 2] = Stg_Sto_Ar.stg2ar(Stage_LO[i + 2], 0)
         LO_WD[i] = Stage_LO[i] * 0.3048 - LO_BL
-        Lake_O_Storage_N[i] = (
-            Storage[i] * TP_Variables.N_Per * 4046.85642 * 0.305
-        )  # m3
-        Lake_O_Storage_S[i] = (
-            Storage[i] * TP_Variables.S_Per * 4046.85642 * 0.305
-        )  # m3
+        Lake_O_Storage_N[i] = Storage[i] * TP_Variables.N_Per * 4046.85642 * 0.305  # m3
+        Lake_O_Storage_S[i] = Storage[i] * TP_Variables.S_Per * 4046.85642 * 0.305  # m3
         Lake_O_A_N[i] = Stage2ar[i] * TP_Variables.N_Per * 4046.85642  # m2
         Lake_O_A_S[i] = Stage2ar[i] * TP_Variables.S_Per * 4046.85642  # m2
         Lake_O_A_M_N[i] = (
@@ -468,30 +437,14 @@ def LOONE_Nut(
             (TP_Variables.A_Sand_S + TP_Variables.A_Rock_S) / TP_Variables.A_S
         )
 
-        J_des_M_N[i] = TP_MBFR.Des_flux(
-            Γ_M_N[i], Mass_sed_M_N, TP_Variables.K_des_M
-        )
-        J_des_S_N[i] = TP_MBFR.Des_flux(
-            Γ_S_N[i], Mass_sed_S_N, TP_Variables.K_des_S
-        )
-        J_des_R_N[i] = TP_MBFR.Des_flux(
-            Γ_R_N[i], Mass_sed_R_N, TP_Variables.K_des_R
-        )
-        J_des_P_N[i] = TP_MBFR.Des_flux(
-            Γ_P_N[i], Mass_sed_P_N, TP_Variables.K_des_P
-        )
-        J_des_M_S[i] = TP_MBFR.Des_flux(
-            Γ_M_S[i], Mass_sed_M_S, TP_Variables.K_des_M
-        )
-        J_des_S_S[i] = TP_MBFR.Des_flux(
-            Γ_S_S[i], Mass_sed_S_S, TP_Variables.K_des_S
-        )
-        J_des_R_S[i] = TP_MBFR.Des_flux(
-            Γ_R_S[i], Mass_sed_R_S, TP_Variables.K_des_R
-        )
-        J_des_P_S[i] = TP_MBFR.Des_flux(
-            Γ_P_S[i], Mass_sed_P_S, TP_Variables.K_des_P
-        )
+        J_des_M_N[i] = TP_MBFR.Des_flux(Γ_M_N[i], Mass_sed_M_N, TP_Variables.K_des_M)
+        J_des_S_N[i] = TP_MBFR.Des_flux(Γ_S_N[i], Mass_sed_S_N, TP_Variables.K_des_S)
+        J_des_R_N[i] = TP_MBFR.Des_flux(Γ_R_N[i], Mass_sed_R_N, TP_Variables.K_des_R)
+        J_des_P_N[i] = TP_MBFR.Des_flux(Γ_P_N[i], Mass_sed_P_N, TP_Variables.K_des_P)
+        J_des_M_S[i] = TP_MBFR.Des_flux(Γ_M_S[i], Mass_sed_M_S, TP_Variables.K_des_M)
+        J_des_S_S[i] = TP_MBFR.Des_flux(Γ_S_S[i], Mass_sed_S_S, TP_Variables.K_des_S)
+        J_des_R_S[i] = TP_MBFR.Des_flux(Γ_R_S[i], Mass_sed_R_S, TP_Variables.K_des_R)
+        J_des_P_S[i] = TP_MBFR.Des_flux(Γ_P_S[i], Mass_sed_P_S, TP_Variables.K_des_P)
 
         J_ads_M_N[i] = TP_MBFR.Ads_flux(
             DIP_pore_M_N[i],
@@ -608,10 +561,7 @@ def LOONE_Nut(
         )
 
         Sed_Resusp_M_N[i] = (
-            (
-                (E_0 / Td**E_1)
-                * ((W_SS[i] - Crtcl_ShStr) / Crtcl_ShStr) ** E_2
-            )
+            ((E_0 / Td**E_1) * ((W_SS[i] - Crtcl_ShStr) / Crtcl_ShStr) ** E_2)
             * 10
             / LO_WD[i]
             * P_sed_M_N[i]
@@ -619,10 +569,7 @@ def LOONE_Nut(
             else 0
         )
         Sed_Resusp_S_N[i] = (
-            (
-                (E_0 / Td**E_1)
-                * ((W_SS[i] - Crtcl_ShStr) / Crtcl_ShStr) ** E_2
-            )
+            ((E_0 / Td**E_1) * ((W_SS[i] - Crtcl_ShStr) / Crtcl_ShStr) ** E_2)
             * 10
             / LO_WD[i]
             * P_sed_S_N[i]
@@ -630,10 +577,7 @@ def LOONE_Nut(
             else 0
         )
         Sed_Resusp_R_N[i] = (
-            (
-                (E_0 / Td**E_1)
-                * ((W_SS[i] - Crtcl_ShStr) / Crtcl_ShStr) ** E_2
-            )
+            ((E_0 / Td**E_1) * ((W_SS[i] - Crtcl_ShStr) / Crtcl_ShStr) ** E_2)
             * 10
             / LO_WD[i]
             * P_sed_R_N[i]
@@ -641,10 +585,7 @@ def LOONE_Nut(
             else 0
         )
         Sed_Resusp_P_N[i] = (
-            (
-                (E_0 / Td**E_1)
-                * ((W_SS[i] - Crtcl_ShStr) / Crtcl_ShStr) ** E_2
-            )
+            ((E_0 / Td**E_1) * ((W_SS[i] - Crtcl_ShStr) / Crtcl_ShStr) ** E_2)
             * 10
             / LO_WD[i]
             * P_sed_P_N[i]
@@ -652,10 +593,7 @@ def LOONE_Nut(
             else 0
         )
         Sed_Resusp_M_S[i] = (
-            (
-                (E_0 / Td**E_1)
-                * ((W_SS[i] - Crtcl_ShStr) / Crtcl_ShStr) ** E_2
-            )
+            ((E_0 / Td**E_1) * ((W_SS[i] - Crtcl_ShStr) / Crtcl_ShStr) ** E_2)
             * 10
             / LO_WD[i]
             * P_sed_M_S[i]
@@ -663,10 +601,7 @@ def LOONE_Nut(
             else 0
         )
         Sed_Resusp_S_S[i] = (
-            (
-                (E_0 / Td**E_1)
-                * ((W_SS[i] - Crtcl_ShStr) / Crtcl_ShStr) ** E_2
-            )
+            ((E_0 / Td**E_1) * ((W_SS[i] - Crtcl_ShStr) / Crtcl_ShStr) ** E_2)
             * 10
             / LO_WD[i]
             * P_sed_S_S[i]
@@ -674,10 +609,7 @@ def LOONE_Nut(
             else 0
         )
         Sed_Resusp_R_S[i] = (
-            (
-                (E_0 / Td**E_1)
-                * ((W_SS[i] - Crtcl_ShStr) / Crtcl_ShStr) ** E_2
-            )
+            ((E_0 / Td**E_1) * ((W_SS[i] - Crtcl_ShStr) / Crtcl_ShStr) ** E_2)
             * 10
             / LO_WD[i]
             * P_sed_R_S[i]
@@ -685,10 +617,7 @@ def LOONE_Nut(
             else 0
         )
         Sed_Resusp_P_S[i] = (
-            (
-                (E_0 / Td**E_1)
-                * ((W_SS[i] - Crtcl_ShStr) / Crtcl_ShStr) ** E_2
-            )
+            ((E_0 / Td**E_1) * ((W_SS[i] - Crtcl_ShStr) / Crtcl_ShStr) ** E_2)
             * 10
             / LO_WD[i]
             * P_sed_P_S[i]
@@ -1577,20 +1506,12 @@ def LOONE_Nut(
         )
         TP_Lake_Mean[i + 1] = (TP_Lake_N[i + 1] + TP_Lake_S[i + 1]) / 2
 
-        P_Load_Cal[i] = (
-            S77_Q[i] * 0.028316847 * 3600 * 24 * TP_Lake_S[i]
-        )  # mg/d P
-        P_Load_StL[i] = (
-            S308_Q[i] * 0.028316847 * 3600 * 24 * TP_Lake_S[i]
-        )  # mg/d P
+        P_Load_Cal[i] = S77_Q[i] * 0.028316847 * 3600 * 24 * TP_Lake_S[i]  # mg/d P
+        P_Load_StL[i] = S308_Q[i] * 0.028316847 * 3600 * 24 * TP_Lake_S[i]  # mg/d P
         P_Load_South[i] = TotRegSo[i] * 1233.48 * TP_Lake_S[i]  # mg/d P
 
-    P_Loads_df = pd.DataFrame(
-        date_rng_0, columns=["Date"]
-    )  # 1/1/2008-12/31/2018
-    P_Lake_df = pd.DataFrame(
-        date_rng_0, columns=["Date"]
-    )  # 1/1/2008-12/31/2018
+    P_Loads_df = pd.DataFrame(date_rng_0, columns=["Date"])  # 1/1/2008-12/31/2018
+    P_Lake_df = pd.DataFrame(date_rng_0, columns=["Date"])  # 1/1/2008-12/31/2018
 
     P_Loads_df["P_Load_Cal"] = pd.to_numeric(P_Load_Cal) / 1e9  # tons
     P_Loads_df["P_Load_StL"] = pd.to_numeric(P_Load_StL) / 1e9  # tons

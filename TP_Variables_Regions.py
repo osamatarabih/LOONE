@@ -6,63 +6,65 @@ Created on Fri Jun 18 17:04:54 2021
 """
 import os
 from Model_Config import Model_Config
+
 Working_Path = Model_Config.Working_Path
 
 
 class TP_Variables:
     import pandas as pd
-    Z_sed = 0.05 #m
-    Per_H2O_M = 0#85 #%
-    Per_H2O_S = 0#20 #%
-    Per_H2O_R = 0#20  #%
-    Per_H2O_P = 0#85 #%
+
+    Z_sed = 0.05  # m
+    Per_H2O_M = 0  # 85 #%
+    Per_H2O_S = 0  # 20 #%
+    Per_H2O_R = 0  # 20  #%
+    Per_H2O_P = 0  # 85 #%
     N_Per = 0.43
     S_Per = 0.57
     ####
-    Bulk_density_M = 0.15 #g/cm3
-    Bulk_density_S = 1.213 #g/cm3
-    Bulk_density_R = 1.213 #g/cm3
-    Bulk_density_P = 0.14 #g/cm3
+    Bulk_density_M = 0.15  # g/cm3
+    Bulk_density_S = 1.213  # g/cm3
+    Bulk_density_R = 1.213  # g/cm3
+    Bulk_density_P = 0.14  # g/cm3
     ####
-    Particle_density_M = 1.2 #g/cm3
-    Particle_density_S = 2.56 #g/cm3
-    Particle_density_R = 2.56 #g/cm3
-    Particle_density_P = 1.2 #g/cm3
+    Particle_density_M = 1.2  # g/cm3
+    Particle_density_S = 2.56  # g/cm3
+    Particle_density_R = 2.56  # g/cm3
+    Particle_density_P = 1.2  # g/cm3
     ####
-    A_Mud_N = 377415128 #m2 in 1988!
-    A_Mud_S = 394290227 #m2 in 1988!
-    A_Sand_N = 237504380 #m2 in 1988!
-    A_Sand_S = 117504905 #m2 in 1988!
-    A_Rock_N = 17760274 #m2 in 1988!
-    A_Rock_S = 141327951 #m2 in 1988!
-    A_Peat_N = 97497728 #m2 in 1988!
-    A_Peat_S = 301740272 #m2 in 1988!
+    A_Mud_N = 377415128  # m2 in 1988!
+    A_Mud_S = 394290227  # m2 in 1988!
+    A_Sand_N = 237504380  # m2 in 1988!
+    A_Sand_S = 117504905  # m2 in 1988!
+    A_Rock_N = 17760274  # m2 in 1988!
+    A_Rock_S = 141327951  # m2 in 1988!
+    A_Peat_N = 97497728  # m2 in 1988!
+    A_Peat_S = 301740272  # m2 in 1988!
     A_N = A_Mud_N + A_Sand_N + A_Rock_N + A_Peat_N
     A_S = A_Mud_S + A_Sand_S + A_Rock_S + A_Peat_S
     A_tot = A_N + A_S
-    Per_M_N = A_Mud_N/A_tot
-    Per_M_S = A_Mud_S/A_tot
-    Per_S_N = A_Sand_N/A_tot
-    Per_S_S = A_Sand_S/A_tot
-    Per_R_N = A_Rock_N/A_tot
-    Per_R_S = A_Rock_S/A_tot
-    Per_P_N = A_Peat_N/A_tot
-    Per_P_S = A_Peat_S/A_tot
+    Per_M_N = A_Mud_N / A_tot
+    Per_M_S = A_Mud_S / A_tot
+    Per_S_N = A_Sand_N / A_tot
+    Per_S_S = A_Sand_S / A_tot
+    Per_R_N = A_Rock_N / A_tot
+    Per_R_S = A_Rock_S / A_tot
+    Per_P_N = A_Peat_N / A_tot
+    Per_P_S = A_Peat_S / A_tot
 
-    Per_M_NN = A_Mud_N/A_N
-    Per_M_SS = A_Mud_S/A_S
-    Per_S_NN = A_Sand_N/A_N
-    Per_S_SS = A_Sand_S/A_S
-    Per_R_NN = A_Rock_N/A_N
-    Per_R_SS = A_Rock_S/A_S
-    Per_P_NN = A_Peat_N/A_N
-    Per_P_SS = A_Peat_S/A_S
-    Γ_inf = 91 #(mg/kg)
+    Per_M_NN = A_Mud_N / A_N
+    Per_M_SS = A_Mud_S / A_S
+    Per_S_NN = A_Sand_N / A_N
+    Per_S_SS = A_Sand_S / A_S
+    Per_R_NN = A_Rock_N / A_N
+    Per_R_SS = A_Rock_S / A_S
+    Per_P_NN = A_Peat_N / A_N
+    Per_P_SS = A_Peat_S / A_S
+    Γ_inf = 91  # (mg/kg)
     #####Monthly
-    v_burial_M = 0.0000003#1.0e-05 #(m/day)#0.00017333#(m/month)# 0.00208 (m/yr)
-    v_burial_S = 0.0000003#1.0e-05 #(m/day)#0.00017333#(m/month)# 0.00208 (m/yr)
-    v_burial_R = 0.0000003#1.0e-05 #(m/day)#0.00017333#(m/month)# 0.00208 (m/yr)
-    v_burial_P = 0.0000003#1.0e-05 #(m/day)#0.00017333#(m/month)# 0.00208 (m/yr)
+    v_burial_M = 0.0000003  # 1.0e-05 #(m/day)#0.00017333#(m/month)# 0.00208 (m/yr)
+    v_burial_S = 0.0000003  # 1.0e-05 #(m/day)#0.00017333#(m/month)# 0.00208 (m/yr)
+    v_burial_R = 0.0000003  # 1.0e-05 #(m/day)#0.00017333#(m/month)# 0.00208 (m/yr)
+    v_burial_P = 0.0000003  # 1.0e-05 #(m/day)#0.00017333#(m/month)# 0.00208 (m/yr)
     ######
     # v_diff_M = 0.00319465967020851 #(m/day)#0.0906586660119641#(m/month)
     # v_diff_S = 0.00928768403057645 #(m/day)#0.0906586660119641#(m/month)
@@ -87,8 +89,8 @@ class TP_Variables:
     # v_settle = 0.03024 #0.004 #(m/day)#0.12732776837140575 #(m/month)
 
     # Read Calibration Outputs
-    Cal_Res = pd.read_csv(os.path.join(Working_Path, 'nondominated_Sol_var.csv'))
-    Par = Cal_Res['Par']
+    Cal_Res = pd.read_csv(os.path.join(Working_Path, "nondominated_Sol_var.csv"))
+    Par = Cal_Res["Par"]
     v_diff_M = Par[0]
     v_diff_S = Par[1]
     v_diff_R = Par[2]
@@ -109,5 +111,3 @@ class TP_Variables:
     K_ads_R = Par[14]
     K_ads_P = Par[15]
     # v_settle = Par[16]
-
-
