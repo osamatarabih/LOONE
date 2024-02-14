@@ -17,7 +17,7 @@ from Data_Analyses_Fns import *
 
 Working_dir = "C:/Work/Research/LOONE"
 os.chdir("%s" % Working_dir)
-from Stg_Sto_Ar import Stg_Sto_Ar
+import utils.stg_sto_ar
 
 Working_dir = "C:/Work/Research/LOONE/LOONE_Data_Pre"
 os.chdir("%s" % Working_dir)
@@ -86,7 +86,7 @@ Storage_Exploring.to_csv("./Storage_Exploring_3MLag.csv")
 # for i in range(1,num_days):
 #     DS[i] = NetFlows[i] + RFVOL[i] - ETVOL[i] + (S77BK[i] + S308BK[i]) - Outflows[i] + Storage_dev[i]
 #     Storage[i] = Storage[i-1] + DS[i]
-#     Stage[i] = Stg_Sto_Ar.stg2sto(Storage[i],1)
+#     Stage[i] = utils.stg_sto_ar.stg2sto(Storage[i],1)
 # LOSMB = pd.DataFrame(date_range, columns=['date'])
 # LOSMB['Storage_acft'] = Storage
 # LOSMB['Stage_ft'] = Stage

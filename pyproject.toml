@@ -1,0 +1,14 @@
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "loone_model"
+version = "0.0.1"
+dependencies = [
+    "matplotlib",
+    "numpy",
+    "pandas",
+    "platypus-opt == 1.0.4",
+    "scipy",
+]
