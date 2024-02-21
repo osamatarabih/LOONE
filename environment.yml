@@ -1,0 +1,11 @@
+name: loone_model
+
+channels:
+  - conda-forge
+
+dependencies:
+  - matplotlib
+  - numpy
+  - pandas
+  - platypus-opt=1.0.4
+  - scipy

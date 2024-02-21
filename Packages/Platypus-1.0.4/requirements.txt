@@ -1,4 +1,0 @@
-numpy
-six
-nose
-mock

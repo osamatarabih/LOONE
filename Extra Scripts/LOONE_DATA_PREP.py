@@ -16,7 +16,7 @@ from Data_Analyses_Fns import *
 
 Working_dir = "C:/Work/Research/LOONE"
 os.chdir("%s" % Working_dir)
-from Stg_Sto_Ar import Stg_Sto_Ar
+import utils.stg_sto_ar
 
 M3_Yr = 2007
 M3_M = 10
@@ -37,8 +37,8 @@ os.chdir("%s" % Working_dir)
 LO_Stage = pd.read_csv("./LO_Stage_2023.csv")
 # Create Column (EOD Stg(ft,NGVD)) in File (SFWMM_Daily_Outputs_LORS20082023)
 LO_Stage = DF_Date_Range(LO_Stage, M3_Yr, M3_M, M3_D, En_Yr, En_M, En_D)
-LO_Storage = Stg_Sto_Ar.stg2sto(LO_Stage["Average_Stage"], 0)
-LO_SA = Stg_Sto_Ar.stg2ar(LO_Stage["Average_Stage"], 0)
+LO_Storage = utils.stg_sto_ar.stg2sto(LO_Stage["Average_Stage"], 0)
+LO_SA = utils.stg_sto_ar.stg2ar(LO_Stage["Average_Stage"], 0)
 LO_Stg_Sto_SA_df = pd.DataFrame(LO_Stage["date"], columns=["date"])
 LO_Stg_Sto_SA_df["Stage_ft"] = LO_Stage["Average_Stage"]
 LO_Stg_Sto_SA_df["Stage_m"] = LO_Stg_Sto_SA_df["Stage_ft"].values * 0.3048  # ft to m
