@@ -41,9 +41,9 @@ def LOONE_Q(P_1, P_2, S77_DV, S308_DV, TP_Lake_S):
     #############################################################################
     if Model_Config.Sim_type == 0 or Model_Config.Sim_type == 1:
         utils.df_wsms.WSMs()
-        df_WSMs = pd.read_csv(os.path.join(Working_Path, "df_WSMs.csv"))
-    else:
-        df_WSMs = pd.read_csv(os.path.join(Working_Path, "df_WSMs.csv"))
+
+    df_WSMs = pd.read_csv(os.path.join(Working_Path, "df_WSMs.csv"))
+    
     # The Following Code interpolates daily LOSA demand from weekly data for 6 differnet datasets where the user defines the LOSA demand that will be used based on a Code (1:6).
     # Set time frame for model run
     date_rng_2 = pd.date_range(start=startdate, end=enddate, freq="D")
@@ -182,49 +182,49 @@ def LOONE_Q(P_1, P_2, S77_DV, S308_DV, TP_Lake_S):
 
     Targ_Stg_df = pd.DataFrame(date_rng_5, columns=["dates"])
     for i in range(len(Targ_Stg_df)):
-        M_var.V10per[i] = utils.additional_functions.Replicate(
+        M_var.V10per[i] = utils.additional_functions.replicate(
             Targ_Stg_df["dates"].iloc[i].year,
             Targ_Stg_df["dates"].iloc[i].timetuple().tm_yday,
             10,
             Targ_Stg,
         )
-        M_var.V20per[i] = utils.additional_functions.Replicate(
+        M_var.V20per[i] = utils.additional_functions.replicate(
             Targ_Stg_df["dates"].iloc[i].year,
             Targ_Stg_df["dates"].iloc[i].timetuple().tm_yday,
             20,
             Targ_Stg,
         )
-        M_var.V25per[i] = utils.additional_functions.Replicate(
+        M_var.V25per[i] = utils.additional_functions.replicate(
             Targ_Stg_df["dates"].iloc[i].year,
             Targ_Stg_df["dates"].iloc[i].timetuple().tm_yday,
             25,
             Targ_Stg,
         )
-        M_var.V30per[i] = utils.additional_functions.Replicate(
+        M_var.V30per[i] = utils.additional_functions.replicate(
             Targ_Stg_df["dates"].iloc[i].year,
             Targ_Stg_df["dates"].iloc[i].timetuple().tm_yday,
             30,
             Targ_Stg,
         )
-        M_var.V40per[i] = utils.additional_functions.Replicate(
+        M_var.V40per[i] = utils.additional_functions.replicate(
             Targ_Stg_df["dates"].iloc[i].year,
             Targ_Stg_df["dates"].iloc[i].timetuple().tm_yday,
             40,
             Targ_Stg,
         )
-        M_var.V45per[i] = utils.additional_functions.Replicate(
+        M_var.V45per[i] = utils.additional_functions.replicate(
             Targ_Stg_df["dates"].iloc[i].year,
             Targ_Stg_df["dates"].iloc[i].timetuple().tm_yday,
             45,
             Targ_Stg,
         )
-        M_var.V50per[i] = utils.additional_functions.Replicate(
+        M_var.V50per[i] = utils.additional_functions.replicate(
             Targ_Stg_df["dates"].iloc[i].year,
             Targ_Stg_df["dates"].iloc[i].timetuple().tm_yday,
             50,
             Targ_Stg,
         )
-        M_var.V60per[i] = utils.additional_functions.Replicate(
+        M_var.V60per[i] = utils.additional_functions.replicate(
             Targ_Stg_df["dates"].iloc[i].year,
             Targ_Stg_df["dates"].iloc[i].timetuple().tm_yday,
             60,

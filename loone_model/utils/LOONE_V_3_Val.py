@@ -356,49 +356,49 @@ def LOONE_HydNut():
     V60per = np.zeros(len(Targ_Stg_df))
 
     for i in range(len(Targ_Stg_df)):
-        V10per[i] = utils.additional_functions.Replicate(
+        V10per[i] = utils.additional_functions.replicate(
             Targ_Stg_df["dates"].iloc[i].year,
             Targ_Stg_df["dates"].iloc[i].timetuple().tm_yday,
             10,
             Targ_Stg,
         )
-        V20per[i] = utils.additional_functions.Replicate(
+        V20per[i] = utils.additional_functions.replicate(
             Targ_Stg_df["dates"].iloc[i].year,
             Targ_Stg_df["dates"].iloc[i].timetuple().tm_yday,
             20,
             Targ_Stg,
         )
-        V25per[i] = utils.additional_functions.Replicate(
+        V25per[i] = utils.additional_functions.replicate(
             Targ_Stg_df["dates"].iloc[i].year,
             Targ_Stg_df["dates"].iloc[i].timetuple().tm_yday,
             25,
             Targ_Stg,
         )
-        V30per[i] = utils.additional_functions.Replicate(
+        V30per[i] = utils.additional_functions.replicate(
             Targ_Stg_df["dates"].iloc[i].year,
             Targ_Stg_df["dates"].iloc[i].timetuple().tm_yday,
             30,
             Targ_Stg,
         )
-        V40per[i] = utils.additional_functions.Replicate(
+        V40per[i] = utils.additional_functions.replicate(
             Targ_Stg_df["dates"].iloc[i].year,
             Targ_Stg_df["dates"].iloc[i].timetuple().tm_yday,
             40,
             Targ_Stg,
         )
-        V45per[i] = utils.additional_functions.Replicate(
+        V45per[i] = utils.additional_functions.replicate(
             Targ_Stg_df["dates"].iloc[i].year,
             Targ_Stg_df["dates"].iloc[i].timetuple().tm_yday,
             45,
             Targ_Stg,
         )
-        V50per[i] = utils.additional_functions.Replicate(
+        V50per[i] = utils.additional_functions.replicate(
             Targ_Stg_df["dates"].iloc[i].year,
             Targ_Stg_df["dates"].iloc[i].timetuple().tm_yday,
             50,
             Targ_Stg,
         )
-        V60per[i] = utils.additional_functions.Replicate(
+        V60per[i] = utils.additional_functions.replicate(
             Targ_Stg_df["dates"].iloc[i].year,
             Targ_Stg_df["dates"].iloc[i].timetuple().tm_yday,
             60,

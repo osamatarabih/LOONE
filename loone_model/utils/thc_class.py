@@ -64,7 +64,7 @@ def THC_Class(
     WSM_Zone,
 ):
 
-    THC_Class_normal_or_above[i] = utils.ap_functions.THC_Class_normal_or_above(
+    THC_Class_normal_or_above[i] = utils.ap_functions.thc_class_normal_or_above(
         AdapProt_df["Tributary Hydrologic Condition"].iloc[i],
         Pre_defined_Variables.THC_threshold,
     )
@@ -111,7 +111,7 @@ def THC_Class(
     # Calculate 30-day moving avg salinity (psu)
     n30d_mavg[i] = utils.ap_functions.n30d_mavg(Pre_defined_Variables.OptSalFcast)
     # Calculate the 30d avg Forecast salinity > the defined CE_SalThreshold psu within 2wks?
-    n30davgForecast[i] = utils.n30davgForecast(
+    n30davgForecast[i] = utils.ap_functions.n30davgForecast(
         Estuary_needs_water["Estuary Needs Water?"].iloc[i],
         n30d_mavg[i : i + 13],
         Pre_defined_Variables.OptSalFcast,
