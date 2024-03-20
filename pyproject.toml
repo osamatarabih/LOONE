@@ -3,12 +3,15 @@ requires = ["setuptools"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "loone_model"
+name = "loone"
 version = "0.0.1"
-dependencies = [
-    "matplotlib",
-    "numpy",
-    "pandas",
-    "platypus-opt == 1.0.4",
-    "scipy",
+description = "LOONE: A comprehensive water balance-nutrient-optimization model"
+readme = "README.md"
+authors = [
+    { name = "Osama Tarabih", email = "osamatarabih@usf.edu" },
+    { name = "Michael Souffront", email = "msouffront@aquaveo.com" },
+    { name = "James Dolinar", email = "jdolinar@aquaveo.com" },
 ]
+dependencies = ["matplotlib", "numpy", "pandas", "platypus-opt==1.0.4", "scipy"]
+[tool.setuptools.packages.find]
+include = ["loone*"]

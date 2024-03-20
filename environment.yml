@@ -1,4 +1,4 @@
-name: loone_model
+name: loone
 
 channels:
   - conda-forge

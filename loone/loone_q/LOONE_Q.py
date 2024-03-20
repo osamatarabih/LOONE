@@ -30,7 +30,8 @@ import utils.trib_hc
 
 def LOONE_Q(P_1, P_2, S77_DV, S308_DV, TP_Lake_S):
     print("LOONE Q Module is Running!")
-    # Based on the defined Start and End year, month, and day on the Pre_defined_Variables File, Startdate and enddate are defined.
+    # Based on the defined Start and End year, month, and day on the 
+    # Pre_defined_Variables File, Startdate and enddate are defined.
     year, month, day = map(int, Pre_defined_Variables.startdate_entry)
     startdate = datetime(year, month, day).date()
     year, month, day = map(int, Pre_defined_Variables.startdate_entry)
@@ -38,13 +39,15 @@ def LOONE_Q(P_1, P_2, S77_DV, S308_DV, TP_Lake_S):
     year, month, day = map(int, Pre_defined_Variables.enddate_entry)
     enddate = datetime(year, month, day).date()
 
-    #############################################################################
+    ###################################################################
     if Model_Config.Sim_type == 0 or Model_Config.Sim_type == 1:
         utils.df_wsms.WSMs()
 
     df_WSMs = pd.read_csv(os.path.join(Working_Path, "df_WSMs.csv"))
-    
-    # The Following Code interpolates daily LOSA demand from weekly data for 6 differnet datasets where the user defines the LOSA demand that will be used based on a Code (1:6).
+
+    # The Following Code interpolates daily LOSA demand from weekly 
+    # data for 6 differnet datasets where the user defines the LOSA 
+    # demand that will be used based on a Code (1:6).
     # Set time frame for model run
     date_rng_2 = pd.date_range(start=startdate, end=enddate, freq="D")
     # Create a data frame with a date column
@@ -71,26 +74,38 @@ def LOONE_Q(P_1, P_2, S77_DV, S308_DV, TP_Lake_S):
     dd = []  # daily demand
     # Calculate daily water demand
     for i in Water_dmd["Week_num"]:
-        D = ((Data.Weekly_dmd["C%s" % Pre_defined_Variables.Code].iloc[i - 1]) / 7) * (
-            Pre_defined_Variables.Multiplier / 100
-        )
+        D = (
+            (Data.Weekly_dmd["C%s" % Pre_defined_Variables.Code].iloc[i - 1])
+            / 7
+        ) * (Pre_defined_Variables.Multiplier / 100)
         dd.append(D)
     Water_dmd["Daily_demand"] = dd
-    ##############################################################################################
+    ###################################################################
     # Determine Tributary Hydrologic Conditions
     TC_LONINO_df = utils.trib_hc.Trib_HC()
     # Determine WCA Stages
     WCA_Stages_df = WCA_Stages_Cls(TC_LONINO_df)
-    # A dataframe to determine eachday's season (Months 11,12,1,2 are Season 1, Months 3,4,5 are season 2, Months 6,7 are season 3, Months 8,9,10 are season 4 )
+    # A dataframe to determine eachday's season (Months 11,12,1,2 are 
+    # Season 1, Months 3,4,5 are season 2, Months 6,7 are season 3, 
+    # Months 8,9,10 are season 4 )
     date_rng_5 = pd.date_range(start=startdate, end=enddate, freq="D")
     Seasons = pd.DataFrame(date_rng_5, columns=["date"])
     Seas_Count = len(Seasons.index)
     for i in range(Seas_Count):
-        if Seasons["date"].iloc[i].month > 2 and Seasons["date"].iloc[i].month < 6:
+        if (
+            Seasons["date"].iloc[i].month > 2
+            and Seasons["date"].iloc[i].month < 6
+        ):
             S = 2
-        elif Seasons["date"].iloc[i].month > 5 and Seasons["date"].iloc[i].month < 8:
+        elif (
+            Seasons["date"].iloc[i].month > 5
+            and Seasons["date"].iloc[i].month < 8
+        ):
             S = 3
-        elif Seasons["date"].iloc[i].month > 7 and Seasons["date"].iloc[i].month < 11:
+        elif (
+            Seasons["date"].iloc[i].month > 7
+            and Seasons["date"].iloc[i].month < 11
+        ):
             S = 4
         else:
             S = 1
@@ -98,10 +113,12 @@ def LOONE_Q(P_1, P_2, S77_DV, S308_DV, TP_Lake_S):
         M_var.Mon[i] = Seasons["date"].iloc[i].month
     Seasons["Season"] = M_var.Daily_Seasons
     Seasons["Month"] = M_var.Mon
-    ##################################################################################################################
+    ###################################################################
     # This following Script runs the main model daily simulations.
     date_rng_6 = pd.date_range(
-        start="12/30/%d" % (Pre_defined_Variables.startyear - 1), end=enddate, freq="D"
+        start="12/30/%d" % (Pre_defined_Variables.startyear - 1),
+        end=enddate,
+        freq="D",
     )
     LO_Model = pd.DataFrame(date_rng_6, columns=["date"])
     LO_Model["Net_Inflow"] = Data.NetInf_Input["Netflows_acft"]
@@ -113,7 +130,8 @@ def LOONE_Q(P_1, P_2, S77_DV, S308_DV, TP_Lake_S):
     ##################################
     DecTree_df = pd.DataFrame(date_rng_5, columns=["Date"])
     DecTree_df["Zone_B_MetFcast"] = TC_LONINO_df["LONINO_Seasonal_Classes"]
-    # Create a dataframe that includes Monthly Mean Basin Runoff & BaseFlow-Runoff & Runoff-Baseflow (cfs)
+    # Create a dataframe that includes Monthly Mean Basin Runoff & 
+    # BaseFlow-Runoff & Runoff-Baseflow (cfs)
     date_rng_11 = pd.date_range(start=startdate, end=enddate, freq="MS")
     date_rng_11d = pd.date_range(start=startdate, end=enddate, freq="D")
     date_rng_11d.name = "Date"
@@ -138,7 +156,8 @@ def LOONE_Q(P_1, P_2, S77_DV, S308_DV, TP_Lake_S):
         BS_C44RO[i] = max(0, (Outlet2_baseflow - Data.C44RO["C44RO"].iloc[i]))
         C44RO_SLTRIB[i] = BS_C44RO[i] + Data.SLTRIB["SLTRIB_cfs"].iloc[i]
         C44RO_BS[i] = (
-            max(0, Data.C44RO["C44RO"].iloc[i] - Outlet2_baseflow) * Num_days[i]
+            max(0, Data.C44RO["C44RO"].iloc[i] - Outlet2_baseflow)
+            * Num_days[i]
         )
     Basin_RO["Ndays"] = Num_days
     Basin_RO["C43RO"] = Data.C43RO["C43RO"]
@@ -161,8 +180,9 @@ def LOONE_Q(P_1, P_2, S77_DV, S308_DV, TP_Lake_S):
     Basin_RO = Basin_RO.reset_index()
     VLOOKUP1 = Basin_RO_Daily["BS-C44RO"]
     VLOOKUP1_c = [x for x in VLOOKUP1 if ~np.isnan(x)]
-    ##################################################################################################################
-    # This following script contains the logic and calculations for the proposed Lake Okeechobee Adaptive Protocol.
+    ###################################################################
+    # This following script contains the logic and calculations for 
+    # the proposed Lake Okeechobee Adaptive Protocol.
     AdapProt_df = pd.DataFrame(date_rng_5, columns=["date"])
     # Calculate Late Dry Season (Apr-May) logic.
     Late_Dry_Season = []
@@ -173,7 +193,9 @@ def LOONE_Q(P_1, P_2, S77_DV, S308_DV, TP_Lake_S):
             L = False
         Late_Dry_Season.append(L)
     AdapProt_df["Late_Dry_Season"] = Late_Dry_Season
-    AdapProt_df["Tributary Hydrologic Condition"] = TC_LONINO_df["Tributary_Condition"]
+    AdapProt_df["Tributary Hydrologic Condition"] = TC_LONINO_df[
+        "Tributary_Condition"
+    ]
     # Define "Low Chance" 6/1 stg<11'
     if Pre_defined_Variables.Opt_Date_Targ_Stg == 1:
         Targ_Stg = Data.Targ_Stg_June_1st
@@ -252,7 +274,7 @@ def LOONE_Q(P_1, P_2, S77_DV, S308_DV, TP_Lake_S):
     Outlet1_baseflow = 450  # cfs
     VLOOKUP2 = Basin_RO_Daily["BS-C43RO"]
     VLOOKUP2_c = [x for x in VLOOKUP2 if ~np.isnan(x)]
-    ####################################################################################################################
+    ###################################################################
     M_var.Lake_Stage[0] = Pre_defined_Variables.begstageCS
     M_var.Lake_Stage[1] = Pre_defined_Variables.begstageCS
     M_var.DecTree_Relslevel[0] = np.nan
@@ -271,7 +293,9 @@ def LOONE_Q(P_1, P_2, S77_DV, S308_DV, TP_Lake_S):
     else:
         X1 = LO_Model["date"].iloc[2]
     M_var.DayFlags[2] = X1
-    StartStorage = utils.stg_sto_ar.stg2sto(Pre_defined_Variables.startstage, 0)
+    StartStorage = utils.stg_sto_ar.stg2sto(
+        Pre_defined_Variables.startstage, 0
+    )
     M_var.Storage[0] = StartStorage
     M_var.Storage[1] = StartStorage
     # Flood = np.zeros(n_rows, dtype = object)
@@ -284,7 +308,7 @@ def LOONE_Q(P_1, P_2, S77_DV, S308_DV, TP_Lake_S):
     #     C = Data.S77_RegRelRates['Zone_D0'].iloc[0]
     # Choose_1 = C
     Choose_1 = 450  # cfs
-    ##############################################################################################################
+    ###################################################################
     M_var.Zone_Code[0] = utils.lo_functions.Zone_Code(
         M_var.Lake_Stage[0],
         df_WSMs["A"].iloc[0],
@@ -306,7 +330,8 @@ def LOONE_Q(P_1, P_2, S77_DV, S308_DV, TP_Lake_S):
             df_WSMs.at[i + 1, "WSM1"],
         )
         # Calculate Daily Maximum Water Supply
-        # Note that in LOSA_dmd we used (i) because this file starts from 1/1/2008 so i at this point =0.
+        # Note that in LOSA_dmd we used (i) because this file starts 
+        # from 1/1/2008 so i at this point =0.
         # Cutbacks are determined based on the WSM Zone.
         M_var.Max_Supply[i + 2] = utils.lo_functions.Max_Supply(
             M_var.WSM_Zone[i + 2],
@@ -327,19 +352,25 @@ def LOONE_Q(P_1, P_2, S77_DV, S308_DV, TP_Lake_S):
         M_var.NI_Supply[i + 2] = (
             LO_Model.at[i + 2, "Net_Inflow"] - M_var.LOSA_Supply[i + 2]
         )
-        # TODO Note: for the pass statement, We will read the Daily Water supply from the SFWMM as an input.
+        # TODO Note: for the pass statement, We will read the Daily 
+        # Water supply from the SFWMM as an input.
         # Calculate the cutback where Cutback = Demand - Supply
         ctbk = LO_Model.at[i + 2, "LOSA_dmd_SFWMM"] - M_var.LOSA_Supply[i + 2]
         M_var.Cut_back[i + 2] = ctbk
-        # Calculate percentage of the demand that is not supplied for each day
+        # Calculate percentage of the demand that is not supplied for 
+        # each day
         if LO_Model.at[i + 2, "LOSA_dmd_SFWMM"] == 0:
             DNS = 0
         else:
-            DNS = (M_var.Cut_back[i + 2] / LO_Model.at[i + 2, "LOSA_dmd_SFWMM"]) * 100
+            DNS = (
+                M_var.Cut_back[i + 2] / LO_Model.at[i + 2, "LOSA_dmd_SFWMM"]
+            ) * 100
         M_var.Dem_N_Sup[i + 2] = DNS
         # Calculate the Zone Code
-        # Note that to calculate the Zone Code in Dec 31 2020 we needed the WSM and breakpoint zones in 1/1/2021!
-        # Note Also that i = 0 in Stage indicates Dec 30 1964 while i = 0 in df_WSMs indicates Dec 31 1964!
+        # Note that to calculate the Zone Code in Dec 31 2020 we 
+        # needed the WSM and breakpoint zones in 1/1/2021!
+        # Note Also that i = 0 in Stage indicates Dec 30 1964 while 
+        # i = 0 in df_WSMs indicates Dec 31 1964!
         M_var.Zone_Code[i + 1] = utils.lo_functions.Zone_Code(
             M_var.Lake_Stage[i + 1],
             df_WSMs.at[i + 1, "A"],
@@ -351,10 +382,13 @@ def LOONE_Q(P_1, P_2, S77_DV, S308_DV, TP_Lake_S):
             df_WSMs.at[i + 1, "D0"],
             df_WSMs.at[i + 1, "WSM1"],
         )
-        # Generate the Zone Column based on the corresponding Zone Code.
-        M_var.LO_Zone[i + 1] = utils.lo_functions.LO_Zone(M_var.Zone_Code[i + 1])
+        # Generate the Zone Column based on the corresponding Zone Code
+        M_var.LO_Zone[i + 1] = utils.lo_functions.LO_Zone(
+            M_var.Zone_Code[i + 1]
+        )
         M_var.Zone_D_Trib[i] = utils.dec_tree_functions.Zone_D_Trib(
-            TC_LONINO_df.at[i, "Tributary_Condition"], Pre_defined_Variables.Opt_NewTree
+            TC_LONINO_df.at[i, "Tributary_Condition"],
+            Pre_defined_Variables.Opt_NewTree,
         )
         M_var.Zone_D_stage[i] = utils.dec_tree_functions.Zone_D_stage(
             M_var.Lake_Stage[i + 1], df_WSMs.at[i, "C-b"]
@@ -377,7 +411,8 @@ def LOONE_Q(P_1, P_2, S77_DV, S308_DV, TP_Lake_S):
             M_var.Zone_D_Branch_Code[i], Pre_defined_Variables.Opt_DecTree
         )
         M_var.Zone_C_Trib[i] = utils.dec_tree_functions.Zone_C_Trib(
-            TC_LONINO_df.at[i, "Tributary_Condition"], Pre_defined_Variables.Opt_NewTree
+            TC_LONINO_df.at[i, "Tributary_Condition"],
+            Pre_defined_Variables.Opt_NewTree,
         )
         M_var.Zone_C_Seas[i] = utils.dec_tree_functions.Zone_C_Seas(
             TC_LONINO_df.at[i, "LONINO_Seasonal_Classes"],
@@ -401,7 +436,8 @@ def LOONE_Q(P_1, P_2, S77_DV, S308_DV, TP_Lake_S):
             M_var.Zone_C_Branch_Code[i], Pre_defined_Variables.Opt_DecTree
         )
         M_var.Zone_B_Trib[i] = utils.dec_tree_functions.Zone_B_Trib(
-            TC_LONINO_df.at[i, "Tributary_Condition"], Pre_defined_Variables.Opt_NewTree
+            TC_LONINO_df.at[i, "Tributary_Condition"],
+            Pre_defined_Variables.Opt_NewTree,
         )
         M_var.Zone_B_Stage[i] = utils.dec_tree_functions.Zone_B_Stage(
             M_var.Lake_Stage[i + 1], Seasons.at[i, "Season"]
@@ -454,16 +490,18 @@ def LOONE_Q(P_1, P_2, S77_DV, S308_DV, TP_Lake_S):
         if i >= 6:
             dh = M_var.Lake_Stage[i + 1] - M_var.Lake_Stage[i - 6]
             M_var.dh_7days[i + 1] = dh
-        M_var.ZoneCodeminus1Code[i + 1] = utils.lo_functions.ZoneCodeminus1Code(
-            M_var.Zone_Code[i + 1],
-            df_WSMs.at[i + 1, "WSM1"],
-            df_WSMs.at[i + 1, "D0"],
-            df_WSMs.at[i + 1, "D1"],
-            df_WSMs.at[i + 1, "D2"],
-            df_WSMs.at[i + 1, "D3"],
-            df_WSMs.at[i + 1, "C"],
-            df_WSMs.at[i + 1, "B"],
-            df_WSMs.at[i + 1, "A"],
+        M_var.ZoneCodeminus1Code[i + 1] = (
+            utils.lo_functions.ZoneCodeminus1Code(
+                M_var.Zone_Code[i + 1],
+                df_WSMs.at[i + 1, "WSM1"],
+                df_WSMs.at[i + 1, "D0"],
+                df_WSMs.at[i + 1, "D1"],
+                df_WSMs.at[i + 1, "D2"],
+                df_WSMs.at[i + 1, "D3"],
+                df_WSMs.at[i + 1, "C"],
+                df_WSMs.at[i + 1, "B"],
+                df_WSMs.at[i + 1, "A"],
+            )
         )
         M_var.ZoneCodeCode[i + 1] = utils.lo_functions.ZoneCodeCode(
             M_var.Zone_Code[i + 1],
@@ -540,7 +578,8 @@ def LOONE_Q(P_1, P_2, S77_DV, S308_DV, TP_Lake_S):
             ],
             M_var.Outlet2DS_Mult_2[i + 2],
             Data.CE_SLE_turns.at[
-                LO_Model.at[i + 2, "date"].year - Pre_defined_Variables.startyear,
+                LO_Model.at[i + 2, "date"].year
+                - Pre_defined_Variables.startyear,
                 "SLEturn",
             ],
             Data.S80_RegRelRates.at[0, "Zone_D2"],
@@ -591,7 +630,9 @@ def LOONE_Q(P_1, P_2, S77_DV, S308_DV, TP_Lake_S):
             Pre_defined_Variables.S308BK_Const,
             Pre_defined_Variables.S308_BK_Thr,
         )
-        M_var.ROeast[i + 2] = LO_Model.at[i + 2, "C44RO"] - M_var.Outlet2USBK[i + 2]
+        M_var.ROeast[i + 2] = (
+            LO_Model.at[i + 2, "C44RO"] - M_var.Outlet2USBK[i + 2]
+        )
         M_var.Outlet2USBS[i + 2] = utils.lo_functions.Outlet2USBS(
             M_var.Outlet2DSBS[i + 2],
             M_var.Outlet2USRG1[i + 2],
@@ -624,11 +665,15 @@ def LOONE_Q(P_1, P_2, S77_DV, S308_DV, TP_Lake_S):
             elif (TP_Lake_S[i] <= P_1) and (
                 date_rng_6[i + 2].month in [1, 2, 3, 4, 11, 12]
             ):
-                M_var.Outlet2USRG[i + 2] = S308_DV[(date_rng_6[i + 2].month) - 1]
+                M_var.Outlet2USRG[i + 2] = S308_DV[
+                    (date_rng_6[i + 2].month) - 1
+                ]
             elif (TP_Lake_S[i] <= P_2) and (
                 date_rng_6[i + 2].month in [5, 6, 7, 8, 9, 10]
             ):
-                M_var.Outlet2USRG[i + 2] = S308_DV[(date_rng_6[i + 2].month) - 1]
+                M_var.Outlet2USRG[i + 2] = S308_DV[
+                    (date_rng_6[i + 2].month) - 1
+                ]
             else:
                 M_var.Outlet2USRG[i + 2] = 0
         M_var.Outlet2DS[i + 2] = utils.lo_functions.S80(
@@ -678,7 +723,8 @@ def LOONE_Q(P_1, P_2, S77_DV, S308_DV, TP_Lake_S):
             M_var.Outlet1US_Mult_2[i + 2],
             LO_Model.at[i + 2, "C43RO"],
             Data.CE_SLE_turns.at[
-                LO_Model.at[i + 2, "date"].year - Pre_defined_Variables.startyear,
+                LO_Model.at[i + 2, "date"].year
+                - Pre_defined_Variables.startyear,
                 "CEturn",
             ],
             Data.S77_RegRelRates.at[0, "Zone_D2"],
@@ -720,7 +766,9 @@ def LOONE_Q(P_1, P_2, S77_DV, S308_DV, TP_Lake_S):
             Pre_defined_Variables.Outlet1USBK_Switch,
             Pre_defined_Variables.Outlet1USBK_Threshold,
         )
-        M_var.ROwest[i + 2] = LO_Model.at[i + 2, "C43RO"] - M_var.Outlet1USBK[i + 2]
+        M_var.ROwest[i + 2] = (
+            LO_Model.at[i + 2, "C43RO"] - M_var.Outlet1USBK[i + 2]
+        )
         M_var.Outlet1DSBS[i + 2] = utils.lo_functions.Outlet1DSBS(
             M_var.Release_Level[i + 2],
             M_var.Sum_Outlet1USRS[i + 2],
@@ -851,11 +899,15 @@ def LOONE_Q(P_1, P_2, S77_DV, S308_DV, TP_Lake_S):
             elif (TP_Lake_S[i] <= P_1) and (
                 date_rng_6[i + 2].month in [1, 2, 3, 4, 11, 12]
             ):
-                M_var.Outlet1USREG[i + 2] = S77_DV[(date_rng_6[i + 2].month) - 1]
+                M_var.Outlet1USREG[i + 2] = S77_DV[
+                    (date_rng_6[i + 2].month) - 1
+                ]
             elif (TP_Lake_S[i] <= P_2) and (
                 date_rng_6[i + 2].month in [5, 6, 7, 8, 9, 10]
             ):
-                M_var.Outlet1USREG[i + 2] = S77_DV[(date_rng_6[i + 2].month) - 1]
+                M_var.Outlet1USREG[i + 2] = S77_DV[
+                    (date_rng_6[i + 2].month) - 1
+                ]
             else:
                 M_var.Outlet1USREG[i + 2] = 0
         M_var.Outlet1DS[i + 2] = utils.lo_functions.Outlet1DS(
@@ -884,11 +936,18 @@ def LOONE_Q(P_1, P_2, S77_DV, S308_DV, TP_Lake_S):
         )
         M_var.RegL8C51[i + 2] = min(
             Pre_defined_Variables.MaxCap_RegL8C51,
-            Pre_defined_Variables.Multiplier_RegL8C51 * M_var.Choose_L8C51[i + 2],
+            Pre_defined_Variables.Multiplier_RegL8C51
+            * M_var.Choose_L8C51[i + 2],
         )
-        M_var.TotRegSo[i + 2] = (M_var.RegWCA[i + 2] + M_var.RegL8C51[i + 2]) * 1.9835
-        M_var.Stage2ar[i + 2] = utils.stg_sto_ar.stg2ar(M_var.Lake_Stage[i + 1], 0)
-        M_var.Stage2marsh[i + 2] = utils.stg_sto_ar.stg2mar(M_var.Lake_Stage[i + 1], 0)
+        M_var.TotRegSo[i + 2] = (
+            M_var.RegWCA[i + 2] + M_var.RegL8C51[i + 2]
+        ) * 1.9835
+        M_var.Stage2ar[i + 2] = utils.stg_sto_ar.stg2ar(
+            M_var.Lake_Stage[i + 1], 0
+        )
+        M_var.Stage2marsh[i + 2] = utils.stg_sto_ar.stg2mar(
+            M_var.Lake_Stage[i + 1], 0
+        )
         M_var.RF[i + 2] = Data.RF_Vol.at[i + 2, "RFVol_acft"]
         M_var.ET[i + 2] = utils.lo_functions.ET(
             Data.SFWMM_Daily_Outputs.at[i + 2, "et_dry"],
@@ -978,7 +1037,9 @@ def LOONE_Q(P_1, P_2, S77_DV, S308_DV, TP_Lake_S):
         LO_Model["TotRegEW"] = M_var.TotRegEW
         LO_Model["TotRegSo"] = M_var.TotRegSo
 
-    # Write out the results to a file - Needed because execute_loone.py calls this script as a subprocess and can't get this data.
+    # Write out the results to a file - Needed because 
+    # execute_loone.py calls this script as a subprocess and can't get 
+    # this data.
     LO_Model.to_csv(os.path.join(Working_Path, "LOONE_Q_Outputs.csv"))
 
     return [LO_Model]
