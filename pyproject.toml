@@ -12,6 +12,13 @@ authors = [
     { name = "Michael Souffront", email = "msouffront@aquaveo.com" },
     { name = "James Dolinar", email = "jdolinar@aquaveo.com" },
 ]
-dependencies = ["matplotlib", "numpy", "pandas", "platypus-opt==1.0.4", "scipy"]
+dependencies = [
+    "matplotlib",
+    "numpy",
+    "pandas",
+    "platypus-opt==1.0.4",
+    "scipy",
+    "yaml",
+]
 [tool.setuptools.packages.find]
 include = ["loone*"]

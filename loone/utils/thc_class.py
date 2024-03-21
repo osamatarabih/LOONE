@@ -1,15 +1,4 @@
-import pandas as pd
-from datetime import datetime
-import numpy as np
-from scipy import interpolate
-from calendar import monthrange
-import os
-from loone_config.Model_Config import Model_Config
-
-Working_Path = Model_Config.Working_Path
-os.chdir("%s" % Working_Path)
-from data.pre_defined_variables import Pre_defined_Variables
-import utils.ap_functions
+from loone.utils import ap_functions
 
 # -*- coding: utf-8 -*-
 """
@@ -20,6 +9,7 @@ Created on Thu Apr 28 19:16:14 2022
 
 
 def THC_Class(
+    config,
     i,
     THC_Class_normal_or_above,
     Lake_O_Stage_AP,
@@ -64,24 +54,24 @@ def THC_Class(
     WSM_Zone,
 ):
 
-    THC_Class_normal_or_above[i] = utils.ap_functions.thc_class_normal_or_above(
+    THC_Class_normal_or_above[i] = ap_functions.thc_class_normal_or_above(
         AdapProt_df["Tributary Hydrologic Condition"].iloc[i],
-        Pre_defined_Variables.THC_threshold,
+        config["THC_threshold"],
     )
     # Lake Okeechobee Stage
     Lake_O_Stage_AP[i] = Stage_LO[i + 1]
     # Lake Okeechobee Zone Code
     Lake_O_Schedule_Zone[i] = Zone_Code[i + 1]
     #
-    LStgCorres[i] = utils.ap_functions.LStgCorres(
+    LStgCorres[i] = ap_functions.LStgCorres(
         AdapProt_df["date"].iloc[i].month,
         df_WSMs["WSM1"].iloc[i + 1],
-        Targ_Stg_df["%s%%" % (Pre_defined_Variables.LowChance)].iloc[i],
-        Pre_defined_Variables.Opt_LChance_line,
-        Pre_defined_Variables.LowChance,
+        Targ_Stg_df["%s%%" % (config["LowChance"])].iloc[i],
+        config["Opt_LChance_line"],
+        config["LowChance"],
     )
     # Lowchance 6/1 stage falls <11'?
-    LowChance_Check[i] = utils.ap_functions.LowChance_Check(
+    LowChance_Check[i] = ap_functions.LowChance_Check(
         Lake_O_Stage_AP[i], LStgCorres[i]
     )
     # Read LO_Model S77RS
@@ -96,52 +86,52 @@ def THC_Class(
     # Sum S77RS + S77BS
     S77RS_Pre_AP_S77_Baseflow[i] = S77RS_AP[i] + S77BS_AP[i]
     # Forecast daily salinity at Val_I75 if no baseflow or WES(psu), or at Ft. Myers if no baseflow or WES(psu), or at Val_I75  if No S77 contribution to S79.
-    if Pre_defined_Variables.OptSalFcast == 1:
+    if config["OptSalFcast"] == 1:
         S = "Forecast Daily Salinity at Val_I75 if No Baseflow or EWS (psu)"
-    elif Pre_defined_Variables.OptSalFcast == 2:
+    elif config["OptSalFcast"] == 2:
         S = "Forecast Daily Salinity at Ft. Myers if No Baseflow or EWS (psu)"
     else:
         S = "Forecast Daily Salinity at Val_I75 if No S77 contribution to S79"
     # Option 3 does not use the daily "forecast" salinity from this column (L), nor the 30d ma from Col M.
     # Column N contains the logical T/F pertinent to the AP flowchart.
     # For Option 3 details, see the formula in Col N and corresponding forecast computations in sheet CE_Sal_ValI75.
-    Forecast_D_Sal[i] = utils.ap_functions.Forecast_D_Sal(
-        Pre_defined_Variables.OptSalFcast
-    )
+    Forecast_D_Sal[i] = ap_functions.Forecast_D_Sal(config["OptSalFcast"])
     # Calculate 30-day moving avg salinity (psu)
-    n30d_mavg[i] = utils.ap_functions.n30d_mavg(Pre_defined_Variables.OptSalFcast)
+    n30d_mavg[i] = ap_functions.n30d_mavg(config["OptSalFcast"])
     # Calculate the 30d avg Forecast salinity > the defined CE_SalThreshold psu within 2wks?
-    n30davgForecast[i] = utils.ap_functions.n30davgForecast(
+    n30davgForecast[i] = ap_functions.n30davgForecast(
         Estuary_needs_water["Estuary Needs Water?"].iloc[i],
         n30d_mavg[i : i + 13],
-        Pre_defined_Variables.OptSalFcast,
-        Pre_defined_Variables.CE_SalThreshold,
+        config["OptSalFcast"],
+        config["CE_SalThreshold"],
     )
     # AdapProt_df.to_csv('D:/P_LOOPS/30davgForecastSalgreaterCE_SalThr_cal_%s.csv'%Pre_defined_Variables.Schedule)
     # LORS-08 suggests baseflow release from Lake & estuary needs Lake water
-    LORS08_bf_rel[i] = utils.ap_functions.LORS08_bf_rel(S77BS_AP[i], n30davgForecast[i])
+    LORS08_bf_rel[i] = ap_functions.LORS08_bf_rel(
+        S77BS_AP[i], n30davgForecast[i]
+    )
     #
-    LDS_LC6_1[i] = utils.ap_functions.LDS_LC6_1(
+    LDS_LC6_1[i] = ap_functions.LDS_LC6_1(
         AdapProt_df["Late_Dry_Season"].iloc[i],
         LowChance_Check[i],
-        Pre_defined_Variables.Late_Dry_Season_Option,
+        config["Late_Dry_Season_Option"],
     )
     # Define Switch at Cell O
-    S_O[i] = utils.ap_functions.S_O(LDS_LC6_1[i], S77BS_AP[i])
+    S_O[i] = ap_functions.S_O(LDS_LC6_1[i], S77BS_AP[i])
     # DEfine All 4 prior conditions are TRUE:
-    All_4[i] = utils.ap_functions.All_4(LORS08_bf_rel[i], LDS_LC6_1[i])
+    All_4[i] = ap_functions.All_4(LORS08_bf_rel[i], LDS_LC6_1[i])
     # Stage above Baseflow SB?
-    Sabf[i] = utils.ap_functions.Sabf(Lake_O_Schedule_Zone[i])
+    Sabf[i] = ap_functions.Sabf(Lake_O_Schedule_Zone[i])
     # Stage within Baseflow SB?
-    Swbf[i] = utils.ap_functions.Swbf(Lake_O_Schedule_Zone[i])
+    Swbf[i] = ap_functions.Swbf(Lake_O_Schedule_Zone[i])
     # Stage within Bene.Use SB?
-    Swbu[i] = utils.ap_functions.Swbu(Lake_O_Schedule_Zone[i])
+    Swbu[i] = ap_functions.Swbu(Lake_O_Schedule_Zone[i])
     # All 4 and Stage > Baseflow SB?
-    All_4andStage[i] = utils.ap_functions.All_4andStage(All_4[i], Sabf[i])
+    All_4andStage[i] = ap_functions.All_4andStage(All_4[i], Sabf[i])
     # All 4 and Stage in Baseflow SB?
-    All_4andStagein[i] = utils.ap_functions.All_4andStagein(All_4[i], Sabf[i])
+    All_4andStagein[i] = ap_functions.All_4andStagein(All_4[i], Sabf[i])
     # Pre-AP BF>0 AND stg>BF Subband
-    P_AP_BF_Stg[i] = utils.ap_functions.P_AP_BF_Stg(
+    P_AP_BF_Stg[i] = ap_functions.P_AP_BF_Stg(
         Lake_O_Schedule_Zone[i], S77BS_AP[i]
     )
     # Post-AP Baseflow (cfs)
@@ -151,11 +141,11 @@ def THC_Class(
     # to:
     # =IF(V11,J11,IF(W11,MIN(J11,CHOOSE(Opt_AdapProt,450,ActiveSchedule!$G$11)),0))
     # Create a logic test to be used for Post-AP Baseflow (cfs)
-    Logic_test_1[i] = utils.ap_functions.Logic_test_1(
-        All_4andStage[i], P_AP_BF_Stg[i], Pre_defined_Variables.Opt_NoAP_above_BF_SB
+    Logic_test_1[i] = ap_functions.Logic_test_1(
+        All_4andStage[i], P_AP_BF_Stg[i], config["Opt_NoAP_above_BF_SB"]
     )
     # Main Function
-    Post_Ap_Baseflow[i] = utils.ap_functions.Post_Ap_Baseflow(
+    Post_Ap_Baseflow[i] = ap_functions.Post_Ap_Baseflow(
         Logic_test_1[i], S77BS_AP[i], All_4andStagein[i], Choose_1
     )
     # S77RS+PreAPS77bsf=0 and [Stage above LOWSM]?
@@ -169,46 +159,46 @@ def THC_Class(
     # =IF(Opt_CEews_LOWSM=0,AND(K11=0,F11>1)),(K11=0))
     # This allows Env WS releases for any stage, but logic in subsequent columns cuts back the ews release based on the input cutback percentages that apply to the target CE env ws release.
     # See column "Post-AP EWS" comment and formulas in Col AD.
-    S77RSplusPreAPS77bsf[i] = utils.ap_functions.S77RSplusPreAPS77bsf(
+    S77RSplusPreAPS77bsf[i] = ap_functions.S77RSplusPreAPS77bsf(
         S77RS_Pre_AP_S77_Baseflow[i],
         Lake_O_Schedule_Zone[i],
-        Pre_defined_Variables.Opt_CEews_LOWSM,
+        config["Opt_CEews_LOWSM"],
     )
     # AND Est Needs Lake Water?
-    AndEstNeedsLakeWater[i] = utils.ap_functions.AndEstNeedsLakeWater(
+    AndEstNeedsLakeWater[i] = ap_functions.AndEstNeedsLakeWater(
         n30davgForecast[i], S77RSplusPreAPS77bsf[i]
     )
     # AND Low chance 6/1 stage <11'?
-    AndLowChance61stagelessth11[i] = utils.ap_functions.AndLowChance61stagelessth11(
+    AndLowChance61stagelessth11[i] = ap_functions.AndLowChance61stagelessth11(
         LDS_LC6_1[i], AndEstNeedsLakeWater[i]
     )
     # AND THC normal or above?
-    ATHCnora[i] = utils.ap_functions.ATHCnora(
+    ATHCnora[i] = ap_functions.ATHCnora(
         AndLowChance61stagelessth11[i],
         THC_Class_normal_or_above[i],
         AdapProt_df["Late_Dry_Season"].iloc[i],
-        Pre_defined_Variables.Opt_THCbypLateDS,
+        config["Opt_THCbypLateDS"],
     )
     # Post-AP EWS (cfs)
     # Define Choose_PAPEWS_1 and 2
-    Choose_PAPEWS_1[i] = utils.ap_functions.Choose_PAPEWS_1(
+    Choose_PAPEWS_1[i] = ap_functions.Choose_PAPEWS_1(
         WSM_Zone[i + 2],
-        Pre_defined_Variables.APCB1,
-        Pre_defined_Variables.APCB2,
-        Pre_defined_Variables.APCB3,
-        Pre_defined_Variables.APCB4,
+        config["APCB1"],
+        config["APCB2"],
+        config["APCB3"],
+        config["APCB4"],
     )
     #
-    Choose_PAPEWS_2[i] = utils.ap_functions.Choose_PAPEWS_2(
-        Pre_defined_Variables.Opt_CEews_LOWSM, Pre_defined_Variables.CalEst_ews
+    Choose_PAPEWS_2[i] = ap_functions.Choose_PAPEWS_2(
+        config["Opt_CEews_LOWSM"], config["CalEst_ews"]
     )
     #
-    Post_AP_EWS[i] = utils.ap_functions.Post_AP_EWS(
+    Post_AP_EWS[i] = ap_functions.Post_AP_EWS(
         ATHCnora[i],
         WSM_Zone[i + 2],
         Choose_PAPEWS_1[i],
         Choose_PAPEWS_2[i],
-        Pre_defined_Variables.CalEst_ews,
+        config["CalEst_ews"],
     )
     # Post-AP Baseflow + EWS (cfs)
     Post_AP_Baseflow_EWS_cfs[i] = Post_Ap_Baseflow[i] + Post_AP_EWS[i]

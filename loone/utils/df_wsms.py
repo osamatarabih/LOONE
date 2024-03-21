@@ -5,31 +5,27 @@ Created on Tue May 17 00:37:38 2022
 @author: osama
 """
 # This Script Interpolates each Water Shortage Management (WSMs) and each Regulation Schedule Breakpoint Zone (D, C, B, and A).
+import os
+import numpy as np
 import pandas as pd
 from datetime import datetime
-import numpy as np
 from scipy import interpolate
-import os
-from loone_config.Model_Config import Model_Config
-from data.pre_defined_variables import Pre_defined_Variables
-from data.data import Data
-
-Working_Path = Model_Config.Working_Path
-os.chdir("%s" % Working_Path)
+from loone.data import Data
 
 
-def WSMs():
-    year, month, day = map(int, Pre_defined_Variables.startdate_entry)
+def WSMs(config: str):
+    os.chdir(config["working_path"])
+    year, month, day = map(int, config["startdate_entry"])
     startdate = datetime(year, month, day).date()
-    year, month, day = map(int, Pre_defined_Variables.startdate_entry)
+    year, month, day = map(int, config["startdate_entry"])
     begdateCS = datetime(year, month, day).date()
-    year, month, day = map(int, Pre_defined_Variables.enddate_entry)
+    year, month, day = map(int, config["enddate_entry"])
     enddate = datetime(year, month, day).date()
 
     # Set time frame for model run such that it starts on the defined startdate but ends on 1/1/(endyear+1)
     # date_rng_1 = pd.date_range(start = startdate, end = '1/1/%d'%(Pre_defined_Variables.endyear+1), freq= 'D')
     date_rng_1 = pd.date_range(
-        start=startdate, end="4/1/%d" % (Pre_defined_Variables.endyear), freq="D"
+        start=startdate, end="4/1/%d" % (config["endyear"]), freq="D"
     )
     # Create a data frame with a date column
     df_WSMs = pd.DataFrame(date_rng_1, columns=["date"])
@@ -50,7 +46,7 @@ def WSMs():
     df_WSMs["count"] = WSM_Count
     for j in Oper_Zones:
         df_WSMs["%s" % j] = globals()[j]
-    if Pre_defined_Variables.Opt_NewTree == 1:
+    if config["Opt_NewTree == 1"]:
         df_WSMs["C-b"] = Data.WSMs_RSBKs["C-b_NewTree"]
     else:
         df_WSMs["C-b"] = Data.WSMs_RSBKs["C-b_NoNewTree"]
@@ -76,4 +72,4 @@ def WSMs():
     )
     df_WSMs = pd.concat([First_row, df_WSMs]).reset_index(drop=True)
 
-    df_WSMs.to_csv(os.path.join(Working_Path, "df_WSMs.csv"))
+    df_WSMs.to_csv("df_WSMs.csv")
