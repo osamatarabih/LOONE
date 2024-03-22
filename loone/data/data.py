@@ -1,12 +1,10 @@
 import os
 import pandas as pd
-from loone.utils import load_config
 
 
 class Data:
-    def __init__(self, config_path: str):
-        self.config = load_config(config_path)
-        self.data_dir = self.config["working_path"]
+    def __init__(self, working_path: str):
+        self.data_dir = working_path
 
         # Read SFWMM Daily Output File
         self.SFWMM_Daily_Outputs = pd.read_csv(

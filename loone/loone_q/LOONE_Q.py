@@ -20,29 +20,29 @@ from loone.utils import (
     additional_functions,
     trib_hc,
 )
-from loone.data.model_variables import M_var
+from loone.data.model_variables import M_var as MVarClass
 from loone.utils.wca_stages_class import WCA_Stages_Cls
 from loone.data import Data as DClass
 
 
 def LOONE_Q(config_path, P_1, P_2, S77_DV, S308_DV, TP_Lake_S):
-    breakpoint()
     config = load_config(config_path)
     os.chdir(config["working_path"])
-    Data = DClass(config_path)
+    Data = DClass(config["working_path"])
+    M_var = MVarClass(config)
     print("LOONE Q Module is Running!")
     # Based on the defined Start and End year, month, and day on the
     # Pre_defined_Variables File, Startdate and enddate are defined.
-    year, month, day = map(int, config["startdate_entry"])
+    year, month, day = map(int, config["start_date_entry"])
     startdate = datetime(year, month, day).date()
-    year, month, day = map(int, config["startdate_entry"])
+    year, month, day = map(int, config["start_date_entry"])
     begdateCS = datetime(year, month, day).date()
-    year, month, day = map(int, config["enddate_entry"])
+    year, month, day = map(int, config["end_date_entry"])
     enddate = datetime(year, month, day).date()
 
     ###################################################################
     if config["sim_type"] in [0, 1]:
-        df_wsms.WSMs()
+        df_wsms.WSMs(config)
 
     df_WSMs = pd.read_csv("df_WSMs.csv")
 
@@ -75,16 +75,16 @@ def LOONE_Q(config_path, P_1, P_2, S77_DV, S308_DV, TP_Lake_S):
     dd = []  # daily demand
     # Calculate daily water demand
     for i in Water_dmd["Week_num"]:
-        D = ((Data.Weekly_dmd["C%s" % config["Code"]].iloc[i - 1]) / 7) * (
-            config["Multiplier"] / 100
+        D = ((Data.Weekly_dmd[f'C{config["code"]}'].iloc[i - 1]) / 7) * (
+            config["multiplier"] / 100
         )
         dd.append(D)
     Water_dmd["Daily_demand"] = dd
     ###################################################################
     # Determine Tributary Hydrologic Conditions
-    TC_LONINO_df = trib_hc.Trib_HC()
+    TC_LONINO_df = trib_hc.Trib_HC(config)
     # Determine WCA Stages
-    WCA_Stages_df = WCA_Stages_Cls(TC_LONINO_df)
+    WCA_Stages_df = WCA_Stages_Cls(config, TC_LONINO_df)
     # A dataframe to determine eachday's season (Months 11,12,1,2 are
     # Season 1, Months 3,4,5 are season 2, Months 6,7 are season 3,
     # Months 8,9,10 are season 4 )
@@ -116,7 +116,7 @@ def LOONE_Q(config_path, P_1, P_2, S77_DV, S308_DV, TP_Lake_S):
     ###################################################################
     # This following Script runs the main model daily simulations.
     date_rng_6 = pd.date_range(
-        start="12/30/%d" % (config["startyear"] - 1),
+        start=f'12/30/{config["start_year"] - 1}',
         end=enddate,
         freq="D",
     )
@@ -124,7 +124,7 @@ def LOONE_Q(config_path, P_1, P_2, S77_DV, S308_DV, TP_Lake_S):
     LO_Model["Net_Inflow"] = Data.NetInf_Input["Netflows_acft"]
     n_rows = len(LO_Model.index)
     LO_Model["LOSA_dmd_SFWMM"] = Data.SFWMM_W_dmd["LOSA_dmd"] * (
-        config["Mult_LOSA"] / 100
+        config["mult_losa"] / 100
     )
     LO_Model["C44RO"] = Data.C44_Runoff["C44RO"]
     ##################################
@@ -197,7 +197,7 @@ def LOONE_Q(config_path, P_1, P_2, S77_DV, S308_DV, TP_Lake_S):
         "Tributary_Condition"
     ]
     # Define "Low Chance" 6/1 stg<11'
-    if config["Opt_Date_Targ_Stg"] == 1:
+    if config["opt_date_targ_stg"] == 1:
         Targ_Stg = Data.Targ_Stg_June_1st
     else:
         Targ_Stg = Data.Targ_Stg_May_1st
@@ -275,8 +275,8 @@ def LOONE_Q(config_path, P_1, P_2, S77_DV, S308_DV, TP_Lake_S):
     VLOOKUP2 = Basin_RO_Daily["BS-C43RO"]
     VLOOKUP2_c = [x for x in VLOOKUP2 if ~np.isnan(x)]
     ###################################################################
-    M_var.Lake_Stage[0] = config["begstageCS"]
-    M_var.Lake_Stage[1] = config["begstageCS"]
+    M_var.Lake_Stage[0] = config["beg_stage_cs"]
+    M_var.Lake_Stage[1] = config["beg_stage_cs"]
     M_var.DecTree_Relslevel[0] = np.nan
     M_var.DecTree_Relslevel[1] = np.nan
     if (
@@ -293,7 +293,7 @@ def LOONE_Q(config_path, P_1, P_2, S77_DV, S308_DV, TP_Lake_S):
     else:
         X1 = LO_Model["date"].iloc[2]
     M_var.DayFlags[2] = X1
-    StartStorage = stg_sto_ar.stg2sto(config["startstage"], 0)
+    StartStorage = stg_sto_ar.stg2sto(config["start_stage"], 0)
     M_var.Storage[0] = StartStorage
     M_var.Storage[1] = StartStorage
     # Flood = np.zeros(n_rows, dtype = object)
@@ -334,17 +334,17 @@ def LOONE_Q(config_path, P_1, P_2, S77_DV, S308_DV, TP_Lake_S):
         M_var.Max_Supply[i + 2] = lo_functions.Max_Supply(
             M_var.WSM_Zone[i + 2],
             Water_dmd.at[i, "Daily_demand"],
-            config["Z1_cutback"],
-            config["Z2_cutback"],
-            config["Z3_cutback"],
-            config["Z4_cutback"],
+            config["z1_cutback"],
+            config["z2_cutback"],
+            config["z3_cutback"],
+            config["z4_cutback"],
         )
         # Actual Daily Water supply
         M_var.LOSA_Supply[i + 2] = lo_functions.LOSA_Supply(
             M_var.WSM_Zone[i + 2],
             LO_Model.at[i + 2, "LOSA_dmd_SFWMM"],
             M_var.Max_Supply[i + 2],
-            config["Opt_LOSAws"],
+            config["opt_losa_ws"],
         )
         # NetInflow - LOSA Supply
         M_var.NI_Supply[i + 2] = (
@@ -381,12 +381,10 @@ def LOONE_Q(config_path, P_1, P_2, S77_DV, S308_DV, TP_Lake_S):
             df_WSMs.at[i + 1, "WSM1"],
         )
         # Generate the Zone Column based on the corresponding Zone Code
-        M_var.LO_Zone[i + 1] = lo_functions.LO_Zone(
-            M_var.Zone_Code[i + 1]
-        )
+        M_var.LO_Zone[i + 1] = lo_functions.LO_Zone(M_var.Zone_Code[i + 1])
         M_var.Zone_D_Trib[i] = dec_tree_functions.Zone_D_Trib(
             TC_LONINO_df.at[i, "Tributary_Condition"],
-            config["Opt_NewTree"],
+            config["opt_new_tree"],
         )
         M_var.Zone_D_stage[i] = dec_tree_functions.Zone_D_stage(
             M_var.Lake_Stage[i + 1], df_WSMs.at[i, "C-b"]
@@ -394,7 +392,7 @@ def LOONE_Q(config_path, P_1, P_2, S77_DV, S308_DV, TP_Lake_S):
         M_var.Zone_D_Seas[i] = dec_tree_functions.Zone_D_Seas(
             TC_LONINO_df.at[i, "LONINO_Seasonal_Classes"],
             M_var.Zone_D_Trib[i],
-            config["Opt_NewTree"],
+            config["opt_new_tree"],
         )
         M_var.Zone_D_MSeas[i] = dec_tree_functions.Zone_D_MSeas(
             TC_LONINO_df.at[i, "LONINO_MultiSeasonal_Classes"]
@@ -406,15 +404,15 @@ def LOONE_Q(config_path, P_1, P_2, S77_DV, S308_DV, TP_Lake_S):
             + M_var.Zone_D_MSeas[i] * 1
         )
         M_var.Zone_D_Rel_Code[i] = dec_tree_functions.Zone_D_Rel_Code(
-            M_var.Zone_D_Branch_Code[i], config["Opt_DecTree"]
+            M_var.Zone_D_Branch_Code[i], config["opt_dec_tree"]
         )
         M_var.Zone_C_Trib[i] = dec_tree_functions.Zone_C_Trib(
             TC_LONINO_df.at[i, "Tributary_Condition"],
-            config["Opt_NewTree"],
+            config["opt_new_tree"],
         )
         M_var.Zone_C_Seas[i] = dec_tree_functions.Zone_C_Seas(
             TC_LONINO_df.at[i, "LONINO_Seasonal_Classes"],
-            config["Opt_NewTree"],
+            config["opt_new_tree"],
         )
         M_var.Zone_C_MSeas[i] = dec_tree_functions.Zone_C_MSeas(
             TC_LONINO_df.at[i, "LONINO_MultiSeasonal_Classes"]
@@ -422,7 +420,7 @@ def LOONE_Q(config_path, P_1, P_2, S77_DV, S308_DV, TP_Lake_S):
         M_var.Zone_C_MetFcast[i] = dec_tree_functions.Zone_C_MetFcast(
             M_var.Zone_C_Seas[i],
             TC_LONINO_df.at[i, "LONINO_Seasonal_Classes"],
-            config["Zone_C_MetFcast_Indicator"],
+            config["zone_c_met_fcast_indicator"],
         )
         M_var.Zone_C_Branch_Code[i] = (
             M_var.Zone_C_Trib[i] * 1000
@@ -431,11 +429,11 @@ def LOONE_Q(config_path, P_1, P_2, S77_DV, S308_DV, TP_Lake_S):
             + M_var.Zone_C_MSeas[i] * 1
         )
         M_var.Zone_C_Rel_Code[i] = dec_tree_functions.Zone_C_Rel_Code(
-            M_var.Zone_C_Branch_Code[i], config["Opt_DecTree"]
+            M_var.Zone_C_Branch_Code[i], config["opt_dec_tree"]
         )
         M_var.Zone_B_Trib[i] = dec_tree_functions.Zone_B_Trib(
             TC_LONINO_df.at[i, "Tributary_Condition"],
-            config["Opt_NewTree"],
+            config["opt_new_tree"],
         )
         M_var.Zone_B_Stage[i] = dec_tree_functions.Zone_B_Stage(
             M_var.Lake_Stage[i + 1], Seasons.at[i, "Season"]
@@ -450,7 +448,7 @@ def LOONE_Q(config_path, P_1, P_2, S77_DV, S308_DV, TP_Lake_S):
             + M_var.Zone_B_Seas[i] * 1
         )
         M_var.Zone_B_Rel_Code[i] = dec_tree_functions.Zone_B_Rel_Code(
-            M_var.Zone_B_Branch_Code[i], config["Opt_DecTree"]
+            M_var.Zone_B_Branch_Code[i], config["opt_dec_tree"]
         )
         M_var.DecTree_Relslevel[i + 2] = lo_functions.DecTree_Relslevel(
             M_var.Zone_Code[i + 1],
@@ -463,7 +461,7 @@ def LOONE_Q(config_path, P_1, P_2, S77_DV, S308_DV, TP_Lake_S):
                 startdate.month == LO_Model.at[i, "date"].month
                 and startdate.day == LO_Model.at[i, "date"].day
                 and (
-                    config["CSflag"] == 0
+                    config["cs_flag"] == 0
                     or startdate.year == LO_Model.at[i, "date"].year
                 )
             ):
@@ -474,7 +472,7 @@ def LOONE_Q(config_path, P_1, P_2, S77_DV, S308_DV, TP_Lake_S):
         M_var.PlsDay[i + 2] = lo_functions.PlsDay(
             M_var.DayFlags[i + 2],
             M_var.DecTree_Relslevel[i + 2],
-            config["PlsDay_Switch"],
+            config["pls_day_switch"],
         )
         M_var.Release_Level[i + 2] = lo_functions.Release_Level(
             M_var.Release_Level[i + 1],
@@ -483,23 +481,21 @@ def LOONE_Q(config_path, P_1, P_2, S77_DV, S308_DV, TP_Lake_S):
             M_var.PlsDay[i + 2],
             M_var.Zone_Code[i + 1],
             M_var.DecTree_Relslevel[i + 2],
-            config["MaxQstgTrigger"],
+            config["max_qstg_trigger"],
         )
         if i >= 6:
             dh = M_var.Lake_Stage[i + 1] - M_var.Lake_Stage[i - 6]
             M_var.dh_7days[i + 1] = dh
-        M_var.ZoneCodeminus1Code[i + 1] = (
-            lo_functions.ZoneCodeminus1Code(
-                M_var.Zone_Code[i + 1],
-                df_WSMs.at[i + 1, "WSM1"],
-                df_WSMs.at[i + 1, "D0"],
-                df_WSMs.at[i + 1, "D1"],
-                df_WSMs.at[i + 1, "D2"],
-                df_WSMs.at[i + 1, "D3"],
-                df_WSMs.at[i + 1, "C"],
-                df_WSMs.at[i + 1, "B"],
-                df_WSMs.at[i + 1, "A"],
-            )
+        M_var.ZoneCodeminus1Code[i + 1] = lo_functions.ZoneCodeminus1Code(
+            M_var.Zone_Code[i + 1],
+            df_WSMs.at[i + 1, "WSM1"],
+            df_WSMs.at[i + 1, "D0"],
+            df_WSMs.at[i + 1, "D1"],
+            df_WSMs.at[i + 1, "D2"],
+            df_WSMs.at[i + 1, "D3"],
+            df_WSMs.at[i + 1, "C"],
+            df_WSMs.at[i + 1, "B"],
+            df_WSMs.at[i + 1, "A"],
         )
         M_var.ZoneCodeCode[i + 1] = lo_functions.ZoneCodeCode(
             M_var.Zone_Code[i + 1],
@@ -522,27 +518,27 @@ def LOONE_Q(config_path, P_1, P_2, S77_DV, S308_DV, TP_Lake_S):
         )
         M_var.ReLevelCode_1[i + 2] = lo_functions.ReLevelCode_1(
             M_var.Release_Level[i + 2],
-            config["dstar_D1"],
-            config["dstar_D2"],
-            config["dstar_D3"],
-            config["dstar_C"],
-            config["dstar_B"],
+            config["dstar_d1"],
+            config["dstar_d2"],
+            config["dstar_d3"],
+            config["dstar_c"],
+            config["dstar_b"],
         )
         M_var.ReLevelCode_2[i + 2] = lo_functions.ReLevelCode_2(
             M_var.Release_Level[i + 2],
-            config["astar_D1"],
-            config["astar_D2"],
-            config["astar_D3"],
-            config["astar_C"],
-            config["astar_B"],
+            config["astar_d1"],
+            config["astar_d2"],
+            config["astar_d3"],
+            config["astar_c"],
+            config["astar_b"],
         )
         M_var.ReLevelCode_3_S80[i + 2] = lo_functions.ReLevelCode_3_S80(
             M_var.Release_Level[i + 2],
-            config["bstar_S80_D1"],
-            config["bstar_S80_D2"],
-            config["bstar_S80_D3"],
-            config["bstar_S80_C"],
-            config["bstar_S80_B"],
+            config["bstar_s80_d1"],
+            config["bstar_s80_d2"],
+            config["bstar_s80_d3"],
+            config["bstar_s80_c"],
+            config["bstar_s80_b"],
         )
         M_var.Outlet2DS_Mult[i + 2] = lo_functions.Outlet2DS_Mult(
             Seasons.at[i, "Season"],
@@ -552,7 +548,7 @@ def LOONE_Q(config_path, P_1, P_2, S77_DV, S308_DV, TP_Lake_S):
             M_var.Fraction_of_Zone_height[i + 1],
             M_var.ReLevelCode_2[i + 2],
             M_var.ReLevelCode_3_S80[i + 2],
-            config["Opt_QregMult"],
+            config["opt_qreg_mult"],
         )
         M_var.Outlet2DS_Mult_2[i + 2] = lo_functions.Outlet2DS_Mult_2(
             LO_Model.at[i + 2, "date"].month,
@@ -560,7 +556,7 @@ def LOONE_Q(config_path, P_1, P_2, S77_DV, S308_DV, TP_Lake_S):
             M_var.PlsDay[i + 2],
             M_var.Outlet2DS_Mult[i + 2 - M_var.PlsDay[i + 2]],
             M_var.Outlet2DS_Mult[i + 2],
-            config["Opt_QregMult"],
+            config["opt_qreg_mult"],
         )
         M_var.Outlet2DSRS[i + 2] = lo_functions.Outlet2DSRS(
             M_var.Release_Level[i + 2],
@@ -572,11 +568,11 @@ def LOONE_Q(config_path, P_1, P_2, S77_DV, S308_DV, TP_Lake_S):
                     if M_var.PlsDay[i + 2] - 1 >= 0
                     else len(Data.Pulses) - 1
                 ),
-                "S-80_L1_%s" % config["Schedule"],
+                f'S-80_L1_{config["schedule"]}',
             ],
             M_var.Outlet2DS_Mult_2[i + 2],
             Data.CE_SLE_turns.at[
-                LO_Model.at[i + 2, "date"].year - config["startyear"],
+                LO_Model.at[i + 2, "date"].year - config["start_year"],
                 "SLEturn",
             ],
             Data.S80_RegRelRates.at[0, "Zone_D2"],
@@ -587,7 +583,7 @@ def LOONE_Q(config_path, P_1, P_2, S77_DV, S308_DV, TP_Lake_S):
                     if M_var.PlsDay[i + 2] - 1 >= 0
                     else len(Data.Pulses) - 1
                 ),
-                "S-80_L2_%s" % config["Schedule"],
+                f'S-80_L2_{config["schedule"]}',
             ],
             Data.S80_RegRelRates.at[0, "Zone_D3"],
             S80avgL3,
@@ -597,7 +593,7 @@ def LOONE_Q(config_path, P_1, P_2, S77_DV, S308_DV, TP_Lake_S):
                     if M_var.PlsDay[i + 2] - 1 >= 0
                     else len(Data.Pulses) - 1
                 ),
-                "S-80_L3_%s" % config["Schedule"],
+                f'S-80_L3_{config["schedule"]}',
             ],
             Data.S80_RegRelRates.at[0, "Zone_C"],
             Data.S80_RegRelRates.at[0, "Zone_B"],
@@ -615,7 +611,7 @@ def LOONE_Q(config_path, P_1, P_2, S77_DV, S308_DV, TP_Lake_S):
             M_var.Sum_Outlet2USRG1[i + 2],
             VLOOKUP1_c[i],
             Outlet2_baseflow,
-            config["Option_S80Baseflow"],
+            config["option_s80_baseflow"],
         )
         M_var.Outlet2USBK[i + 2] = lo_functions.Outlet2USBK(
             M_var.Lake_Stage[i + 1],
@@ -623,9 +619,9 @@ def LOONE_Q(config_path, P_1, P_2, S77_DV, S308_DV, TP_Lake_S):
             M_var.Outlet2USRG[i + 1],
             LO_Model.at[i + 2, "C44RO"],
             Data.SFWMM_Daily_Outputs.at[i + 2, "S308BK"],
-            config["Opt_S308"],
-            config["S308BK_Const"],
-            config["S308_BK_Thr"],
+            config["opt_s308"],
+            config["s308_bk_const"],
+            config["s308_bk_thr"],
         )
         M_var.ROeast[i + 2] = (
             LO_Model.at[i + 2, "C44RO"] - M_var.Outlet2USBK[i + 2]
@@ -634,7 +630,7 @@ def LOONE_Q(config_path, P_1, P_2, S77_DV, S308_DV, TP_Lake_S):
             M_var.Outlet2DSBS[i + 2],
             M_var.Outlet2USRG1[i + 2],
             M_var.ROeast[i + 2],
-            config["Option_S80Baseflow"],
+            config["option_s80_baseflow"],
         )
         M_var.Sum_Outlet2USBK[i + 2] = lo_functions.Sum_Outlet2USBK(
             LO_Model.at[i + 2, "date"].day, M_var.Outlet2USBK[i + 2]
@@ -644,15 +640,15 @@ def LOONE_Q(config_path, P_1, P_2, S77_DV, S308_DV, TP_Lake_S):
             M_var.Outlet2USBS[i + 2],
             Data.SFWMM_Daily_Outputs.at[i + 2, "S308RG"],
             Data.SFWMM_Daily_Outputs.at[i + 2, "STEST"],
-            config["Option_RegS77S308"],
+            config["option_reg_s77_s308"],
         )
         if config["sim_type"] == 0:
             M_var.Outlet2USRG[i + 2] = lo_functions.Outlet2USRG(
                 M_var.Outlet2USRG_Code[i + 2],
                 Data.SFWMM_Daily_Outputs.at[i + 2, "S308RG"],
                 Data.SFWMM_Daily_Outputs.at[i + 2, "STEST"],
-                config["Opt_S308"],
-                config["S308RG_Const"],
+                config["opt_s308"],
+                config["s308_rg_const"],
             )
         else:
             if M_var.Lake_Stage[i + 1] >= 18:
@@ -677,15 +673,15 @@ def LOONE_Q(config_path, P_1, P_2, S77_DV, S308_DV, TP_Lake_S):
             M_var.ROeast[i + 2],
             M_var.Outlet2USRG[i + 2],
             Data.SFWMM_Daily_Outputs.at[i + 2, "S80"],
-            config["S80_Const"],
+            config["s80_const"],
         )
         M_var.ReLevelCode_3_S77[i + 2] = lo_functions.ReLevelCode_3_S77(
             M_var.Release_Level[i + 2],
-            config["bstar_S77_D1"],
-            config["bstar_S77_D2"],
-            config["bstar_S77_D3"],
-            config["bstar_S77_C"],
-            config["bstar_S77_B"],
+            config["bstar_s77_d1"],
+            config["bstar_s77_d2"],
+            config["bstar_s77_d3"],
+            config["bstar_s77_c"],
+            config["bstar_s77_b"],
         )
         M_var.Outlet1US_Mult[i + 2] = lo_functions.Outlet1US_Mult(
             Seasons.at[i, "Season"],
@@ -695,7 +691,7 @@ def LOONE_Q(config_path, P_1, P_2, S77_DV, S308_DV, TP_Lake_S):
             M_var.Fraction_of_Zone_height[i + 1],
             M_var.ReLevelCode_2[i + 2],
             M_var.ReLevelCode_3_S77[i + 2],
-            config["Opt_QregMult"],
+            config["opt_qreg_mult"],
         )
         M_var.Outlet1US_Mult_2[i + 2] = lo_functions.Outlet1US_Mult_2(
             LO_Model.at[i + 2, "date"].month,
@@ -703,7 +699,7 @@ def LOONE_Q(config_path, P_1, P_2, S77_DV, S308_DV, TP_Lake_S):
             M_var.PlsDay[i + 2],
             M_var.Outlet1US_Mult[i + 2 - M_var.PlsDay[i + 2]],
             M_var.Outlet1US_Mult[i + 2],
-            config["Opt_QregMult"],
+            config["opt_qreg_mult"],
         )
         M_var.Outlet1USRS[i + 2] = lo_functions.Outlet1USRS(
             M_var.Release_Level[i + 2],
@@ -720,7 +716,7 @@ def LOONE_Q(config_path, P_1, P_2, S77_DV, S308_DV, TP_Lake_S):
             M_var.Outlet1US_Mult_2[i + 2],
             LO_Model.at[i + 2, "C43RO"],
             Data.CE_SLE_turns.at[
-                LO_Model.at[i + 2, "date"].year - config["startyear"],
+                LO_Model.at[i + 2, "date"].year - config["start_year"],
                 "CEturn",
             ],
             Data.S77_RegRelRates.at[0, "Zone_D2"],
@@ -747,7 +743,7 @@ def LOONE_Q(config_path, P_1, P_2, S77_DV, S308_DV, TP_Lake_S):
             Data.S77_RegRelRates.at[0, "Zone_C"],
             Data.S77_RegRelRates.at[0, "Zone_B"],
             Data.S77_RegRelRates.at[0, "Zone_A"],
-            config["Opt_Outlet1DSRG"],
+            config["opt_outlet1_dsrg"],
         )
         M_var.Sum_Outlet1USRS[i + 2] = lo_functions.Sum_Outlet1USRS(
             LO_Model.at[i + 2, "date"].day, M_var.Outlet1USRS[i + 2]
@@ -759,8 +755,8 @@ def LOONE_Q(config_path, P_1, P_2, S77_DV, S308_DV, TP_Lake_S):
             M_var.Outlet1USEWS[i + 1],
             LO_Model.at[i + 2, "C43RO"],
             Data.SFWMM_Daily_Outputs.at[i + 2, "S77BK"],
-            config["Outlet1USBK_Switch"],
-            config["Outlet1USBK_Threshold"],
+            config["outlet1_usbk_switch"],
+            config["outlet1_usbk_threshold"],
         )
         M_var.ROwest[i + 2] = (
             LO_Model.at[i + 2, "C43RO"] - M_var.Outlet1USBK[i + 2]
@@ -770,13 +766,13 @@ def LOONE_Q(config_path, P_1, P_2, S77_DV, S308_DV, TP_Lake_S):
             M_var.Sum_Outlet1USRS[i + 2],
             VLOOKUP2_c[i],
             Outlet1_baseflow,
-            config["Option_S77Baseflow"],
+            config["option_s77_baseflow"],
         )
         M_var.Outlet1USBS[i + 2] = lo_functions.Outlet1USBS(
             M_var.Outlet1DSBS[i + 2],
             M_var.Outlet1USRS[i + 2],
             M_var.ROwest[i + 2],
-            config["Option_S77Baseflow"],
+            config["option_s77_baseflow"],
         )
         # Define THC Class Normal or above
         if i < (n_rows - 2):
@@ -873,21 +869,21 @@ def LOONE_Q(config_path, P_1, P_2, S77_DV, S308_DV, TP_Lake_S):
         M_var.Outlet1USBSAP[i + 2] = lo_functions.Outlet1USBSAP(
             M_var.Outlet1USBS[i + 2],
             M_var.Post_Ap_Baseflow[i],
-            config["Opt_AdapProt"],
+            config["opt_adap_prot"],
         )
         M_var.Outlet1USEWS[i + 2] = lo_functions.Outlet1USEWS(
             M_var.Post_AP_EWS[i],
             Data.SFWMM_Daily_Outputs.at[i + 2, "CAEST"],
-            config["Outlet1USEWS_Switch"],
-            config["Opt_AdapProt"],
+            config["outlet1_usews_switch"],
+            config["opt_adap_prot"],
         )
-        if config["Sim_type"] == 0:
+        if config["sim_type"] == 0:
             M_var.Outlet1USREG[i + 2] = lo_functions.Outlet1USREG(
                 M_var.Outlet1USRS[i + 2],
                 M_var.Outlet1USBSAP[i + 2],
                 Data.SFWMM_Daily_Outputs.at[i + 2, "S77RG"],
-                config["Outlet1USREG_Switch"],
-                config["Option_RegS77S308"],
+                config["outlet1_usreg_switch"],
+                config["option_reg_s77_s308"],
             )
         else:
             if M_var.Lake_Stage[i + 1] >= 18:
@@ -913,28 +909,28 @@ def LOONE_Q(config_path, P_1, P_2, S77_DV, S308_DV, TP_Lake_S):
             M_var.Outlet1USEWS[i + 2],
             M_var.ROwest[i + 2],
             Data.SFWMM_Daily_Outputs.at[i + 2, "S79"],
-            config["Outlet1DS_Switch"],
+            config["outlet1_ds_switch"],
         )
         M_var.TotRegEW[i + 2] = (
             M_var.Outlet1USREG[i + 2] + M_var.Outlet2USRG[i + 2]
         ) * 1.9835
         M_var.Choose_WCA[i + 2] = lo_functions.Choose_WCA(
             Data.SFWMM_Daily_Outputs.at[i + 2, "RegWCA"],
-            config["Option_RegWCA"],
-            config["Constant_RegWCA"],
+            config["option_reg_wca"],
+            config["constant_reg_wca"],
         )
         M_var.RegWCA[i + 2] = min(
-            config["MaxCap_RegWCA"],
-            config["Multiplier_RegWCA"] * M_var.Choose_WCA[i + 2],
+            config["max_cap_reg_wca"],
+            config["multiplier_reg_wca"] * M_var.Choose_WCA[i + 2],
         )
         M_var.Choose_L8C51[i + 2] = lo_functions.Choose_L8C51(
             Data.SFWMM_Daily_Outputs.at[i + 2, "RegL8C51"],
-            config["Option_RegL8C51"],
-            config["Constant_RegL8C51"],
+            config["option_reg_l8_c51"],
+            config["constant_reg_l8_c51"],
         )
         M_var.RegL8C51[i + 2] = min(
-            config["MaxCap_RegL8C51"],
-            config["Multiplier_RegL8C51"] * M_var.Choose_L8C51[i + 2],
+            config["max_cap_reg_l8_c51"],
+            config["multiplier_reg_l8_c51"] * M_var.Choose_L8C51[i + 2],
         )
         M_var.TotRegSo[i + 2] = (
             M_var.RegWCA[i + 2] + M_var.RegL8C51[i + 2]
@@ -951,19 +947,19 @@ def LOONE_Q(config_path, P_1, P_2, S77_DV, S308_DV, TP_Lake_S):
             M_var.Stage2marsh[i + 2],
             Data.SFWMM_Daily_Outputs.at[i + 2, "et_open"],
             Data.ET_Vol.at[i + 2, "ETVol_acft"],
-            config["ET_Switch"],
+            config["et_switch"],
         )
         M_var.Choose_WSA_1[i + 2] = lo_functions.Choose_WSA_1(
             df_WSMs.at[i + 2, "WSM1"],
-            config["Opt_WSA"],
-            config["WSAtrig2"],
-            config["WSAoff2"],
+            config["opt_wsa"],
+            config["wsa_trig2"],
+            config["wsa_off2"],
         )
         M_var.Choose_WSA_2[i + 2] = lo_functions.Choose_WSA_2(
             df_WSMs.at[i + 2, "WSM1"],
-            config["Opt_WSA"],
-            config["WSAtrig1"],
-            config["WSAoff1"],
+            config["opt_wsa"],
+            config["wsa_trig1"],
+            config["wsa_off1"],
         )
         M_var.WSA_MIA[i + 2] = lo_functions.WSA_MIA(
             WCA_Stages_df.at[i, "Are WCA stages too low?"],
@@ -973,10 +969,10 @@ def LOONE_Q(config_path, P_1, P_2, S77_DV, S308_DV, TP_Lake_S):
             Data.EAA_MIA_RUNOFF.at[i, "MIA"],
             Data.EAA_MIA_RUNOFF.at[i, "S3PMP"],
             M_var.Choose_WSA_2[i + 2],
-            config["Opt_WSA"],
-            config["WSA_THC"],
-            config["MIAcap2"],
-            config["MIAcap1"],
+            config["opt_wsa"],
+            config["wsa_thc"],
+            config["mia_cap2"],
+            config["mia_cap1"],
         )
         M_var.WSA_NNR[i + 2] = lo_functions.WSA_NNR(
             WCA_Stages_df.at[i, "Are WCA stages too low?"],
@@ -986,10 +982,10 @@ def LOONE_Q(config_path, P_1, P_2, S77_DV, S308_DV, TP_Lake_S):
             Data.EAA_MIA_RUNOFF.at[i, "NNR"],
             Data.EAA_MIA_RUNOFF.at[i, "S2PMP"],
             M_var.Choose_WSA_2[i + 2],
-            config["Opt_WSA"],
-            config["WSA_THC"],
-            config["NNRcap2"],
-            config["NNRcap1"],
+            config["opt_wsa"],
+            config["wsa_thc"],
+            config["nnr_cap2"],
+            config["nnr_cap1"],
         )
         M_var.DSto[i + 2] = (
             M_var.NI_Supply[i + 2]
@@ -1017,7 +1013,7 @@ def LOONE_Q(config_path, P_1, P_2, S77_DV, S308_DV, TP_Lake_S):
         M_var.Lake_Stage[i + 2] = lo_functions.Lake_Stage(
             stg_sto_ar.stg2sto(M_var.Storage[i + 2], 1),
             Data.SFWMM_Daily_Outputs.at[i + 2, "EOD Stg(ft,NGVD)"],
-            config["Option_Stage"],
+            config["option_stage"],
         )
         # if M_var.Lake_Stage[i+2] >= 18:
         #     Flood[i+2] = 1

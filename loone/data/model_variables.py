@@ -7,21 +7,20 @@ Created on Wed May 25 23:53:16 2022
 import numpy as np
 import pandas as pd
 from datetime import datetime
-from loone.data.data import load_config
 
 
 class M_var:
-    
-    def __init__(self, config_path: str):
-        config = load_config(config_path)
-        year, month, day = map(int, config["startdate_entry"])
+    def __init__(self, config: dict):
+        year, month, day = map(int, config["start_date_entry"])
         startdate = datetime(year, month, day).date()
-        year, month, day = map(int, config["enddate_entry"])
+        year, month, day = map(int, config["end_date_entry"])
         enddate = datetime(year, month, day).date()
-        year, month, day = map(int, config["enddate_TC"])
+        year, month, day = map(int, config["end_date_tc"])
         enddate_TC = datetime(year, month, day).date()
-        
-        date_rng_3 = pd.date_range(start=startdate, end=enddate_TC, freq="W-Fri")
+
+        date_rng_3 = pd.date_range(
+            start=startdate, end=enddate_TC, freq="W-Fri"
+        )
         TC_Count = len(date_rng_3)
         self.RF_Cls = np.zeros(TC_Count)
         self.MainTrib_Cls = np.zeros(TC_Count)
@@ -29,21 +28,23 @@ class M_var:
         self.NetInflow_Cls = np.zeros(TC_Count)
         self.Max_RF_MainTrib = np.zeros(TC_Count)
         self.Max_Palmer_NetInf = np.zeros(TC_Count)
-        
+
         date_rng_4 = pd.date_range(start=startdate, end=enddate, freq="MS")
         LONINO_Count = len(date_rng_4)
         self.Seas = np.zeros(LONINO_Count)
         self.M_Seas = np.zeros(LONINO_Count)
-        self.LONINO_Seas_cls = np.zeros(config["Month_N"])
-        self.LONINO_M_Seas_cls = np.zeros(config["Month_N"])
-        
+        self.LONINO_Seas_cls = np.zeros(config["month_n"])
+        self.LONINO_M_Seas_cls = np.zeros(config["month_n"])
+
         date_rng_5 = pd.date_range(start=startdate, end=enddate, freq="D")
         Seas_Count = len(date_rng_5)
         self.Daily_Seasons = np.zeros(Seas_Count)
         self.Mon = np.zeros(Seas_Count)
-        
+
         date_rng_6 = pd.date_range(
-            start="12/30/%d" % (config["startyear"] - 1), end=enddate, freq="D"
+            start="12/30/%d" % (config["start_year"] - 1),
+            end=enddate,
+            freq="D",
         )
         n_rows = len(date_rng_6)
         self.Lake_Stage = np.zeros(n_rows, dtype=object)
@@ -52,7 +53,7 @@ class M_var:
         self.LOSA_Supply = np.zeros(n_rows, dtype=object)
         self.Cut_back = np.zeros(n_rows, dtype=object)
         self.Dem_N_Sup = np.zeros(n_rows, dtype=object)
-        
+
         V = len(date_rng_5)
         self.V10per = np.zeros(V)
         self.V20per = np.zeros(V)
@@ -65,7 +66,7 @@ class M_var:
         self.NI_Supply = np.zeros(n_rows, dtype=object)
         self.Zone_Code = np.zeros(n_rows, dtype=object)
         self.LO_Zone = np.zeros(n_rows, dtype=object)
-        
+
         Counter = len(date_rng_5)
         self.Zone_D_Trib = np.zeros(Counter)
         self.Zone_D_stage = np.zeros(Counter)
@@ -104,7 +105,7 @@ class M_var:
         self.Outlet2USBK = np.zeros(n_rows, dtype=object)
         self.ROeast = np.zeros(n_rows, dtype=object)
         self.Outlet2USBS = np.zeros(n_rows, dtype=object)
-        self. Sum_Outlet2USBK = np.zeros(n_rows, dtype=object)
+        self.Sum_Outlet2USBK = np.zeros(n_rows, dtype=object)
         self.Outlet2USRG_Code = np.zeros(n_rows, dtype=object)
         self.Outlet2USRG = np.zeros(n_rows, dtype=object)
         self.Outlet2DS = np.zeros(n_rows, dtype=object)
@@ -152,7 +153,7 @@ class M_var:
         self.n30davgForecast = np.zeros(Count_AP)
         self.LORS08_bf_rel = np.zeros(Count_AP)
         self.LDS_LC6_1 = np.zeros(Count_AP)
-        self. S_O = np.zeros(Count_AP)
+        self.S_O = np.zeros(Count_AP)
         self.All_4 = np.zeros(Count_AP)
         self.Sabf = np.zeros(Count_AP)
         self.Swbf = np.zeros(Count_AP)

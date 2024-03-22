@@ -10,22 +10,23 @@ import numpy as np
 import pandas as pd
 from datetime import datetime
 from scipy import interpolate
-from loone.data import Data
+from loone.data import Data as DClass
 
 
-def WSMs(config: str):
+def WSMs(config: dict):
     os.chdir(config["working_path"])
-    year, month, day = map(int, config["startdate_entry"])
+    Data = DClass(config["working_path"])
+    year, month, day = map(int, config["start_date_entry"])
     startdate = datetime(year, month, day).date()
-    year, month, day = map(int, config["startdate_entry"])
+    year, month, day = map(int, config["start_date_entry"])
     begdateCS = datetime(year, month, day).date()
-    year, month, day = map(int, config["enddate_entry"])
+    year, month, day = map(int, config["end_date_entry"])
     enddate = datetime(year, month, day).date()
 
     # Set time frame for model run such that it starts on the defined startdate but ends on 1/1/(endyear+1)
     # date_rng_1 = pd.date_range(start = startdate, end = '1/1/%d'%(Pre_defined_Variables.endyear+1), freq= 'D')
     date_rng_1 = pd.date_range(
-        start=startdate, end="4/1/%d" % (config["endyear"]), freq="D"
+        start=startdate, end="4/1/%d" % (config["end_year"]), freq="D"
     )
     # Create a data frame with a date column
     df_WSMs = pd.DataFrame(date_rng_1, columns=["date"])
@@ -40,13 +41,15 @@ def WSMs(config: str):
     for i in range(WSM_length):
         for j in Oper_Zones:
             globals()[j][i] = interpolate.interp1d(
-                Data.WSMs_RSBKs["Day"], Data.WSMs_RSBKs["%s" % j], kind="linear"
+                Data.WSMs_RSBKs["Day"],
+                Data.WSMs_RSBKs["%s" % j],
+                kind="linear",
             )(WSM_Count[i])
 
     df_WSMs["count"] = WSM_Count
     for j in Oper_Zones:
         df_WSMs["%s" % j] = globals()[j]
-    if config["Opt_NewTree == 1"]:
+    if config["opt_new_tree"] == 1:
         df_WSMs["C-b"] = Data.WSMs_RSBKs["C-b_NewTree"]
     else:
         df_WSMs["C-b"] = Data.WSMs_RSBKs["C-b_NoNewTree"]

@@ -4,52 +4,49 @@ Created on Fri Jul 29 18:01:45 2022
 
 @author: osamatarabih
 """
+import os
+import pandas as pd
+import numpy as np
+from datetime import datetime
+from loone.data.model_variables import M_var as MVarClass
+from loone.utils import lonino_functions
+from loone.data import Data as DClass
 
 
 # I determine daily values for the Tributary conditions and Seasonal/Multi-Seasonal LONINO classes
 # using a weekly Trib. Condition data and Monthly LONINO data.
-def Trib_HC():
-    import os
-    import pandas as pd
-    import numpy as np
-    from datetime import datetime
-    from loone_config.Model_Config import Model_Config
-
-    Working_Path = Model_Config.Working_Path
-    os.chdir("%s" % Working_Path)
-    from data.pre_defined_variables import Pre_defined_Variables
-    from data.model_variables import M_var
-    import utils.lonino_functions
-    from data.data import Data
-
+def Trib_HC(config: dict):
+    os.chdir(config["working_path"])
+    Data = DClass(config["working_path"])
+    M_var = MVarClass(config)
     # Generate weekly time step date column where frequency is 'W-Fri' to start on 01/01/2008.
     # FIXME: Always check here for start date, end date, and frequency to match with the Trib. Condition weekly data obtained.
-    year, month, day = map(int, Pre_defined_Variables.startdate_entry)
+    year, month, day = map(int, config["start_date_entry"])
     startdate = datetime(year, month, day).date()
-    year, month, day = map(int, Pre_defined_Variables.enddate_entry)
+    year, month, day = map(int, config["end_date_entry"])
     enddate = datetime(year, month, day).date()
-    year, month, day = map(int, Pre_defined_Variables.enddate_TC)
+    year, month, day = map(int, config["end_date_tc"])
     enddate_TC = datetime(year, month, day).date()
     date_rng_3 = pd.date_range(start=startdate, end=enddate_TC, freq="W-Fri")
     # Generate the Tributary Condition Dataframe.
     Trib_Cond_df = pd.DataFrame(date_rng_3, columns=["date"])
     TC_Count = len(Trib_Cond_df.index)
     for i in range(TC_Count):
-        M_var.RF_Cls[i] = utils.lonino_functions.RF_Cls(
+        M_var.RF_Cls[i] = lonino_functions.RF_Cls(
             Data.Wkly_Trib_Cond["NetRF"].iloc[i]
         )
-        M_var.MainTrib_Cls[i] = utils.lonino_functions.MainTrib_Cls(
+        M_var.MainTrib_Cls[i] = lonino_functions.MainTrib_Cls(
             Data.Wkly_Trib_Cond["S65E"].iloc[i]
         )
-        M_var.Palmer_Cls[i] = utils.lonino_functions.Palmer_Cls(
+        M_var.Palmer_Cls[i] = lonino_functions.Palmer_Cls(
             Data.Wkly_Trib_Cond["Palmer"].iloc[i]
         )
-        M_var.NetInflow_Cls[i] = utils.lonino_functions.NetInflow_Cls(
+        M_var.NetInflow_Cls[i] = lonino_functions.NetInflow_Cls(
             Data.Wkly_Trib_Cond["NetInf"].iloc[i]
         )
         M_var.Max_RF_MainTrib[i] = max(M_var.RF_Cls[i], M_var.MainTrib_Cls[i])
         M_var.Max_Palmer_NetInf[i] = max(M_var.Palmer_Cls[i], M_var.NetInflow_Cls[i])
-    if Pre_defined_Variables.TCI == 1:  # Tributary Condition Index
+    if config["tci"] == 1:  # Tributary Condition Index
         Trib_Cond_df["TCI"] = M_var.Max_Palmer_NetInf
     else:
         Trib_Cond_df["TCI"] = M_var.Max_RF_MainTrib
@@ -61,17 +58,17 @@ def Trib_HC():
     for i in range(LONINO_Count):
         M_var.Seas[i] = Data.LONINO_Seas_data[
             "%s" % LONINO_df["date"].iloc[i].month
-        ].iloc[LONINO_df["date"].iloc[i].year - Pre_defined_Variables.startyear]
+        ].iloc[LONINO_df["date"].iloc[i].year - config["start_year"]]
         M_var.M_Seas[i] = Data.LONINO_Mult_Seas_data[
             "%s" % LONINO_df["date"].iloc[i].month
-        ].iloc[LONINO_df["date"].iloc[i].year - Pre_defined_Variables.startyear]
+        ].iloc[LONINO_df["date"].iloc[i].year - config["start_year"]]
     LONINO_df["LONINO_Seas"] = M_var.Seas
     LONINO_df["LONINO_Mult_Seas"] = M_var.M_Seas
-    for i in range(Pre_defined_Variables.Month_N):
-        M_var.LONINO_Seas_cls[i] = utils.lonino_functions.LONINO_Seas_cls(
+    for i in range(config["month_n"]):
+        M_var.LONINO_Seas_cls[i] = lonino_functions.LONINO_Seas_cls(
             LONINO_df["LONINO_Seas"].iloc[i]
         )
-        M_var.LONINO_M_Seas_cls[i] = utils.lonino_functions.LONINO_M_Seas_cls(
+        M_var.LONINO_M_Seas_cls[i] = lonino_functions.LONINO_M_Seas_cls(
             LONINO_df["LONINO_Mult_Seas"].iloc[i]
         )
     LONINO_df["LONINO_Seasonal_Cls"] = M_var.LONINO_Seas_cls
