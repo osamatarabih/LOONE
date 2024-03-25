@@ -25,10 +25,15 @@ from loone.utils.wca_stages_class import WCA_Stages_Cls
 from loone.data import Data as DClass
 
 
-def LOONE_Q(config_path, P_1, P_2, S77_DV, S308_DV, TP_Lake_S):
-    config = load_config(config_path)
-    os.chdir(config["working_path"])
-    Data = DClass(config["working_path"])
+def LOONE_Q(workspace, P_1, P_2, S77_DV, S308_DV, TP_Lake_S):
+    os.chdir(workspace)
+    for config_file in ["config.yaml", "config.yml"]:
+        if os.path.exists(config_file):
+            config = load_config(config_file)
+            break
+    else:
+        raise FileNotFoundError("Config file not found in the workspace.")
+    Data = DClass(workspace)
     M_var = MVarClass(config)
     print("LOONE Q Module is Running!")
     # Based on the defined Start and End year, month, and day on the
@@ -42,7 +47,7 @@ def LOONE_Q(config_path, P_1, P_2, S77_DV, S308_DV, TP_Lake_S):
 
     ###################################################################
     if config["sim_type"] in [0, 1]:
-        df_wsms.WSMs(config)
+        df_wsms.WSMs(workspace)
 
     df_WSMs = pd.read_csv("df_WSMs.csv")
 
@@ -82,9 +87,9 @@ def LOONE_Q(config_path, P_1, P_2, S77_DV, S308_DV, TP_Lake_S):
     Water_dmd["Daily_demand"] = dd
     ###################################################################
     # Determine Tributary Hydrologic Conditions
-    TC_LONINO_df = trib_hc.Trib_HC(config)
+    TC_LONINO_df = trib_hc.Trib_HC(workspace)
     # Determine WCA Stages
-    WCA_Stages_df = WCA_Stages_Cls(config, TC_LONINO_df)
+    WCA_Stages_df = WCA_Stages_Cls(workspace, TC_LONINO_df)
     # A dataframe to determine eachday's season (Months 11,12,1,2 are
     # Season 1, Months 3,4,5 are season 2, Months 6,7 are season 3,
     # Months 8,9,10 are season 4 )
@@ -171,8 +176,8 @@ def LOONE_Q(config_path, P_1, P_2, S77_DV, S308_DV, TP_Lake_S):
     S80avgL1 = Data.Pulses["S-80_L1_LORS20082023"].mean()
     S80avgL2 = Data.Pulses["S-80_L2_LORS20082023"].mean()
     S80avgL3 = Data.Pulses["S-80_L3_LORS20082023"].mean()
-    S77avgL1 = Data.Pulses["S-77_L1_LORS20082023"].mean()  # LORS
-    S77avgL2 = Data.Pulses["S-77_L2_LORS20082023"].mean()  # LORS
+    S77avgL1 = Data.Pulses["S-77_L1_LORS20082023"].mean()
+    S77avgL2 = Data.Pulses["S-77_L2_LORS20082023"].mean()
     S77avgL3 = Data.Pulses["S-77_L3_LORS20082023"].mean()
     Basin_RO = Basin_RO.set_index(["date"])
     Basin_RO.index = pd.to_datetime(Basin_RO.index)
@@ -711,7 +716,7 @@ def LOONE_Q(config_path, P_1, P_2, S77_DV, S308_DV, TP_Lake_S):
                     if M_var.PlsDay[i + 2] - 1 >= 0
                     else len(Data.Pulses) - 1
                 ),
-                "S-77_L1_LORS20082023",
+                f'S-77_L1_{config["schedule"]}',
             ],
             M_var.Outlet1US_Mult_2[i + 2],
             LO_Model.at[i + 2, "C43RO"],
@@ -727,7 +732,7 @@ def LOONE_Q(config_path, P_1, P_2, S77_DV, S308_DV, TP_Lake_S):
                     if M_var.PlsDay[i + 2] - 1 >= 0
                     else len(Data.Pulses) - 1
                 ),
-                "S-77_L2_LORS20082023",
+                f'S-77_L2_{config["schedule"]}',
             ],
             M_var.Zone_Code[i + 1],
             Data.S77_RegRelRates.at[0, "Zone_D3"],
@@ -738,7 +743,7 @@ def LOONE_Q(config_path, P_1, P_2, S77_DV, S308_DV, TP_Lake_S):
                     if M_var.PlsDay[i + 2] - 1 >= 0
                     else len(Data.Pulses) - 1
                 ),
-                "S-77_L3_LORS20082023",
+                f'S-77_L3_{config["schedule"]}',
             ],
             Data.S77_RegRelRates.at[0, "Zone_C"],
             Data.S77_RegRelRates.at[0, "Zone_B"],

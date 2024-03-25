@@ -11,11 +11,18 @@ import pandas as pd
 from datetime import datetime
 from scipy import interpolate
 from loone.data import Data as DClass
+from loone.utils import load_config
 
 
-def WSMs(config: dict):
-    os.chdir(config["working_path"])
-    Data = DClass(config["working_path"])
+def WSMs(workspace: str):
+    os.chdir(workspace)
+    for config_file in ["config.yaml", "config.yml"]:
+        if os.path.exists(config_file):
+            config = load_config(config_file)
+            break
+    else:
+        raise FileNotFoundError("Config file not found in the workspace.")
+    Data = DClass(workspace)
     year, month, day = map(int, config["start_date_entry"])
     startdate = datetime(year, month, day).date()
     year, month, day = map(int, config["start_date_entry"])

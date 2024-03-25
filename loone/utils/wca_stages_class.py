@@ -8,13 +8,18 @@ import os
 import numpy as np
 import pandas as pd
 from datetime import datetime
-from loone.utils import additional_functions
+from loone.utils import load_config, additional_functions
 
 
 # This following section calculates the parameter states (trib conds, stage tests, seasonal & multi-seasonal LONINO) and sets a 4-digit code for the branch.  The branch code is used with the Routing sheet to determine release rates.
-def WCA_Stages_Cls(config: dict, TC_LONINO_df: pd.DataFrame | None):
-    working_path = config["working_path"]
-    os.chdir(working_path)
+def WCA_Stages_Cls(workspace: str, TC_LONINO_df: pd.DataFrame | None):
+    os.chdir(workspace)
+    for config_file in ["config.yaml", "config.yml"]:
+        if os.path.exists(config_file):
+            config = load_config(config_file)
+            break
+    else:
+        raise FileNotFoundError("Config file not found in the workspace.")
 
     year, month, day = map(int, config["start_date_entry"])
     startdate = datetime(year, month, day).date()
@@ -27,11 +32,11 @@ def WCA_Stages_Cls(config: dict, TC_LONINO_df: pd.DataFrame | None):
 
     # Read the WCA Stage data
     WCA_Stages = pd.read_csv(
-        os.path.join(working_path, "WCA_Stages_Inputs.csv")
+        os.path.join(workspace, "WCA_Stages_Inputs.csv")
     )
     # Read WCA3A_REG inputs
     # Note that I added a date column in the first column and I copied values of Feb28 to the Feb29!
-    WCA3A_REG = pd.read_csv(os.path.join(working_path, "WCA3A_REG_Inputs.csv"))
+    WCA3A_REG = pd.read_csv(os.path.join(workspace, "WCA3A_REG_Inputs.csv"))
 
     # generate WCA Stage dataframe
     WCA_Stages_df = pd.DataFrame(date_rng_5, columns=["Date"])

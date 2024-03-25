@@ -17,7 +17,7 @@ from platypus import NSGAII, Problem, Real, nondominated
 
 os.chdir("%s" % Working_Path)
 from loone_q.LOONE_Q import LOONE_Q
-from loone_nut.LOONE_Nut import LOONE_Nut
+from loone.loone_nut.LOONE_NUT import LOONE_Nut
 import matplotlib.pyplot as plt
 
 

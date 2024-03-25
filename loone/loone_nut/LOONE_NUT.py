@@ -1,18 +1,13 @@
-# Standard library imports
-from datetime import datetime, timedelta
 import os
-
-# Third-party library imports
+import argparse
 import numpy as np
 import pandas as pd
+from datetime import datetime, timedelta
+from loone.utils import load_config, stg_sto_ar
+from loone.utils import tp_mass_balance_functions_regions as TP_MBFR
+from loone.data import Data as DClass
+from loone.data.tp_variables_regions import TP_Variables as TPVarClass
 
-# Local application/library specific imports
-from data.data import Data
-from data.pre_defined_variables import Pre_defined_Variables
-from data.tp_variables_regions import TP_Variables
-from loone_config.Model_Config import Model_Config
-import utils.stg_sto_ar
-import utils.tp_mass_balance_functions_regions as TP_MBFR
 
 SECONDS_IN_DAY = 86400
 CUBIC_METERS_IN_ACRE_FOOT = 1233.48
@@ -24,38 +19,62 @@ HOURS_IN_DAY = 24
 CUBIC_METERS_IN_CUBIC_FOOT = 0.028316847
 MILLIGRAMS_IN_TON = 1e9
 
-def LOONE_Nut(
-    loone_q_path: str,
+
+def LOONE_NUT(
+    workspace: str,
+    out_file_name: str,
     loads_external_filename: str,
     flow_df_filename: str,
-    data_dir: str | None = None,
+    loone_q_path: str | None = None,
+    input_data: str | None = None,
+    forecast_mode: bool = False,
 ) -> pd.DataFrame:
     """
     Simulates nutrient (phosphorus) dynamics in the water column
 
     Args:
-        loone_q_path (str): Path to LOONE Q CSV file.
+        workspace (str): Path to the workspace containing config file.
+        out_file_name (str): Path to LOONE nutrient file to be created.
         loads_external_filename (str): The name of the file that holds the external loads for the model.
         flow_df_filename (str): The name of the file that holds the flow data for the model.
-        data_dir (str | None, optional): Path to the data directory. Defaults to Model_Config.Working_Path.
+        loone_q_path (str | None, optional): Path to LOONE Q CSV file. Defaults to "<workspace>/LOONE_Q_Outputs.csv".
+        input_data (str | None, optional): Path to the data directory. Defaults to <workspace>.
+        forecast_mode (bool, optional): Whether to run the model in forecast mode. Defaults to False.
 
     Returns:
         pd.DataFrame: A Dataframe containing an estimate of the total phosphorus concentration in the lake for a certain time series.
     """
+    os.chdir(workspace)
+    for config_file in ["config.yaml", "config.yml"]:
+        if os.path.exists(config_file):
+            config = load_config(config_file)
+            break
+    else:
+        raise FileNotFoundError("Config file not found in the workspace.")
+
+    TP_Variables = TPVarClass(workspace)
+
+    if not loone_q_path:
+        loone_q_path = os.path.join(workspace, "LOONE_Q_Outputs.csv")
+    Data = DClass(workspace)
     print("LOONE Nut Module is Running!")
-    
+
     # Read in config values
-    
-    
-    data_dir = data_dir if data_dir else Model_Config.Working_Path
+
+    data_dir = input_data if input_data else workspace
     loone_q = pd.read_csv(loone_q_path)
     # Based on the defined Start and End year, month, and day on the
     # Pre_defined_Variables File, Startdate and enddate are defined.
-    year, month, day = map(int, Pre_defined_Variables.startdate_entry)
-    startdate = datetime.now().date()  # datetime(year, month, day).date()
-    year, month, day = map(int, Pre_defined_Variables.startdate_entry)
-    year, month, day = map(int, Pre_defined_Variables.enddate_entry)
-    enddate = startdate + timedelta(days=15)  # datetime(year, month, day).date()
+    if forecast_mode:
+        startdate = datetime.now().date()  # datetime(year, month, day).date()
+        enddate = startdate + timedelta(
+            days=15
+        )  # datetime(year, month, day).date()
+    else:
+        year, month, day = map(int, config["start_date_entry"])
+        startdate = datetime(year, month, day).date()
+        year, month, day = map(int, config["end_date_entry"])
+        enddate = datetime(year, month, day).date()
 
     date_rng_0 = pd.date_range(start=startdate, end=enddate, freq="D")
     load_ext = pd.read_csv(os.path.join(data_dir, loads_external_filename))
@@ -67,7 +86,9 @@ def LOONE_Nut(
     tot_reg_so = flow_df[["S351_Out", "S352_Out", "S354_Out"]].sum(axis=1) * (
         70.0456 / SECONDS_IN_DAY
     )
-    sto_stage = pd.read_csv(os.path.join(data_dir, f"Average_LO_Storage_3MLag.csv"))
+    sto_stage = pd.read_csv(
+        os.path.join(data_dir, f"Average_LO_Storage_3MLag.csv")
+    )
     stage_lo = sto_stage["Stage_ft"].values
     storage = sto_stage["Storage_acft"].values
     n_rows = len(q_in.index)
@@ -77,7 +98,9 @@ def LOONE_Nut(
     atm_dep_s = TP_Variables.S_Per * load_ext["Atm_Loading_mg"]
 
     # Read Shear Stress driven by Wind Speed
-    wind_shear_str = pd.read_csv(os.path.join(data_dir, f"WindShearStress.csv"))
+    wind_shear_str = pd.read_csv(
+        os.path.join(data_dir, f"WindShearStress.csv")
+    )
     w_ss = wind_shear_str["ShearStress"]  # Dyne/cm2
     nu_ts = pd.read_csv(os.path.join(data_dir, "nu.csv"))
     LO_BL = 0.5  # m (Bed Elevation of LO)
@@ -222,11 +245,11 @@ def LOONE_Nut(
     ##Initial Values##
     # S.A. is calculated based on the Lake's previous time step Stage, but for
     # the S.A. at i=0 I used same time step Stage!
-    start_storage = utils.stg_sto_ar.stg2sto(Pre_defined_Variables.startstage, 0)
-    stage_2_ar[0] = utils.stg_sto_ar.stg2ar(stage_lo[0], 0)
-    stage_2_ar[1] = utils.stg_sto_ar.stg2ar(stage_lo[1], 0)
+    start_storage = stg_sto_ar.stg2sto(config["start_stage"], 0)
+    stage_2_ar[0] = stg_sto_ar.stg2ar(stage_lo[0], 0)
+    stage_2_ar[1] = stg_sto_ar.stg2ar(stage_lo[1], 0)
     storage[0] = start_storage  # ac-ft
-    storage[1] = utils.stg_sto_ar.stg2sto(stage_lo[1], 0)  # ac-ft
+    storage[1] = stg_sto_ar.stg2sto(stage_lo[1], 0)  # ac-ft
     # TP_MassBalanceModel Initial Values.
     tp_lake_n[0] = 225  # mg/m3
     tp_lake_s[0] = 275  # mg/m3
@@ -255,83 +278,253 @@ def LOONE_Nut(
     p_sed_s_s[0] = 300  # mg/kg
     p_sed_r_s[0] = 300  # mg/kg
     p_sed_p_s[0] = 200  # mg/kg
-    Θ_m = _calculate_porosity(TP_Variables.Bulk_density_M, TP_Variables.Particle_density_M, TP_Variables.Per_H2O_M)
-    Θ_s = _calculate_porosity(TP_Variables.Bulk_density_S, TP_Variables.Particle_density_S, TP_Variables.Per_H2O_S)
-    Θ_r = _calculate_porosity(TP_Variables.Bulk_density_R, TP_Variables.Particle_density_R, TP_Variables.Per_H2O_R)
-    Θ_p = _calculate_porosity(TP_Variables.Bulk_density_P, TP_Variables.Particle_density_P, TP_Variables.Per_H2O_P)
-    
+    Θ_m = _calculate_porosity(
+        TP_Variables.Bulk_density_M,
+        TP_Variables.Particle_density_M,
+        TP_Variables.Per_H2O_M,
+    )
+    Θ_s = _calculate_porosity(
+        TP_Variables.Bulk_density_S,
+        TP_Variables.Particle_density_S,
+        TP_Variables.Per_H2O_S,
+    )
+    Θ_r = _calculate_porosity(
+        TP_Variables.Bulk_density_R,
+        TP_Variables.Particle_density_R,
+        TP_Variables.Per_H2O_R,
+    )
+    Θ_p = _calculate_porosity(
+        TP_Variables.Bulk_density_P,
+        TP_Variables.Particle_density_P,
+        TP_Variables.Per_H2O_P,
+    )
+
     # Mass of sediment in surfacial mix Mud layer in the North Region(kg)
-    mass_sed_m_n = _calculate_mass_sediment(TP_Variables.A_Mud_N, TP_Variables.Z_sed, TP_Variables.Per_H2O_M, TP_Variables.Bulk_density_M)
+    mass_sed_m_n = _calculate_mass_sediment(
+        TP_Variables.A_Mud_N,
+        TP_Variables.Z_sed,
+        TP_Variables.Per_H2O_M,
+        TP_Variables.Bulk_density_M,
+    )
 
     # Mass of sediment in surfacial mix Sand layer in the North Region(kg)
-    mass_sed_s_n = _calculate_mass_sediment(TP_Variables.A_Sand_N, TP_Variables.Z_sed, TP_Variables.Per_H2O_S, TP_Variables.Bulk_density_S)
+    mass_sed_s_n = _calculate_mass_sediment(
+        TP_Variables.A_Sand_N,
+        TP_Variables.Z_sed,
+        TP_Variables.Per_H2O_S,
+        TP_Variables.Bulk_density_S,
+    )
 
     # Mass of sediment in surfacial mix Rock layer in the North Region(kg)
-    mass_sed_r_n = _calculate_mass_sediment(TP_Variables.A_Rock_N, TP_Variables.Z_sed, TP_Variables.Per_H2O_R, TP_Variables.Bulk_density_R)
+    mass_sed_r_n = _calculate_mass_sediment(
+        TP_Variables.A_Rock_N,
+        TP_Variables.Z_sed,
+        TP_Variables.Per_H2O_R,
+        TP_Variables.Bulk_density_R,
+    )
 
     # Mass of sediment in surfacial mix Peat layer in the North Region(kg)
-    mass_sed_p_n = _calculate_mass_sediment(TP_Variables.A_Peat_N, TP_Variables.Z_sed, TP_Variables.Per_H2O_P, TP_Variables.Bulk_density_P)
+    mass_sed_p_n = _calculate_mass_sediment(
+        TP_Variables.A_Peat_N,
+        TP_Variables.Z_sed,
+        TP_Variables.Per_H2O_P,
+        TP_Variables.Bulk_density_P,
+    )
 
     # Mass of sediment in surfacial mix Mud layer in the South Region(kg)
-    mass_sed_m_s = _calculate_mass_sediment(TP_Variables.A_Mud_S, TP_Variables.Z_sed, TP_Variables.Per_H2O_M, TP_Variables.Bulk_density_M)
+    mass_sed_m_s = _calculate_mass_sediment(
+        TP_Variables.A_Mud_S,
+        TP_Variables.Z_sed,
+        TP_Variables.Per_H2O_M,
+        TP_Variables.Bulk_density_M,
+    )
 
     # Mass of sediment in surfacial mix Sand layer in the South Region(kg)
-    mass_sed_s_s = _calculate_mass_sediment(TP_Variables.A_Sand_S, TP_Variables.Z_sed, TP_Variables.Per_H2O_S, TP_Variables.Bulk_density_S)
+    mass_sed_s_s = _calculate_mass_sediment(
+        TP_Variables.A_Sand_S,
+        TP_Variables.Z_sed,
+        TP_Variables.Per_H2O_S,
+        TP_Variables.Bulk_density_S,
+    )
 
     # Mass of sediment in surfacial mix Rock layer in the South Region(kg)
-    mass_sed_r_s = _calculate_mass_sediment(TP_Variables.A_Rock_S, TP_Variables.Z_sed, TP_Variables.Per_H2O_R, TP_Variables.Bulk_density_R)
+    mass_sed_r_s = _calculate_mass_sediment(
+        TP_Variables.A_Rock_S,
+        TP_Variables.Z_sed,
+        TP_Variables.Per_H2O_R,
+        TP_Variables.Bulk_density_R,
+    )
 
     # Mass of sediment in surfacial mix Peat layer in the South Region(kg)
-    mass_sed_p_s = _calculate_mass_sediment(TP_Variables.A_Peat_S, TP_Variables.Z_sed, TP_Variables.Per_H2O_P, TP_Variables.Bulk_density_P)
+    mass_sed_p_s = _calculate_mass_sediment(
+        TP_Variables.A_Peat_S,
+        TP_Variables.Z_sed,
+        TP_Variables.Per_H2O_P,
+        TP_Variables.Bulk_density_P,
+    )
 
     for i in range(n_rows - 2):
         if storage_dev[i] >= 0:
-            q_i_m[i] = q_i[i] + storage_dev[i] * CUBIC_METERS_IN_ACRE_FOOT  # m3/d
+            q_i_m[i] = (
+                q_i[i] + storage_dev[i] * CUBIC_METERS_IN_ACRE_FOOT
+            )  # m3/d
             q_o_m[i] = q_o[i]
             l_ext_m[i] = l_ext[i] + q_i_m[i] * tp_lake_n[i]
         else:
-            q_o_m[i] = q_o[i] - storage_dev[i] * CUBIC_METERS_IN_ACRE_FOOT  # m3/d
+            q_o_m[i] = (
+                q_o[i] - storage_dev[i] * CUBIC_METERS_IN_ACRE_FOOT
+            )  # m3/d
             q_i_m[i] = q_i[i]
             l_ext_m[i] = l_ext[i]
         q_n2s[i] = (q_i_m[i] + q_o_m[i]) / 2
-        stage_2_ar[i + 2] = utils.stg_sto_ar.stg2ar(stage_lo[i + 2], 0)
+        stage_2_ar[i + 2] = stg_sto_ar.stg2ar(stage_lo[i + 2], 0)
         lo_wd[i] = stage_lo[i] * METERS_IN_FOOT - LO_BL
-        lake_o_storage_n[i] = storage[i] * TP_Variables.N_Per * SQUARE_METERS_IN_ACRE * METERS_IN_FOOT_3  # m3
-        lake_o_storage_s[i] = storage[i] * TP_Variables.S_Per * SQUARE_METERS_IN_ACRE * METERS_IN_FOOT_3  # m3
-        lake_o_a_n[i] = stage_2_ar[i] * TP_Variables.N_Per * SQUARE_METERS_IN_ACRE  # m2
-        lake_o_a_s[i] = stage_2_ar[i] * TP_Variables.S_Per * SQUARE_METERS_IN_ACRE  # m2
-        lake_o_a_m_n[i] = _calculate_sediment_area(lake_o_a_n[i], TP_Variables.A_Mud_N, TP_Variables.A_Mud_N, TP_Variables.A_Sand_N, TP_Variables.A_Rock_N, TP_Variables.A_Peat_N)
-        lake_o_a_s_n[i] = _calculate_sediment_area(lake_o_a_n[i], TP_Variables.A_Sand_N, TP_Variables.A_Mud_N, TP_Variables.A_Sand_N, TP_Variables.A_Rock_N, TP_Variables.A_Peat_N)
-        lake_o_a_r_n[i] = _calculate_sediment_area(lake_o_a_n[i], TP_Variables.A_Rock_N, TP_Variables.A_Mud_N, TP_Variables.A_Sand_N, TP_Variables.A_Rock_N, TP_Variables.A_Peat_N)
-        lake_o_a_p_n[i] = _calculate_sediment_area(lake_o_a_n[i], TP_Variables.A_Peat_N, TP_Variables.A_Mud_N, TP_Variables.A_Sand_N, TP_Variables.A_Rock_N, TP_Variables.A_Peat_N)
-        lake_o_a_m_s[i] = _calculate_sediment_area(lake_o_a_s[i], TP_Variables.A_Mud_S, TP_Variables.A_Mud_S, TP_Variables.A_Sand_S, TP_Variables.A_Rock_S, TP_Variables.A_Peat_S)
-        lake_o_a_s_s[i] = _calculate_sediment_area(lake_o_a_s[i], TP_Variables.A_Sand_S, TP_Variables.A_Mud_S, TP_Variables.A_Sand_S, TP_Variables.A_Rock_S, TP_Variables.A_Peat_S)
-        lake_o_a_r_s[i] = _calculate_sediment_area(lake_o_a_s[i], TP_Variables.A_Rock_S, TP_Variables.A_Mud_S, TP_Variables.A_Sand_S, TP_Variables.A_Rock_S, TP_Variables.A_Peat_S)
-        lake_o_a_p_s[i] = _calculate_sediment_area(lake_o_a_s[i], TP_Variables.A_Peat_S, TP_Variables.A_Mud_S, TP_Variables.A_Sand_S, TP_Variables.A_Rock_S, TP_Variables.A_Peat_S)
+        lake_o_storage_n[i] = (
+            storage[i]
+            * TP_Variables.N_Per
+            * SQUARE_METERS_IN_ACRE
+            * METERS_IN_FOOT_3
+        )  # m3
+        lake_o_storage_s[i] = (
+            storage[i]
+            * TP_Variables.S_Per
+            * SQUARE_METERS_IN_ACRE
+            * METERS_IN_FOOT_3
+        )  # m3
+        lake_o_a_n[i] = (
+            stage_2_ar[i] * TP_Variables.N_Per * SQUARE_METERS_IN_ACRE
+        )  # m2
+        lake_o_a_s[i] = (
+            stage_2_ar[i] * TP_Variables.S_Per * SQUARE_METERS_IN_ACRE
+        )  # m2
+        lake_o_a_m_n[i] = _calculate_sediment_area(
+            lake_o_a_n[i],
+            TP_Variables.A_Mud_N,
+            TP_Variables.A_Mud_N,
+            TP_Variables.A_Sand_N,
+            TP_Variables.A_Rock_N,
+            TP_Variables.A_Peat_N,
+        )
+        lake_o_a_s_n[i] = _calculate_sediment_area(
+            lake_o_a_n[i],
+            TP_Variables.A_Sand_N,
+            TP_Variables.A_Mud_N,
+            TP_Variables.A_Sand_N,
+            TP_Variables.A_Rock_N,
+            TP_Variables.A_Peat_N,
+        )
+        lake_o_a_r_n[i] = _calculate_sediment_area(
+            lake_o_a_n[i],
+            TP_Variables.A_Rock_N,
+            TP_Variables.A_Mud_N,
+            TP_Variables.A_Sand_N,
+            TP_Variables.A_Rock_N,
+            TP_Variables.A_Peat_N,
+        )
+        lake_o_a_p_n[i] = _calculate_sediment_area(
+            lake_o_a_n[i],
+            TP_Variables.A_Peat_N,
+            TP_Variables.A_Mud_N,
+            TP_Variables.A_Sand_N,
+            TP_Variables.A_Rock_N,
+            TP_Variables.A_Peat_N,
+        )
+        lake_o_a_m_s[i] = _calculate_sediment_area(
+            lake_o_a_s[i],
+            TP_Variables.A_Mud_S,
+            TP_Variables.A_Mud_S,
+            TP_Variables.A_Sand_S,
+            TP_Variables.A_Rock_S,
+            TP_Variables.A_Peat_S,
+        )
+        lake_o_a_s_s[i] = _calculate_sediment_area(
+            lake_o_a_s[i],
+            TP_Variables.A_Sand_S,
+            TP_Variables.A_Mud_S,
+            TP_Variables.A_Sand_S,
+            TP_Variables.A_Rock_S,
+            TP_Variables.A_Peat_S,
+        )
+        lake_o_a_r_s[i] = _calculate_sediment_area(
+            lake_o_a_s[i],
+            TP_Variables.A_Rock_S,
+            TP_Variables.A_Mud_S,
+            TP_Variables.A_Sand_S,
+            TP_Variables.A_Rock_S,
+            TP_Variables.A_Peat_S,
+        )
+        lake_o_a_p_s[i] = _calculate_sediment_area(
+            lake_o_a_s[i],
+            TP_Variables.A_Peat_S,
+            TP_Variables.A_Mud_S,
+            TP_Variables.A_Sand_S,
+            TP_Variables.A_Rock_S,
+            TP_Variables.A_Peat_S,
+        )
 
         dip_lake_n[i] = TP_MBFR.DIP_Lake(tp_lake_n[i])
         dip_lake_s[i] = TP_MBFR.DIP_Lake(tp_lake_s[i])
-        
+
         # Calculate the settling velocity for the North and South regions
         v_settle_n[i] = _calculate_settling_velocity(
-            R, g, d_c, d_s, c_1_c, c_1_s, c_2_c, c_2_s, nu_d[i],
-            TP_Variables.A_Mud_N, TP_Variables.A_Peat_N, TP_Variables.A_Sand_N, TP_Variables.A_Rock_N, TP_Variables.A_N
+            R,
+            g,
+            d_c,
+            d_s,
+            c_1_c,
+            c_1_s,
+            c_2_c,
+            c_2_s,
+            nu_d[i],
+            TP_Variables.A_Mud_N,
+            TP_Variables.A_Peat_N,
+            TP_Variables.A_Sand_N,
+            TP_Variables.A_Rock_N,
+            TP_Variables.A_N,
         )
-        
+
         v_settle_s[i] = _calculate_settling_velocity(
-            R, g, d_c, d_s, c_1_c, c_1_s, c_2_c, c_2_s, nu_d[i],
-            TP_Variables.A_Mud_S, TP_Variables.A_Peat_S, TP_Variables.A_Sand_S, TP_Variables.A_Rock_S, TP_Variables.A_S
+            R,
+            g,
+            d_c,
+            d_s,
+            c_1_c,
+            c_1_s,
+            c_2_c,
+            c_2_s,
+            nu_d[i],
+            TP_Variables.A_Mud_S,
+            TP_Variables.A_Peat_S,
+            TP_Variables.A_Sand_S,
+            TP_Variables.A_Rock_S,
+            TP_Variables.A_S,
         )
 
         # Calculate desorption fluxes for the North and South regions (for mud, sand, rock, and peat)
-        j_des_m_n[i] = TP_MBFR.Des_flux(Γ_m_n[i], mass_sed_m_n, TP_Variables.K_des_M)
-        j_des_s_n[i] = TP_MBFR.Des_flux(Γ_s_n[i], mass_sed_s_n, TP_Variables.K_des_S)
-        j_des_r_n[i] = TP_MBFR.Des_flux(Γ_r_n[i], mass_sed_r_n, TP_Variables.K_des_R)
-        j_des_p_n[i] = TP_MBFR.Des_flux(Γ_p_n[i], mass_sed_p_n, TP_Variables.K_des_P)
-        j_des_m_s[i] = TP_MBFR.Des_flux(Γ_m_s[i], mass_sed_m_s, TP_Variables.K_des_M)
-        j_des_s_s[i] = TP_MBFR.Des_flux(Γ_s_s[i], mass_sed_s_s, TP_Variables.K_des_S)
-        j_des_r_s[i] = TP_MBFR.Des_flux(Γ_r_s[i], mass_sed_r_s, TP_Variables.K_des_R)
-        j_des_p_s[i] = TP_MBFR.Des_flux(Γ_p_s[i], mass_sed_p_s, TP_Variables.K_des_P)
+        j_des_m_n[i] = TP_MBFR.Des_flux(
+            Γ_m_n[i], mass_sed_m_n, TP_Variables.K_des_M
+        )
+        j_des_s_n[i] = TP_MBFR.Des_flux(
+            Γ_s_n[i], mass_sed_s_n, TP_Variables.K_des_S
+        )
+        j_des_r_n[i] = TP_MBFR.Des_flux(
+            Γ_r_n[i], mass_sed_r_n, TP_Variables.K_des_R
+        )
+        j_des_p_n[i] = TP_MBFR.Des_flux(
+            Γ_p_n[i], mass_sed_p_n, TP_Variables.K_des_P
+        )
+        j_des_m_s[i] = TP_MBFR.Des_flux(
+            Γ_m_s[i], mass_sed_m_s, TP_Variables.K_des_M
+        )
+        j_des_s_s[i] = TP_MBFR.Des_flux(
+            Γ_s_s[i], mass_sed_s_s, TP_Variables.K_des_S
+        )
+        j_des_r_s[i] = TP_MBFR.Des_flux(
+            Γ_r_s[i], mass_sed_r_s, TP_Variables.K_des_R
+        )
+        j_des_p_s[i] = TP_MBFR.Des_flux(
+            Γ_p_s[i], mass_sed_p_s, TP_Variables.K_des_P
+        )
 
         # Calculate adsorption fluxes for the North and South regions
         j_ads_m_n[i] = TP_MBFR.Ads_flux(
@@ -450,24 +643,128 @@ def LOONE_Nut(
         )
 
         # Calculate the sediment resuspension for the North and South regions (for mud, sand, rock, and peat)
-        sed_resusp_m_n[i] = _calculate_sediment_resuspension(E_0, td, E_1, E_2, w_ss[i], crtcl_sh_str, lo_wd[i], p_sed_m_n[i])
-        sed_resusp_s_n[i] = _calculate_sediment_resuspension(E_0, td, E_1, E_2, w_ss[i], crtcl_sh_str, lo_wd[i], p_sed_s_n[i])
-        sed_resusp_r_n[i] = _calculate_sediment_resuspension(E_0, td, E_1, E_2, w_ss[i], crtcl_sh_str, lo_wd[i], p_sed_r_n[i])
-        sed_resusp_p_n[i] = _calculate_sediment_resuspension(E_0, td, E_1, E_2, w_ss[i], crtcl_sh_str, lo_wd[i], p_sed_p_n[i])
-        sed_resusp_m_s[i] = _calculate_sediment_resuspension(E_0, td, E_1, E_2, w_ss[i], crtcl_sh_str, lo_wd[i], p_sed_m_s[i])
-        sed_resusp_s_s[i] = _calculate_sediment_resuspension(E_0, td, E_1, E_2, w_ss[i], crtcl_sh_str, lo_wd[i], p_sed_s_s[i])
-        sed_resusp_r_s[i] = _calculate_sediment_resuspension(E_0, td, E_1, E_2, w_ss[i], crtcl_sh_str, lo_wd[i], p_sed_r_s[i])
-        sed_resusp_p_s[i] = _calculate_sediment_resuspension(E_0, td, E_1, E_2, w_ss[i], crtcl_sh_str, lo_wd[i], p_sed_p_s[i])
+        sed_resusp_m_n[i] = _calculate_sediment_resuspension(
+            E_0, td, E_1, E_2, w_ss[i], crtcl_sh_str, lo_wd[i], p_sed_m_n[i]
+        )
+        sed_resusp_s_n[i] = _calculate_sediment_resuspension(
+            E_0, td, E_1, E_2, w_ss[i], crtcl_sh_str, lo_wd[i], p_sed_s_n[i]
+        )
+        sed_resusp_r_n[i] = _calculate_sediment_resuspension(
+            E_0, td, E_1, E_2, w_ss[i], crtcl_sh_str, lo_wd[i], p_sed_r_n[i]
+        )
+        sed_resusp_p_n[i] = _calculate_sediment_resuspension(
+            E_0, td, E_1, E_2, w_ss[i], crtcl_sh_str, lo_wd[i], p_sed_p_n[i]
+        )
+        sed_resusp_m_s[i] = _calculate_sediment_resuspension(
+            E_0, td, E_1, E_2, w_ss[i], crtcl_sh_str, lo_wd[i], p_sed_m_s[i]
+        )
+        sed_resusp_s_s[i] = _calculate_sediment_resuspension(
+            E_0, td, E_1, E_2, w_ss[i], crtcl_sh_str, lo_wd[i], p_sed_s_s[i]
+        )
+        sed_resusp_r_s[i] = _calculate_sediment_resuspension(
+            E_0, td, E_1, E_2, w_ss[i], crtcl_sh_str, lo_wd[i], p_sed_r_s[i]
+        )
+        sed_resusp_p_s[i] = _calculate_sediment_resuspension(
+            E_0, td, E_1, E_2, w_ss[i], crtcl_sh_str, lo_wd[i], p_sed_p_s[i]
+        )
 
         # Calculate the phosphorus concentration for the next time step for the North and South regions (for mud, sand, rock, and peat)
-        p_sed_m_n[i + 1] = _calculate_next_sediment(lake_o_a_m_n[i], tp_lake_n[i], dip_lake_n[i], j_sedburial_m_n[i], p_sed_m_n[i], mass_sed_m_n, TP_Variables.K_decomp_M, v_settle_n[i], sed_resusp_m_n[i], lake_o_storage_n[i])
-        p_sed_s_n[i + 1] = _calculate_next_sediment(lake_o_a_s_n[i], tp_lake_n[i], dip_lake_n[i], j_sedburial_s_n[i], p_sed_s_n[i], mass_sed_s_n, TP_Variables.K_decomp_S, v_settle_n[i], sed_resusp_s_n[i], lake_o_storage_n[i])
-        p_sed_r_n[i + 1] = _calculate_next_sediment(lake_o_a_r_n[i], tp_lake_n[i], dip_lake_n[i], j_sedburial_r_n[i], p_sed_r_n[i], mass_sed_r_n, TP_Variables.K_decomp_R, v_settle_n[i], sed_resusp_r_n[i], lake_o_storage_n[i])
-        p_sed_p_n[i + 1] = _calculate_next_sediment(lake_o_a_p_n[i], tp_lake_n[i], dip_lake_n[i], j_sedburial_p_n[i], p_sed_p_n[i], mass_sed_p_n, TP_Variables.K_decomp_P, v_settle_n[i], sed_resusp_p_n[i], lake_o_storage_n[i])
-        p_sed_m_s[i + 1] = _calculate_next_sediment(lake_o_a_m_s[i], tp_lake_s[i], dip_lake_s[i], j_sedburial_m_s[i], p_sed_m_s[i], mass_sed_m_s, TP_Variables.K_decomp_M, v_settle_s[i], sed_resusp_m_s[i], lake_o_storage_s[i])
-        p_sed_s_s[i + 1] = _calculate_next_sediment(lake_o_a_s_s[i], tp_lake_s[i], dip_lake_s[i], j_sedburial_s_s[i], p_sed_s_s[i], mass_sed_s_s, TP_Variables.K_decomp_S, v_settle_s[i], sed_resusp_s_s[i], lake_o_storage_s[i])
-        p_sed_r_s[i + 1] = _calculate_next_sediment(lake_o_a_r_s[i], tp_lake_s[i], dip_lake_s[i], j_sedburial_r_s[i], p_sed_r_s[i], mass_sed_r_s, TP_Variables.K_decomp_R, v_settle_s[i], sed_resusp_r_s[i], lake_o_storage_s[i])
-        p_sed_p_s[i + 1] = _calculate_next_sediment(lake_o_a_p_s[i], tp_lake_s[i], dip_lake_s[i], j_sedburial_p_s[i], p_sed_p_s[i], mass_sed_p_s, TP_Variables.K_decomp_P, v_settle_s[i], sed_resusp_p_s[i], lake_o_storage_s[i])
+        p_sed_m_n[i + 1] = _calculate_next_sediment(
+            lake_o_a_m_n[i],
+            tp_lake_n[i],
+            dip_lake_n[i],
+            j_sedburial_m_n[i],
+            p_sed_m_n[i],
+            mass_sed_m_n,
+            TP_Variables.K_decomp_M,
+            v_settle_n[i],
+            sed_resusp_m_n[i],
+            lake_o_storage_n[i],
+        )
+        p_sed_s_n[i + 1] = _calculate_next_sediment(
+            lake_o_a_s_n[i],
+            tp_lake_n[i],
+            dip_lake_n[i],
+            j_sedburial_s_n[i],
+            p_sed_s_n[i],
+            mass_sed_s_n,
+            TP_Variables.K_decomp_S,
+            v_settle_n[i],
+            sed_resusp_s_n[i],
+            lake_o_storage_n[i],
+        )
+        p_sed_r_n[i + 1] = _calculate_next_sediment(
+            lake_o_a_r_n[i],
+            tp_lake_n[i],
+            dip_lake_n[i],
+            j_sedburial_r_n[i],
+            p_sed_r_n[i],
+            mass_sed_r_n,
+            TP_Variables.K_decomp_R,
+            v_settle_n[i],
+            sed_resusp_r_n[i],
+            lake_o_storage_n[i],
+        )
+        p_sed_p_n[i + 1] = _calculate_next_sediment(
+            lake_o_a_p_n[i],
+            tp_lake_n[i],
+            dip_lake_n[i],
+            j_sedburial_p_n[i],
+            p_sed_p_n[i],
+            mass_sed_p_n,
+            TP_Variables.K_decomp_P,
+            v_settle_n[i],
+            sed_resusp_p_n[i],
+            lake_o_storage_n[i],
+        )
+        p_sed_m_s[i + 1] = _calculate_next_sediment(
+            lake_o_a_m_s[i],
+            tp_lake_s[i],
+            dip_lake_s[i],
+            j_sedburial_m_s[i],
+            p_sed_m_s[i],
+            mass_sed_m_s,
+            TP_Variables.K_decomp_M,
+            v_settle_s[i],
+            sed_resusp_m_s[i],
+            lake_o_storage_s[i],
+        )
+        p_sed_s_s[i + 1] = _calculate_next_sediment(
+            lake_o_a_s_s[i],
+            tp_lake_s[i],
+            dip_lake_s[i],
+            j_sedburial_s_s[i],
+            p_sed_s_s[i],
+            mass_sed_s_s,
+            TP_Variables.K_decomp_S,
+            v_settle_s[i],
+            sed_resusp_s_s[i],
+            lake_o_storage_s[i],
+        )
+        p_sed_r_s[i + 1] = _calculate_next_sediment(
+            lake_o_a_r_s[i],
+            tp_lake_s[i],
+            dip_lake_s[i],
+            j_sedburial_r_s[i],
+            p_sed_r_s[i],
+            mass_sed_r_s,
+            TP_Variables.K_decomp_R,
+            v_settle_s[i],
+            sed_resusp_r_s[i],
+            lake_o_storage_s[i],
+        )
+        p_sed_p_s[i + 1] = _calculate_next_sediment(
+            lake_o_a_p_s[i],
+            tp_lake_s[i],
+            dip_lake_s[i],
+            j_sedburial_p_s[i],
+            p_sed_p_s[i],
+            mass_sed_p_s,
+            TP_Variables.K_decomp_P,
+            v_settle_s[i],
+            sed_resusp_p_s[i],
+            lake_o_storage_s[i],
+        )
 
         # Calculate the burial fluxes for the North and South regions (for mud, sand, rock, and peat)
         j_Γburial_m_n[i] = TP_MBFR.Sor_P_burialflux(
@@ -528,14 +825,62 @@ def LOONE_Nut(
         )
 
         # Calculate the phosphorus concentration for the next time step for the North and South regions (for mud, sand, rock, and peat)
-        Γ_m_n[i + 1] = _calculate_next_concentration(j_ads_m_n[i], j_des_m_n[i], j_Γburial_m_n[i], Γ_m_n[i], mass_sed_m_n)
-        Γ_s_n[i + 1] = _calculate_next_concentration(j_ads_s_n[i], j_des_s_n[i], j_Γburial_s_n[i], Γ_s_n[i], mass_sed_s_n)
-        Γ_r_n[i + 1] = _calculate_next_concentration(j_ads_r_n[i], j_des_r_n[i], j_Γburial_r_n[i], Γ_r_n[i], mass_sed_r_n)
-        Γ_p_n[i + 1] = _calculate_next_concentration(j_ads_p_n[i], j_des_p_n[i], j_Γburial_p_n[i], Γ_p_n[i], mass_sed_p_n)
-        Γ_m_s[i + 1] = _calculate_next_concentration(j_ads_m_s[i], j_des_m_s[i], j_Γburial_m_s[i], Γ_m_s[i], mass_sed_m_s)
-        Γ_s_s[i + 1] = _calculate_next_concentration(j_ads_s_s[i], j_des_s_s[i], j_Γburial_s_s[i], Γ_s_s[i], mass_sed_s_s)
-        Γ_r_s[i + 1] = _calculate_next_concentration(j_ads_r_s[i], j_des_r_s[i], j_Γburial_r_s[i], Γ_r_s[i], mass_sed_r_s)
-        Γ_p_s[i + 1] = _calculate_next_concentration(j_ads_p_s[i], j_des_p_s[i], j_Γburial_p_s[i], Γ_p_s[i], mass_sed_p_s)
+        Γ_m_n[i + 1] = _calculate_next_concentration(
+            j_ads_m_n[i],
+            j_des_m_n[i],
+            j_Γburial_m_n[i],
+            Γ_m_n[i],
+            mass_sed_m_n,
+        )
+        Γ_s_n[i + 1] = _calculate_next_concentration(
+            j_ads_s_n[i],
+            j_des_s_n[i],
+            j_Γburial_s_n[i],
+            Γ_s_n[i],
+            mass_sed_s_n,
+        )
+        Γ_r_n[i + 1] = _calculate_next_concentration(
+            j_ads_r_n[i],
+            j_des_r_n[i],
+            j_Γburial_r_n[i],
+            Γ_r_n[i],
+            mass_sed_r_n,
+        )
+        Γ_p_n[i + 1] = _calculate_next_concentration(
+            j_ads_p_n[i],
+            j_des_p_n[i],
+            j_Γburial_p_n[i],
+            Γ_p_n[i],
+            mass_sed_p_n,
+        )
+        Γ_m_s[i + 1] = _calculate_next_concentration(
+            j_ads_m_s[i],
+            j_des_m_s[i],
+            j_Γburial_m_s[i],
+            Γ_m_s[i],
+            mass_sed_m_s,
+        )
+        Γ_s_s[i + 1] = _calculate_next_concentration(
+            j_ads_s_s[i],
+            j_des_s_s[i],
+            j_Γburial_s_s[i],
+            Γ_s_s[i],
+            mass_sed_s_s,
+        )
+        Γ_r_s[i + 1] = _calculate_next_concentration(
+            j_ads_r_s[i],
+            j_des_r_s[i],
+            j_Γburial_r_s[i],
+            Γ_r_s[i],
+            mass_sed_r_s,
+        )
+        Γ_p_s[i + 1] = _calculate_next_concentration(
+            j_ads_p_s[i],
+            j_des_p_s[i],
+            j_Γburial_p_s[i],
+            Γ_p_s[i],
+            mass_sed_p_s,
+        )
 
         # Calculate the decomposition rates for the North and South regions (for mud, sand, rock, and peat)
         j_decomp_m_n[i] = TP_MBFR.J_decomp(
@@ -564,14 +909,118 @@ def LOONE_Nut(
         )
 
         # Calculate the DIP pore concentration for the North and South regions (for mud, sand, rock, and peat)
-        dip_pore_m_n[i + 1] = _calculate_DIP_pore(Θ_m, dip_pore_m_n[i], dip_lake_n[i], j_des_m_n[i], j_ads_m_n[i], p_sed_m_n[i], mass_sed_m_n, TP_Variables.v_diff_M, TP_Variables.A_Mud_N, TP_Variables.K_decomp_M, TP_Variables.v_burial_M)
-        dip_pore_s_n[i + 1] = _calculate_DIP_pore(Θ_s, dip_pore_s_n[i], dip_lake_n[i], j_des_s_n[i], j_ads_s_n[i], p_sed_s_n[i], mass_sed_s_n, TP_Variables.v_diff_S, TP_Variables.A_Sand_N, TP_Variables.K_decomp_S, TP_Variables.v_burial_S)
-        dip_pore_r_n[i + 1] = _calculate_DIP_pore(Θ_r, dip_pore_r_n[i], dip_lake_n[i], j_des_r_n[i], j_ads_r_n[i], p_sed_r_n[i], mass_sed_r_n, TP_Variables.v_diff_R, TP_Variables.A_Rock_N, TP_Variables.K_decomp_R, TP_Variables.v_burial_R)
-        dip_pore_p_n[i + 1] = _calculate_DIP_pore(Θ_p, dip_pore_p_n[i], dip_lake_n[i], j_des_p_n[i], j_ads_p_n[i], p_sed_p_n[i], mass_sed_p_n, TP_Variables.v_diff_P, TP_Variables.A_Peat_N, TP_Variables.K_decomp_P, TP_Variables.v_burial_P)
-        dip_pore_m_s[i + 1] = _calculate_DIP_pore(Θ_m, dip_pore_m_s[i], dip_lake_s[i], j_des_m_s[i], j_ads_m_s[i], p_sed_m_s[i], mass_sed_m_s, TP_Variables.v_diff_M, TP_Variables.A_Mud_S, TP_Variables.K_decomp_M, TP_Variables.v_burial_M)
-        dip_pore_s_s[i + 1] = _calculate_DIP_pore(Θ_s, dip_pore_s_s[i], dip_lake_s[i], j_des_s_s[i], j_ads_s_s[i], p_sed_s_s[i], mass_sed_s_s, TP_Variables.v_diff_S, TP_Variables.A_Sand_S, TP_Variables.K_decomp_S, TP_Variables.v_burial_S)
-        dip_pore_r_s[i + 1] = _calculate_DIP_pore(Θ_r, dip_pore_r_s[i], dip_lake_s[i], j_des_r_s[i], j_ads_r_s[i], p_sed_r_s[i], mass_sed_r_s, TP_Variables.v_diff_R, TP_Variables.A_Rock_S, TP_Variables.K_decomp_R, TP_Variables.v_burial_R)
-        dip_pore_p_s[i + 1] = _calculate_DIP_pore(Θ_p, dip_pore_p_s[i], dip_lake_s[i], j_des_p_s[i], j_ads_p_s[i], p_sed_p_s[i], mass_sed_p_s, TP_Variables.v_diff_P, TP_Variables.A_Peat_S, TP_Variables.K_decomp_P, TP_Variables.v_burial_P)
+        dip_pore_m_n[i + 1] = _calculate_DIP_pore(
+            workspace,
+            Θ_m,
+            dip_pore_m_n[i],
+            dip_lake_n[i],
+            j_des_m_n[i],
+            j_ads_m_n[i],
+            p_sed_m_n[i],
+            mass_sed_m_n,
+            TP_Variables.v_diff_M,
+            TP_Variables.A_Mud_N,
+            TP_Variables.K_decomp_M,
+            TP_Variables.v_burial_M,
+        )
+        dip_pore_s_n[i + 1] = _calculate_DIP_pore(
+            workspace,
+            Θ_s,
+            dip_pore_s_n[i],
+            dip_lake_n[i],
+            j_des_s_n[i],
+            j_ads_s_n[i],
+            p_sed_s_n[i],
+            mass_sed_s_n,
+            TP_Variables.v_diff_S,
+            TP_Variables.A_Sand_N,
+            TP_Variables.K_decomp_S,
+            TP_Variables.v_burial_S,
+        )
+        dip_pore_r_n[i + 1] = _calculate_DIP_pore(
+            workspace,
+            Θ_r,
+            dip_pore_r_n[i],
+            dip_lake_n[i],
+            j_des_r_n[i],
+            j_ads_r_n[i],
+            p_sed_r_n[i],
+            mass_sed_r_n,
+            TP_Variables.v_diff_R,
+            TP_Variables.A_Rock_N,
+            TP_Variables.K_decomp_R,
+            TP_Variables.v_burial_R,
+        )
+        dip_pore_p_n[i + 1] = _calculate_DIP_pore(
+            workspace,
+            Θ_p,
+            dip_pore_p_n[i],
+            dip_lake_n[i],
+            j_des_p_n[i],
+            j_ads_p_n[i],
+            p_sed_p_n[i],
+            mass_sed_p_n,
+            TP_Variables.v_diff_P,
+            TP_Variables.A_Peat_N,
+            TP_Variables.K_decomp_P,
+            TP_Variables.v_burial_P,
+        )
+        dip_pore_m_s[i + 1] = _calculate_DIP_pore(
+            workspace,
+            Θ_m,
+            dip_pore_m_s[i],
+            dip_lake_s[i],
+            j_des_m_s[i],
+            j_ads_m_s[i],
+            p_sed_m_s[i],
+            mass_sed_m_s,
+            TP_Variables.v_diff_M,
+            TP_Variables.A_Mud_S,
+            TP_Variables.K_decomp_M,
+            TP_Variables.v_burial_M,
+        )
+        dip_pore_s_s[i + 1] = _calculate_DIP_pore(
+            workspace,
+            Θ_s,
+            dip_pore_s_s[i],
+            dip_lake_s[i],
+            j_des_s_s[i],
+            j_ads_s_s[i],
+            p_sed_s_s[i],
+            mass_sed_s_s,
+            TP_Variables.v_diff_S,
+            TP_Variables.A_Sand_S,
+            TP_Variables.K_decomp_S,
+            TP_Variables.v_burial_S,
+        )
+        dip_pore_r_s[i + 1] = _calculate_DIP_pore(
+            workspace,
+            Θ_r,
+            dip_pore_r_s[i],
+            dip_lake_s[i],
+            j_des_r_s[i],
+            j_ads_r_s[i],
+            p_sed_r_s[i],
+            mass_sed_r_s,
+            TP_Variables.v_diff_R,
+            TP_Variables.A_Rock_S,
+            TP_Variables.K_decomp_R,
+            TP_Variables.v_burial_R,
+        )
+        dip_pore_p_s[i + 1] = _calculate_DIP_pore(
+            workspace,
+            Θ_p,
+            dip_pore_p_s[i],
+            dip_lake_s[i],
+            j_des_p_s[i],
+            j_ads_p_s[i],
+            p_sed_p_s[i],
+            mass_sed_p_s,
+            TP_Variables.v_diff_P,
+            TP_Variables.A_Peat_S,
+            TP_Variables.K_decomp_P,
+            TP_Variables.v_burial_P,
+        )
 
         # Calculate the settling phosphorus for the North and South regions
         settling_p_n[i] = TP_MBFR.Sett_P(
@@ -657,6 +1106,7 @@ def LOONE_Nut(
 
         # Calculate the total phosphorus concentration for the next time step for the North and South regions
         tp_lake_n[i + 1] = _calculate_next_total_phosphorus_concentration(
+            workspace,
             l_ext_m[i],
             atm_dep_n[i],
             Θ_m,
@@ -682,8 +1132,9 @@ def LOONE_Nut(
             sed_resusp_r_n[i],
             sed_resusp_p_n[i],
         )
-        
+
         tp_lake_s[i + 1] = _calculate_next_total_phosphorus_concentration(
+            workspace,
             atm_dep_s[i],
             q_n2s[i],
             Θ_m,
@@ -709,40 +1160,66 @@ def LOONE_Nut(
             sed_resusp_r_s[i],
             sed_resusp_p_s[i],
         )
-        
+
         # Calculate the average total phosphorus in the lake for the next time step
         tp_lake_mean[i + 1] = (tp_lake_n[i + 1] + tp_lake_s[i + 1]) / 2
 
         # Calculate the phosphorus loads for the Caloosahatchee river, St. Lucie river, and the southern region
-        p_load_cal[i] = s77_q[i] * CUBIC_METERS_IN_CUBIC_FOOT * SECONDS_IN_HOUR * HOURS_IN_DAY * tp_lake_s[i]  # mg/d P
-        p_load_stl[i] = s308_q[i] * CUBIC_METERS_IN_CUBIC_FOOT * SECONDS_IN_HOUR * HOURS_IN_DAY * tp_lake_s[i]  # mg/d P
-        p_load_south[i] = tot_reg_so[i] * CUBIC_METERS_IN_ACRE_FOOT * tp_lake_s[i]  # mg/d P
+        p_load_cal[i] = (
+            s77_q[i]
+            * CUBIC_METERS_IN_CUBIC_FOOT
+            * SECONDS_IN_HOUR
+            * HOURS_IN_DAY
+            * tp_lake_s[i]
+        )  # mg/d P
+        p_load_stl[i] = (
+            s308_q[i]
+            * CUBIC_METERS_IN_CUBIC_FOOT
+            * SECONDS_IN_HOUR
+            * HOURS_IN_DAY
+            * tp_lake_s[i]
+        )  # mg/d P
+        p_load_south[i] = (
+            tot_reg_so[i] * CUBIC_METERS_IN_ACRE_FOOT * tp_lake_s[i]
+        )  # mg/d P
 
     # Create the dataframes for the phosphorus loads and the total phosphorus in the lake
-    p_loads_df = pd.DataFrame(date_rng_0, columns=["Date"])  # 1/1/2008-12/31/2018
-    p_lake_df = pd.DataFrame(date_rng_0, columns=["Date"])  # 1/1/2008-12/31/2018
+    p_loads_df = pd.DataFrame(
+        date_rng_0, columns=["Date"]
+    )  # 1/1/2008-12/31/2018
+    p_lake_df = pd.DataFrame(
+        date_rng_0, columns=["Date"]
+    )  # 1/1/2008-12/31/2018
 
     # Add phosphorus loads as tons
-    p_loads_df["P_Load_Cal"] = pd.to_numeric(p_load_cal) / MILLIGRAMS_IN_TON  # tons
-    p_loads_df["P_Load_StL"] = pd.to_numeric(p_load_stl) / MILLIGRAMS_IN_TON  # tons
-    p_loads_df["P_Load_South"] = pd.to_numeric(p_load_south) / MILLIGRAMS_IN_TON  # tons
-    
+    p_loads_df["P_Load_Cal"] = (
+        pd.to_numeric(p_load_cal) / MILLIGRAMS_IN_TON
+    )  # tons
+    p_loads_df["P_Load_StL"] = (
+        pd.to_numeric(p_load_stl) / MILLIGRAMS_IN_TON
+    )  # tons
+    p_loads_df["P_Load_South"] = (
+        pd.to_numeric(p_load_south) / MILLIGRAMS_IN_TON
+    )  # tons
+
     # Add total phosphorus (in southern region) and average phosphorus in the lake
     p_lake_df["P_Lake"] = pd.to_numeric(tp_lake_mean)
     p_lake_df["TP_Lake_S"] = pd.to_numeric(tp_lake_s)
-    
+
     # Set the date as the index for the dataframe
     p_loads_df = p_loads_df.set_index("Date")
     p_loads_df.index = pd.to_datetime(p_loads_df.index, unit="ns")
-    
+
     # Resample the dataframes to get monthly totals
-    p_loads_m = p_loads_df.resample("M").sum()
+    p_loads_m = p_loads_df.resample("ME").sum()
     p_loads_m = p_loads_m.reset_index()
-    
+
     # Set the date as the index for the dataframe
     p_lake_df = p_lake_df.set_index("Date")
+    p_lake_df.to_csv(out_file_name)
 
     return p_lake_df
+
 
 def _calculate_porosity(bulk_density, particle_density, water_content):
     """
@@ -756,7 +1233,10 @@ def _calculate_porosity(bulk_density, particle_density, water_content):
     Returns:
         float: The porosity of the sediment.
     """
-    return 1 - ((bulk_density / particle_density) * ((100 - water_content) / 100))
+    return 1 - (
+        (bulk_density / particle_density) * ((100 - water_content) / 100)
+    )
+
 
 def _calculate_mass_sediment(area, thickness, water_content, bulk_density):
     """
@@ -771,10 +1251,13 @@ def _calculate_mass_sediment(area, thickness, water_content, bulk_density):
     Returns:
         float: The mass of sediment (in kilograms).
     """
-    return area * thickness * ((100 - water_content) / 100) * bulk_density * 1000
+    return (
+        area * thickness * ((100 - water_content) / 100) * bulk_density * 1000
+    )
 
 
 def _calculate_DIP_pore(
+    workspace,
     porosity,
     initial_DIP_pore,
     DIP_lake,
@@ -807,6 +1290,7 @@ def _calculate_DIP_pore(
         The calculated DIP concentration in the pore water. If the result is negative, it is returned as 0.
     """
     dip_concentration = TP_MBFR.DIP_pore(
+        workspace,
         porosity,
         initial_DIP_pore,
         DIP_lake,
@@ -822,7 +1306,9 @@ def _calculate_DIP_pore(
     return dip_concentration if dip_concentration > 0 else 0
 
 
-def _calculate_sediment_area(lake_overall_area, area_type, area_mud, area_sand, area_rock, area_peat):
+def _calculate_sediment_area(
+    lake_overall_area, area_type, area_mud, area_sand, area_rock, area_peat
+):
     """
     Calculate the area of a specific type of sediment in a region of a lake.
 
@@ -837,14 +1323,29 @@ def _calculate_sediment_area(lake_overall_area, area_type, area_mud, area_sand, 
     Returns:
         float: The calculated area of the specific type of sediment in the region.
     """
-    return lake_overall_area * area_type / (area_mud + area_sand + area_rock + area_peat)
+    return (
+        lake_overall_area
+        * area_type
+        / (area_mud + area_sand + area_rock + area_peat)
+    )
 
 
-def _calculate_settling_velocity(gas_constant, gravity, clay_diameter, sand_diameter, 
-                                clay_drag_coefficient, sand_drag_coefficient, 
-                                clay_lift_coefficient, sand_lift_coefficient, 
-                                dynamic_viscosity, mud_area, peat_area, 
-                                sand_area, rock_area, total_area):
+def _calculate_settling_velocity(
+    gas_constant,
+    gravity,
+    clay_diameter,
+    sand_diameter,
+    clay_drag_coefficient,
+    sand_drag_coefficient,
+    clay_lift_coefficient,
+    sand_lift_coefficient,
+    dynamic_viscosity,
+    mud_area,
+    peat_area,
+    sand_area,
+    rock_area,
+    total_area,
+):
     """
     Calculate the settling velocity for a region of a lake.
 
@@ -867,15 +1368,44 @@ def _calculate_settling_velocity(gas_constant, gravity, clay_diameter, sand_diam
     Returns:
         float: The settling velocity for the region.
     """
-    v_settle_clay = (gas_constant * gravity * clay_diameter**2) / (clay_drag_coefficient * dynamic_viscosity + (0.75 * clay_lift_coefficient * gas_constant * gravity * clay_diameter**3) ** 0.5)
-    v_settle_sand = (gas_constant * gravity * sand_diameter**2) / (sand_drag_coefficient * dynamic_viscosity + (0.75 * sand_lift_coefficient * gas_constant * gravity * sand_diameter**3) ** 0.5)
-    v_settle = v_settle_clay * ((mud_area + peat_area) / total_area) + v_settle_sand * ((sand_area + rock_area) / total_area)
+    v_settle_clay = (gas_constant * gravity * clay_diameter**2) / (
+        clay_drag_coefficient * dynamic_viscosity
+        + (
+            0.75
+            * clay_lift_coefficient
+            * gas_constant
+            * gravity
+            * clay_diameter**3
+        )
+        ** 0.5
+    )
+    v_settle_sand = (gas_constant * gravity * sand_diameter**2) / (
+        sand_drag_coefficient * dynamic_viscosity
+        + (
+            0.75
+            * sand_lift_coefficient
+            * gas_constant
+            * gravity
+            * sand_diameter**3
+        )
+        ** 0.5
+    )
+    v_settle = v_settle_clay * (
+        (mud_area + peat_area) / total_area
+    ) + v_settle_sand * ((sand_area + rock_area) / total_area)
     return v_settle
 
 
-def _calculate_sediment_resuspension(sedimentation_constant, time_delay, E_1, E_2, 
-                                    wind_shear_stress, critical_shear_stress, 
-                                    lake_oxygen_water_depth, sediment_proportion):
+def _calculate_sediment_resuspension(
+    sedimentation_constant,
+    time_delay,
+    E_1,
+    E_2,
+    wind_shear_stress,
+    critical_shear_stress,
+    lake_oxygen_water_depth,
+    sediment_proportion,
+):
     """
     Calculate the sediment resuspension.
 
@@ -893,12 +1423,35 @@ def _calculate_sediment_resuspension(sedimentation_constant, time_delay, E_1, E_
         float: The sediment resuspension for the given parameters.
     """
     if wind_shear_stress > critical_shear_stress:
-        return ((sedimentation_constant / time_delay**E_1) * ((wind_shear_stress - critical_shear_stress) / critical_shear_stress) ** E_2) * 10 / lake_oxygen_water_depth * sediment_proportion
+        return (
+            (
+                (sedimentation_constant / time_delay**E_1)
+                * (
+                    (wind_shear_stress - critical_shear_stress)
+                    / critical_shear_stress
+                )
+                ** E_2
+            )
+            * 10
+            / lake_oxygen_water_depth
+            * sediment_proportion
+        )
     else:
         return 0
 
 
-def _calculate_next_sediment(lake_oxygen_area, total_phosphorus_lake, dissolved_inorganic_phosphorus_lake, sediment_burial_flux, current_sediment_phosphorus, current_sediment_mass, decomposition_constant, settling_velocity, sediment_resuspension, lake_oxygen_storage):
+def _calculate_next_sediment(
+    lake_oxygen_area,
+    total_phosphorus_lake,
+    dissolved_inorganic_phosphorus_lake,
+    sediment_burial_flux,
+    current_sediment_phosphorus,
+    current_sediment_mass,
+    decomposition_constant,
+    settling_velocity,
+    sediment_resuspension,
+    lake_oxygen_storage,
+):
     """
     Calculate the next sediment value based on various parameters.
 
@@ -917,17 +1470,34 @@ def _calculate_next_sediment(lake_oxygen_area, total_phosphorus_lake, dissolved_
     Returns:
         float: The next sediment value. If the calculated value is negative, it returns 0.
     """
-    sediment = TP_MBFR.P_sed(lake_oxygen_area, total_phosphorus_lake, dissolved_inorganic_phosphorus_lake, sediment_burial_flux, current_sediment_phosphorus, current_sediment_mass, decomposition_constant, settling_velocity)
-    sediment -= sediment_resuspension * lake_oxygen_storage / current_sediment_mass
+    sediment = TP_MBFR.P_sed(
+        lake_oxygen_area,
+        total_phosphorus_lake,
+        dissolved_inorganic_phosphorus_lake,
+        sediment_burial_flux,
+        current_sediment_phosphorus,
+        current_sediment_mass,
+        decomposition_constant,
+        settling_velocity,
+    )
+    sediment -= (
+        sediment_resuspension * lake_oxygen_storage / current_sediment_mass
+    )
     return sediment if sediment > 0 else 0
 
 
-def _calculate_next_concentration(adsorption_rate, desorption_rate, burial_rate, current_concentration, sediment_mass):
+def _calculate_next_concentration(
+    adsorption_rate,
+    desorption_rate,
+    burial_rate,
+    current_concentration,
+    sediment_mass,
+):
     """
     Calculate the concentration of phosphorus in the sediment at the next time step.
 
-    This function uses the Sor_P_conc method of the TP_MBFR object to calculate the new concentration based on the 
-    current concentration and the rates of adsorption, desorption, and burial. If the calculated new concentration is 
+    This function uses the Sor_P_conc method of the TP_MBFR object to calculate the new concentration based on the
+    current concentration and the rates of adsorption, desorption, and burial. If the calculated new concentration is
     greater than 0, it is returned. Otherwise, 0 is returned to ensure that the concentration does not become negative.
 
     Args:
@@ -940,11 +1510,18 @@ def _calculate_next_concentration(adsorption_rate, desorption_rate, burial_rate,
     Returns:
         float: The concentration of phosphorus in the sediment at the next time step.
     """
-    next_concentration = TP_MBFR.Sor_P_conc(adsorption_rate, desorption_rate, burial_rate, current_concentration, sediment_mass)
+    next_concentration = TP_MBFR.Sor_P_conc(
+        adsorption_rate,
+        desorption_rate,
+        burial_rate,
+        current_concentration,
+        sediment_mass,
+    )
     return next_concentration if next_concentration > 0 else 0
 
 
 def _calculate_next_total_phosphorus_concentration(
+    workspace,
     external_loading,
     atmospheric_deposition,
     mixing_factor_M,
@@ -974,6 +1551,7 @@ def _calculate_next_total_phosphorus_concentration(
     Calculates the next total phosphorus (TP) concentration in the lake.
 
     Args:
+        workspace (str): The path to the working directory.
         external_loading (float): External loading of phosphorus from the catchment to the lake (M).
         atmospheric_deposition (float): Atmospheric deposition of phosphorus to the lake.
         mixing_factor_M (float): Mixing factor for phosphorus in the lake (M).
@@ -1004,6 +1582,7 @@ def _calculate_next_total_phosphorus_concentration(
     """
     tp_lake_result = (
         TP_MBFR.TP_Lake_N(
+            workspace,
             external_loading,
             atmospheric_deposition,
             mixing_factor_M,
@@ -1032,3 +1611,60 @@ def _calculate_next_total_phosphorus_concentration(
     )
 
     return tp_lake_result if tp_lake_result > 0 else 0
+
+
+if __name__ == "__main__":
+    argparser = argparse.ArgumentParser()
+    argparser.add_argument(
+        "workspace",
+        nargs=1,
+        help="The path to the working directory.",
+    )
+    argparser.add_argument(
+        "out_file_name",
+        nargs=1,
+        help="Path to LOONE nutrient file to be created.",
+    )
+    argparser.add_argument(
+        "loads_external_filename",
+        nargs=1,
+        help="File name that holds the external loads for the model.",
+    )
+    argparser.add_argument(
+        "flow_df_filename",
+        nargs=1,
+        help="The name of the file that holds the flow data for the model.",
+    )
+    argparser.add_argument(
+        "--loone_q_path",
+        nargs=1,
+        help="Path to LOONE Q CSV file.",
+    )
+    argparser.add_argument(
+        "--data_input",
+        nargs=1,
+        help="Path to data directory.",
+    )
+    argparser.add_argument(
+        "--forecast_mode",
+        action="store_true",
+        help="Flag to indicate that the model is running in forecast mode.",
+    )
+    args = argparser.parse_args()
+    workspace = args.workspace[0]
+    out_file_name = args.out_file_name[0]
+    loads_external_filename = args.loads_external_filename[0]
+    flow_df_filename = args.flow_df_filename[0]
+    loone_q_path = args.loone_q_path[0] if args.loone_q_path else None
+    data_input = args.data_input[0] if args.data_input else None
+    forecast_mode = args.forecast_mode if args.forecast_mode else False
+
+    LOONE_NUT(
+        workspace,
+        out_file_name,
+        loads_external_filename,
+        flow_df_filename,
+        loone_q_path,
+        data_input,
+        forecast_mode,
+    )

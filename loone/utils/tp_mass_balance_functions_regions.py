@@ -4,10 +4,7 @@ Created on Fri Jun 18 17:02:28 2021
 
 @author: osama
 """
-
-from data.tp_variables_regions import TP_Variables
-
-TP_Variables = TP_Variables
+from loone.data.tp_variables_regions import TP_Variables as TPVarClass
 
 
 def DIP_Lake(TP_Lake):
@@ -82,6 +79,7 @@ def J_decomp(K_decomp, P_sed, Mass_sed):
 
 
 def DIP_pore(
+    workspace,
     Θ,
     DIP_pore,
     DIP_Lake,
@@ -94,6 +92,7 @@ def DIP_pore(
     K_decomp,
     v_burial,
 ):
+    TP_Variables = TPVarClass(workspace)
     # for value of i - 1
     DIP_p_Nxt = (
         (
@@ -141,6 +140,7 @@ def Diff_P(v_diff, DIP_pore, DIP_Lake, Θ, A_sed, Lake_V):
 
 #### Multiply V_settle * (TP-DIP_Lake)
 def TP_Lake_N(
+    workspace,
     L_ext,
     Atm_Dep_N,
     Θ_M,
@@ -162,6 +162,7 @@ def TP_Lake_N(
     v_diff_P,
     v_settle,
 ):
+    TP_Variables = TPVarClass(workspace)
     # for value of i - 1
     TP_L_N_Nxt = (
         (
@@ -179,6 +180,7 @@ def TP_Lake_N(
 
 
 def TP_Lake_S(
+    workspace,
     Atm_Dep_S,
     Q_N2S,
     TP_Lake_N,
@@ -201,6 +203,7 @@ def TP_Lake_S(
     v_diff_P,
     v_settle,
 ):
+    TP_Variables = TPVarClass(workspace)
     # for value of i - 1
     TP_L_S_Nxt = (
         (
@@ -230,6 +233,7 @@ def TP_Lake_S(
 
 # Determine TP in the 8 regions
 def TP_L_M_N(
+    workspace,
     L_ext,
     Atm_Dep_N,
     Θ_M,
@@ -242,6 +246,7 @@ def TP_L_M_N(
     v_diff_M,
     v_settle,
 ):
+    TP_Variables = TPVarClass(workspace)
     # for value of i - 1
     TP_M_N_Nxt = (
         (
@@ -259,6 +264,7 @@ def TP_L_M_N(
 
 
 def TP_L_S_N(
+    workspace,
     L_ext,
     Atm_Dep_N,
     Θ_S,
@@ -271,6 +277,7 @@ def TP_L_S_N(
     v_diff_S,
     v_settle,
 ):
+    TP_Variables = TPVarClass(workspace)
     # for value of i - 1
     TP_S_N_Nxt = (
         (
@@ -288,6 +295,7 @@ def TP_L_S_N(
 
 
 def TP_L_R_N(
+    workspace,
     L_ext,
     Atm_Dep_N,
     Θ_R,
@@ -300,6 +308,7 @@ def TP_L_R_N(
     v_diff_R,
     v_settle,
 ):
+    TP_Variables = TPVarClass(workspace)
     # for value of i - 1
     TP_R_N_Nxt = (
         (
@@ -317,6 +326,7 @@ def TP_L_R_N(
 
 
 def TP_L_P_N(
+    workspace,
     L_ext,
     Atm_Dep_N,
     Θ_P,
@@ -329,6 +339,7 @@ def TP_L_P_N(
     v_diff_P,
     v_settle,
 ):
+    TP_Variables = TPVarClass(workspace)
     # for value of i - 1
     TP_P_N_Nxt = (
         (
@@ -346,6 +357,7 @@ def TP_L_P_N(
 
 
 def TP_L_M_S(
+    workspace,
     Atm_Dep_S,
     Q_N2S,
     TP_Lake_N,
@@ -359,6 +371,7 @@ def TP_L_M_S(
     v_diff_M,
     v_settle,
 ):
+    TP_Variables = TPVarClass(workspace)
     TP_M_S_Nxt = (
         (
             Atm_Dep_S
@@ -375,6 +388,7 @@ def TP_L_M_S(
 
 
 def TP_L_S_S(
+    workspace,
     Atm_Dep_S,
     Q_N2S,
     TP_Lake_N,
@@ -388,6 +402,7 @@ def TP_L_S_S(
     v_diff_S,
     v_settle,
 ):
+    TP_Variables = TPVarClass(workspace)
     TP_S_S_Nxt = (
         (
             Atm_Dep_S
@@ -404,6 +419,7 @@ def TP_L_S_S(
 
 
 def TP_L_R_S(
+    workspace,
     Atm_Dep_S,
     Q_N2S,
     TP_Lake_N,
@@ -417,6 +433,7 @@ def TP_L_R_S(
     v_diff_R,
     v_settle,
 ):
+    TP_Variables = TPVarClass(workspace)
     TP_R_S_Nxt = (
         (
             Atm_Dep_S
@@ -433,6 +450,7 @@ def TP_L_R_S(
 
 
 def TP_L_P_S(
+    workspace,
     Atm_Dep_S,
     Q_N2S,
     TP_Lake_N,
@@ -446,6 +464,7 @@ def TP_L_P_S(
     v_diff_P,
     v_settle,
 ):
+    TP_Variables = TPVarClass(workspace)
     TP_P_S_Nxt = (
         (
             Atm_Dep_S

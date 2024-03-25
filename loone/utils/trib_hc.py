@@ -9,15 +9,22 @@ import pandas as pd
 import numpy as np
 from datetime import datetime
 from loone.data.model_variables import M_var as MVarClass
-from loone.utils import lonino_functions
+from loone.utils import load_config, lonino_functions
 from loone.data import Data as DClass
 
 
 # I determine daily values for the Tributary conditions and Seasonal/Multi-Seasonal LONINO classes
 # using a weekly Trib. Condition data and Monthly LONINO data.
-def Trib_HC(config: dict):
-    os.chdir(config["working_path"])
-    Data = DClass(config["working_path"])
+def Trib_HC(workspace: str):
+    os.chdir(workspace)
+    for config_file in ["config.yaml", "config.yml"]:
+        if os.path.exists(config_file):
+            config = load_config(config_file)
+            break
+    else:
+        raise FileNotFoundError("Config file not found in the workspace.")
+    os.chdir(workspace)
+    Data = DClass(workspace)
     M_var = MVarClass(config)
     # Generate weekly time step date column where frequency is 'W-Fri' to start on 01/01/2008.
     # FIXME: Always check here for start date, end date, and frequency to match with the Trib. Condition weekly data obtained.
