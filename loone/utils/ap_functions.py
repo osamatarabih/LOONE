@@ -1,6 +1,4 @@
-def thc_class_normal_or_above(
-    tributary_hydrologic_condition, thc_threshold
-):
+def thc_class_normal_or_above(tributary_hydrologic_condition, thc_threshold):
     """
     Determines if the tributary hydrologic condition (THC) is normal or above.
 
@@ -148,7 +146,9 @@ def LORS08_bf_rel(S77BS_AP, n30davgForecast):
 
 
 def LDS_LC6_1(
-    Late_Dry_Season, LowChance_Check, Pre_defined_Variables_Late_Dry_Season_Option
+    Late_Dry_Season,
+    LowChance_Check,
+    Pre_defined_Variables_Late_Dry_Season_Option,
 ):
     """
     Calculates the value of LDS_LC6_1 based on the provided parameters. LDS_LC6_1 stands for Late Dry Season Low Chance 6/1.
@@ -231,7 +231,9 @@ def All_4andStagein(All_4, Sabf):
 
 
 def P_AP_BF_Stg(Lake_O_Schedule_Zone, S77BS_AP):
-    if (Lake_O_Schedule_Zone > 3 and Lake_O_Schedule_Zone < 7) and S77BS_AP > 0:
+    if (
+        Lake_O_Schedule_Zone > 3 and Lake_O_Schedule_Zone < 7
+    ) and S77BS_AP > 0:
         P = True
     else:
         P = False
@@ -305,7 +307,10 @@ def ATHCnora(
         else:
             AT = False
     else:
-        if AndLowChance61stagelessth11 == True and THC_Class_normal_or_above == True:
+        if (
+            AndLowChance61stagelessth11 == True
+            and THC_Class_normal_or_above == True
+        ):
             AT = True
         else:
             AT = False

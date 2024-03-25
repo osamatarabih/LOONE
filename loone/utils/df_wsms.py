@@ -8,7 +8,7 @@ Created on Tue May 17 00:37:38 2022
 import os
 import numpy as np
 import pandas as pd
-from datetime import datetime
+from datetime import datetime, timedelta
 from scipy import interpolate
 from loone.data import Data as DClass
 from loone.utils import load_config
@@ -26,15 +26,11 @@ def WSMs(workspace: str):
     year, month, day = map(int, config["start_date_entry"])
     startdate = datetime(year, month, day).date()
     year, month, day = map(int, config["start_date_entry"])
-    begdateCS = datetime(year, month, day).date()
     year, month, day = map(int, config["end_date_entry"])
-    enddate = datetime(year, month, day).date()
+    # Config end date + 1 day
+    enddate = datetime(year, month, day).date() + timedelta(days=1)
 
-    # Set time frame for model run such that it starts on the defined startdate but ends on 1/1/(endyear+1)
-    # date_rng_1 = pd.date_range(start = startdate, end = '1/1/%d'%(Pre_defined_Variables.endyear+1), freq= 'D')
-    date_rng_1 = pd.date_range(
-        start=startdate, end="4/1/%d" % (config["end_year"]), freq="D"
-    )
+    date_rng_1 = pd.date_range(start=startdate, end=enddate, freq="D")
     # Create a data frame with a date column
     df_WSMs = pd.DataFrame(date_rng_1, columns=["date"])
     # Generate an annual cumulative day count
@@ -49,13 +45,13 @@ def WSMs(workspace: str):
         for j in Oper_Zones:
             globals()[j][i] = interpolate.interp1d(
                 Data.WSMs_RSBKs["Day"],
-                Data.WSMs_RSBKs["%s" % j],
+                Data.WSMs_RSBKs[j],
                 kind="linear",
             )(WSM_Count[i])
 
     df_WSMs["count"] = WSM_Count
     for j in Oper_Zones:
-        df_WSMs["%s" % j] = globals()[j]
+        df_WSMs[j] = globals()[j]
     if config["opt_new_tree"] == 1:
         df_WSMs["C-b"] = Data.WSMs_RSBKs["C-b_NewTree"]
     else:

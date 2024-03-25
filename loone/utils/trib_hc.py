@@ -52,7 +52,9 @@ def Trib_HC(workspace: str):
             Data.Wkly_Trib_Cond["NetInf"].iloc[i]
         )
         M_var.Max_RF_MainTrib[i] = max(M_var.RF_Cls[i], M_var.MainTrib_Cls[i])
-        M_var.Max_Palmer_NetInf[i] = max(M_var.Palmer_Cls[i], M_var.NetInflow_Cls[i])
+        M_var.Max_Palmer_NetInf[i] = max(
+            M_var.Palmer_Cls[i], M_var.NetInflow_Cls[i]
+        )
     if config["tci"] == 1:  # Tributary Condition Index
         Trib_Cond_df["TCI"] = M_var.Max_Palmer_NetInf
     else:
@@ -64,10 +66,10 @@ def Trib_HC(workspace: str):
     LONINO_Count = len(LONINO_df.index)
     for i in range(LONINO_Count):
         M_var.Seas[i] = Data.LONINO_Seas_data[
-            "%s" % LONINO_df["date"].iloc[i].month
+            str(LONINO_df["date"].iloc[i].month)
         ].iloc[LONINO_df["date"].iloc[i].year - config["start_year"]]
         M_var.M_Seas[i] = Data.LONINO_Mult_Seas_data[
-            "%s" % LONINO_df["date"].iloc[i].month
+            str(LONINO_df["date"].iloc[i].month)
         ].iloc[LONINO_df["date"].iloc[i].year - config["start_year"]]
     LONINO_df["LONINO_Seas"] = M_var.Seas
     LONINO_df["LONINO_Mult_Seas"] = M_var.M_Seas
@@ -96,7 +98,9 @@ def Trib_HC(workspace: str):
     headers_S_MS = ["date", "LONINO_Seasonal_Class", "LONINO_MSeasonal_Class"]
     LONINO_Seas_MSeas_df = pd.concat(data_S_MS, axis=1, keys=headers_S_MS)
     LONINO_Seas_MSeas_df = LONINO_Seas_MSeas_df.set_index("date")
-    LONINO_Seas_MSeas_df = LONINO_Seas_MSeas_df.reindex(date_rng_5, method="ffill")
+    LONINO_Seas_MSeas_df = LONINO_Seas_MSeas_df.reindex(
+        date_rng_5, method="ffill"
+    )
     LONINO_Seas_MSeas_df = LONINO_Seas_MSeas_df.reset_index()
     TC_LONINO_df["LONINO_Seasonal_Classes"] = LONINO_Seas_MSeas_df[
         "LONINO_Seasonal_Class"

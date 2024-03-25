@@ -2,8 +2,8 @@ def leap_year(y):
     """
     Determines if a given year is a leap year.
 
-    A leap year is exactly divisible by 4 except for century years (years ending with 00). 
-    The century year is a leap year only if it is perfectly divisible by 400. 
+    A leap year is exactly divisible by 4 except for century years (years ending with 00).
+    The century year is a leap year only if it is perfectly divisible by 400.
 
     Args:
         y (int): The year to check.
@@ -37,7 +37,7 @@ def replicate(
     Returns:
         float: The value from the target stage DataFrame corresponding to the day number and the given percentage.
     """
-    leap_day_val = targ_stg["%d%s" % (x, "%")].iloc[59]
+    leap_day_val = targ_stg[f"{x}%"].iloc[59]
     if leap_year(year):
         day_num_adj = day_num
     else:
@@ -45,6 +45,6 @@ def replicate(
     day_value = (
         leap_day_val
         if day_num_adj == 60 and leap_year(year) == True
-        else targ_stg["%d%s" % (x, "%")].iloc[day_num_adj - 1]
+        else targ_stg[f"{x}%"].iloc[day_num_adj - 1]
     )
     return day_value

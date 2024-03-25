@@ -66,7 +66,7 @@ def THC_Class(
     LStgCorres[i] = ap_functions.LStgCorres(
         AdapProt_df["date"].iloc[i].month,
         df_WSMs["WSM1"].iloc[i + 1],
-        Targ_Stg_df["%s%%" % (config["low_chance"])].iloc[i],
+        Targ_Stg_df[f'{config["low_chance"]}%'].iloc[i],
         config["opt_l_chance_line"],
         config["low_chance"],
     )
@@ -80,7 +80,6 @@ def THC_Class(
     # FIXME first run only!
     # LO_Model['S77BS'] = np.nan
     # FIXME
-    # S77BS = pd.read_csv('./Data/S77BS_Input_%s.csv'%Pre_defined_Variables.Schedule)
     # LO_Model['S77BS'] = S77BS['S77BS']
     S77BS_AP[i] = S77BS[i + 2]
     # Sum S77RS + S77BS
@@ -105,7 +104,6 @@ def THC_Class(
         config["opt_sal_fcast"],
         config["ce_sal_threshold"],
     )
-    # AdapProt_df.to_csv('D:/P_LOOPS/30davgForecastSalgreaterCE_SalThr_cal_%s.csv'%Pre_defined_Variables.Schedule)
     # LORS-08 suggests baseflow release from Lake & estuary needs Lake water
     LORS08_bf_rel[i] = ap_functions.LORS08_bf_rel(
         S77BS_AP[i], n30davgForecast[i]

@@ -6,7 +6,7 @@ Created on Wed May 25 23:53:16 2022
 """
 import numpy as np
 import pandas as pd
-from datetime import datetime
+from datetime import datetime, timedelta
 
 
 class M_var:
@@ -42,7 +42,7 @@ class M_var:
         self.Mon = np.zeros(Seas_Count)
 
         date_rng_6 = pd.date_range(
-            start="12/30/%d" % (config["start_year"] - 1),
+            start=startdate - timedelta(days=1),
             end=enddate,
             freq="D",
         )

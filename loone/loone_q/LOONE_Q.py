@@ -8,7 +8,7 @@ import os
 import sys
 import pandas as pd
 import numpy as np
-from datetime import datetime
+from datetime import datetime, timedelta
 from calendar import monthrange
 from loone.utils import (
     load_config,
@@ -121,7 +121,7 @@ def LOONE_Q(workspace, P_1, P_2, S77_DV, S308_DV, TP_Lake_S):
     ###################################################################
     # This following Script runs the main model daily simulations.
     date_rng_6 = pd.date_range(
-        start=f'12/30/{config["start_year"] - 1}',
+        start=startdate - timedelta(days=1),
         end=enddate,
         freq="D",
     )

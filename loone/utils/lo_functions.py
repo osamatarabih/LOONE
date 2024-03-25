@@ -42,7 +42,9 @@ def Max_Supply(
     return M_S
 
 
-def LOSA_Supply(WSM_Zone, LOSA_dmd, Max_Supply, Pre_defined_Variables_Opt_LOSAws):
+def LOSA_Supply(
+    WSM_Zone, LOSA_dmd, Max_Supply, Pre_defined_Variables_Opt_LOSAws
+):
     Sup = 0
     if Pre_defined_Variables_Opt_LOSAws == 1:
         if WSM_Zone == 0:
@@ -58,7 +60,15 @@ def LOSA_Supply(WSM_Zone, LOSA_dmd, Max_Supply, Pre_defined_Variables_Opt_LOSAws
 
 #
 def Zone_Code(
-    Stage_LO, WSMs_A, WSMs_B, WSMs_C, WSMs_D3, WSMs_D2, WSMs_D1, WSMs_D0, WSMs_WSM1
+    Stage_LO,
+    WSMs_A,
+    WSMs_B,
+    WSMs_C,
+    WSMs_D3,
+    WSMs_D2,
+    WSMs_D1,
+    WSMs_D0,
+    WSMs_WSM1,
 ):
     Zcd = 2
     if Stage_LO > WSMs_A:
@@ -178,7 +188,8 @@ def Release_Level(
 ):
     RL = Prev_RL
     if (
-        Stage_LO > Pre_defined_Variables_MaxQstgTrigger and Tributary_Condition == 6
+        Stage_LO > Pre_defined_Variables_MaxQstgTrigger
+        and Tributary_Condition == 6
     ):  # Note that at i =2 then, (i-2) = 0 which indicates 1/1/1965 for TC_LONINO because it starts at 1/1/1965!
         RL = 6
     elif PlsDay == 0 or Zone_Code > 7:
@@ -191,7 +202,15 @@ def Release_Level(
 
 
 def ZoneCodeminus1Code(
-    Zone_Code, WSMs_WSM1, WSMs_D0, WSMs_D1, WSMs_D2, WSMs_D3, WSMs_C, WSMs_B, WSMs_A
+    Zone_Code,
+    WSMs_WSM1,
+    WSMs_D0,
+    WSMs_D1,
+    WSMs_D2,
+    WSMs_D3,
+    WSMs_C,
+    WSMs_B,
+    WSMs_A,
 ):
     Sam = 0
     if (Zone_Code - 1) == 1:
@@ -214,7 +233,15 @@ def ZoneCodeminus1Code(
 
 
 def ZoneCodeCode(
-    Zone_Code, WSMs_WSM1, WSMs_D0, WSMs_D1, WSMs_D2, WSMs_D3, WSMs_C, WSMs_B, WSMs_A
+    Zone_Code,
+    WSMs_WSM1,
+    WSMs_D0,
+    WSMs_D1,
+    WSMs_D2,
+    WSMs_D3,
+    WSMs_C,
+    WSMs_B,
+    WSMs_A,
 ):
     Roty = 0
     if Zone_Code == 1:
@@ -236,7 +263,9 @@ def ZoneCodeCode(
     return Roty
 
 
-def Fraction_of_Zone_height(Zone_Code, Stage_LO, ZoneCodeminus1Code, ZoneCodeCode):
+def Fraction_of_Zone_height(
+    Zone_Code, Stage_LO, ZoneCodeminus1Code, ZoneCodeCode
+):
     FZH = 0
     if Zone_Code == 1 or Zone_Code == 9:
         FZH = 1
@@ -477,7 +506,8 @@ def Outlet2USBK(
     if Pre_defined_Variables_Opt_S308 == 1:
         if Pre_defined_Variables_S308BK_Const == 1:
             if (
-                Stage_LO < min(Pre_defined_Variables_S308_BK_Thr, WSMs_D1 - 0.25)
+                Stage_LO
+                < min(Pre_defined_Variables_S308_BK_Thr, WSMs_D1 - 0.25)
                 and S308RG == 0
             ):
                 S308 = C44RO
@@ -490,7 +520,9 @@ def Outlet2USBK(
     return S308
 
 
-def Outlet2USBS(S80BS, S308RG1, ROeast, Pre_defined_Variables_Option_S80Baseflow):
+def Outlet2USBS(
+    S80BS, S308RG1, ROeast, Pre_defined_Variables_Option_S80Baseflow
+):
     S308 = 0
     if Pre_defined_Variables_Option_S80Baseflow == 0:
         S308 = max(0, S80BS - (S308RG1 + ROeast))
@@ -659,7 +691,10 @@ def Outlet1USRS(
         S = (
             max(
                 0,
-                S77_RegRelRates_Zone_D1 / S77avgL1 * Pulses_S_77_L1 * S77_Mult_2
+                S77_RegRelRates_Zone_D1
+                / S77avgL1
+                * Pulses_S_77_L1
+                * S77_Mult_2
                 - Pre_defined_Variables_Opt_Outlet1DSRG * C43RO,
             )
             * CE_SLE_turns_CEturn
@@ -668,7 +703,10 @@ def Outlet1USRS(
         S = (
             max(
                 0,
-                S77_RegRelRates_Zone_D2 / S77avgL2 * Pulses_S_77_L2 * S77_Mult_2
+                S77_RegRelRates_Zone_D2
+                / S77avgL2
+                * Pulses_S_77_L2
+                * S77_Mult_2
                 - Pre_defined_Variables_Opt_Outlet1DSRG * C43RO,
             )
             * CE_SLE_turns_CEturn
@@ -677,14 +715,23 @@ def Outlet1USRS(
         S = (
             max(
                 0,
-                S77_RegRelRates_Zone_D3 / S77avgL3 * Pulses_S_77_L3 * S77_Mult_2
+                S77_RegRelRates_Zone_D3
+                / S77avgL3
+                * Pulses_S_77_L3
+                * S77_Mult_2
                 - Pre_defined_Variables_Opt_Outlet1DSRG * C43RO,
             )
             * CE_SLE_turns_CEturn
         )
     elif (Release_Level + 2) == 5 and Zone_Code >= 7:
         S = (
-            max(0, S77_RegRelRates_Zone_D3 / S77avgL3 * Pulses_S_77_L3 * S77_Mult_2)
+            max(
+                0,
+                S77_RegRelRates_Zone_D3
+                / S77avgL3
+                * Pulses_S_77_L3
+                * S77_Mult_2,
+            )
             * CE_SLE_turns_CEturn
         )
     elif (Release_Level + 2) == 6:
@@ -786,7 +833,9 @@ def Outlet1USBS(
     return Z
 
 
-def Outlet1USBSAP(Outlet1USBS, Post_Ap_Baseflow, Pre_defined_Variables_Opt_AdapProt):
+def Outlet1USBSAP(
+    Outlet1USBS, Post_Ap_Baseflow, Pre_defined_Variables_Opt_AdapProt
+):
     S77 = 0
     if Pre_defined_Variables_Opt_AdapProt == 0:
         S77 = Outlet1USBS
