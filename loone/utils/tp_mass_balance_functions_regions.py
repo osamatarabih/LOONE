@@ -1,9 +1,3 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Fri Jun 18 17:02:28 2021
-
-@author: osama
-"""
 from loone.data.tp_variables_regions import TP_Variables as TPVarClass
 
 

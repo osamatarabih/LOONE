@@ -9,6 +9,8 @@ description = "LOONE: A comprehensive water balance-nutrient-optimization model"
 readme = "README.md"
 authors = [
     { name = "Osama Tarabih", email = "osamatarabih@usf.edu" },
+]
+maintainers = [
     { name = "Michael Souffront", email = "msouffront@aquaveo.com" },
     { name = "James Dolinar", email = "jdolinar@aquaveo.com" },
 ]

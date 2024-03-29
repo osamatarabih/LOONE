@@ -1,9 +1,3 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Sun Jul 18 18:44:37 2021
-
-@author: osama
-"""
 import os
 import argparse
 import pandas as pd
@@ -25,16 +19,16 @@ from loone.utils.wca_stages_class import WCA_Stages_Cls
 from loone.data import Data as DClass
 
 
-def LOONE_Q(workspace, P_1, P_2, S77_DV, S308_DV, TP_Lake_S):
+def LOONE_Q(workspace, p1, p2, s77_dv, s308_dv, tp_lake_s):
     """This function runs the LOONE Q module.
 
     Args:
         workspace (str): The path to the workspace directory.
-        P_1 (float): Parameter 1.
-        P_2 (float): Parameter 2.
-        S77_DV (float): S77_DV value.
-        S308_DV (float): S308_DV value.
-        TP_Lake_S (float): TP_Lake_S value.
+        p1 (float): Parameter 1.
+        p2 (float): Parameter 2.
+        s77_dv (float): s77_dv value.
+        s308_dv (float): s308_dv value.
+        tp_lake_s (float): tp_lake_s value.
 
     Returns:
         None
@@ -669,16 +663,16 @@ def LOONE_Q(workspace, P_1, P_2, S77_DV, S308_DV, TP_Lake_S):
                 M_var.Outlet2USRG[i + 2] = 7200
             elif M_var.Lake_Stage[i + 1] <= 8:
                 M_var.Outlet2USRG[i + 2] = 0
-            elif (TP_Lake_S[i] <= P_1) and (
+            elif (tp_lake_s[i] <= p1) and (
                 date_rng_6[i + 2].month in [1, 2, 3, 4, 11, 12]
             ):
-                M_var.Outlet2USRG[i + 2] = S308_DV[
+                M_var.Outlet2USRG[i + 2] = s308_dv[
                     (date_rng_6[i + 2].month) - 1
                 ]
-            elif (TP_Lake_S[i] <= P_2) and (
+            elif (tp_lake_s[i] <= p2) and (
                 date_rng_6[i + 2].month in [5, 6, 7, 8, 9, 10]
             ):
-                M_var.Outlet2USRG[i + 2] = S308_DV[
+                M_var.Outlet2USRG[i + 2] = s308_dv[
                     (date_rng_6[i + 2].month) - 1
                 ]
             else:
@@ -904,16 +898,16 @@ def LOONE_Q(workspace, P_1, P_2, S77_DV, S308_DV, TP_Lake_S):
                 M_var.Outlet1USREG[i + 2] = 7800
             elif M_var.Lake_Stage[i + 1] <= 8:
                 M_var.Outlet1USREG[i + 2] = 0
-            elif (TP_Lake_S[i] <= P_1) and (
+            elif (tp_lake_s[i] <= p1) and (
                 date_rng_6[i + 2].month in [1, 2, 3, 4, 11, 12]
             ):
-                M_var.Outlet1USREG[i + 2] = S77_DV[
+                M_var.Outlet1USREG[i + 2] = s77_dv[
                     (date_rng_6[i + 2].month) - 1
                 ]
-            elif (TP_Lake_S[i] <= P_2) and (
+            elif (tp_lake_s[i] <= p2) and (
                 date_rng_6[i + 2].month in [5, 6, 7, 8, 9, 10]
             ):
-                M_var.Outlet1USREG[i + 2] = S77_DV[
+                M_var.Outlet1USREG[i + 2] = s77_dv[
                     (date_rng_6[i + 2].month) - 1
                 ]
             else:

@@ -1,12 +1,5 @@
 from loone.utils import ap_functions
 
-# -*- coding: utf-8 -*-
-"""
-Created on Thu Apr 28 19:16:14 2022
-
-@author: osama
-"""
-
 
 def THC_Class(
     config,

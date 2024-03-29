@@ -1,9 +1,3 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Fri Jun 18 17:04:54 2021
-
-@author: osama
-"""
 import os
 import pandas as pd
 from loone.utils import load_config

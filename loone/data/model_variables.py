@@ -1,9 +1,3 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Wed May 25 23:53:16 2022
-
-@author: osamatarabih
-"""
 import numpy as np
 import pandas as pd
 from datetime import datetime, timedelta

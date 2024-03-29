@@ -1,9 +1,3 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Tue May 17 00:37:38 2022
-
-@author: osama
-"""
 # This Script Interpolates each Water Shortage Management (WSMs) and each Regulation Schedule Breakpoint Zone (D, C, B, and A).
 import os
 import numpy as np
@@ -15,6 +9,18 @@ from loone.utils import load_config
 
 
 def WSMs(workspace: str):
+    """Generate WSMs (Weather State Modifiers) based on the given workspace.
+
+    Args:
+        workspace (str): The path to the workspace.
+
+    Returns:
+        None
+
+    Raises:
+        None
+    """
+
     os.chdir(workspace)
     config = load_config(workspace)
     Data = DClass(workspace)

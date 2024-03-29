@@ -1,9 +1,3 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Wed Oct 21 16:37:03 2020
-
-@author: osamatarabih
-"""
 # To return storage or surface area given stage (i=0) else (i = any number) will return stage given storage or surface area.
 import pandas as pd
 from scipy import interpolate
