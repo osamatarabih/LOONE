@@ -12,12 +12,12 @@ from datetime import datetime, timedelta
 from calendar import monthrange
 from loone.utils import (
     load_config,
+    replicate,
     df_wsms,
     stg_sto_ar,
     thc_class,
     lo_functions,
     dec_tree_functions,
-    additional_functions,
     trib_hc,
 )
 from loone.data.model_variables import M_var as MVarClass
@@ -218,49 +218,49 @@ def LOONE_Q(workspace, P_1, P_2, S77_DV, S308_DV, TP_Lake_S):
 
     Targ_Stg_df = pd.DataFrame(date_rng_5, columns=["dates"])
     for i in range(len(Targ_Stg_df)):
-        M_var.V10per[i] = additional_functions.replicate(
+        M_var.V10per[i] = replicate(
             Targ_Stg_df["dates"].iloc[i].year,
             Targ_Stg_df["dates"].iloc[i].timetuple().tm_yday,
             10,
             Targ_Stg,
         )
-        M_var.V20per[i] = additional_functions.replicate(
+        M_var.V20per[i] = replicate(
             Targ_Stg_df["dates"].iloc[i].year,
             Targ_Stg_df["dates"].iloc[i].timetuple().tm_yday,
             20,
             Targ_Stg,
         )
-        M_var.V25per[i] = additional_functions.replicate(
+        M_var.V25per[i] = replicate(
             Targ_Stg_df["dates"].iloc[i].year,
             Targ_Stg_df["dates"].iloc[i].timetuple().tm_yday,
             25,
             Targ_Stg,
         )
-        M_var.V30per[i] = additional_functions.replicate(
+        M_var.V30per[i] = replicate(
             Targ_Stg_df["dates"].iloc[i].year,
             Targ_Stg_df["dates"].iloc[i].timetuple().tm_yday,
             30,
             Targ_Stg,
         )
-        M_var.V40per[i] = additional_functions.replicate(
+        M_var.V40per[i] = replicate(
             Targ_Stg_df["dates"].iloc[i].year,
             Targ_Stg_df["dates"].iloc[i].timetuple().tm_yday,
             40,
             Targ_Stg,
         )
-        M_var.V45per[i] = additional_functions.replicate(
+        M_var.V45per[i] = replicate(
             Targ_Stg_df["dates"].iloc[i].year,
             Targ_Stg_df["dates"].iloc[i].timetuple().tm_yday,
             45,
             Targ_Stg,
         )
-        M_var.V50per[i] = additional_functions.replicate(
+        M_var.V50per[i] = replicate(
             Targ_Stg_df["dates"].iloc[i].year,
             Targ_Stg_df["dates"].iloc[i].timetuple().tm_yday,
             50,
             Targ_Stg,
         )
-        M_var.V60per[i] = additional_functions.replicate(
+        M_var.V60per[i] = replicate(
             Targ_Stg_df["dates"].iloc[i].year,
             Targ_Stg_df["dates"].iloc[i].timetuple().tm_yday,
             60,

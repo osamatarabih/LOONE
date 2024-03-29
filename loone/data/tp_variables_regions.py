@@ -10,6 +10,7 @@ from loone.utils import load_config
 
 
 class TP_Variables:
+    """Class representing TP variables."""
     def __init__(self, working_path: str):
         os.chdir(working_path)
         config = load_config(working_path)
@@ -61,23 +62,14 @@ class TP_Variables:
         self.Per_P_SS = self.A_Peat_S / self.A_S
         self.Γ_inf = 91  # (mg/kg)
         #####Monthly
-        self.v_burial_M = (
-            0.0000003  # 1.0e-05 #(m/day)#0.00017333#(m/month)# 0.00208 (m/yr)
-        )
-        self.v_burial_S = (
-            0.0000003  # 1.0e-05 #(m/day)#0.00017333#(m/month)# 0.00208 (m/yr)
-        )
-        self.v_burial_R = (
-            0.0000003  # 1.0e-05 #(m/day)#0.00017333#(m/month)# 0.00208 (m/yr)
-        )
-        self.v_burial_P = (
-            0.0000003  # 1.0e-05 #(m/day)#0.00017333#(m/month)# 0.00208 (m/yr)
-        )
+        self.v_burial_M = config["v_burial_m"]
+        self.v_burial_S = config["v_burial_s"]
+        self.v_burial_R = config["v_burial_r"]
+        self.v_burial_P = config["v_burial_p"]
 
         # Read Calibration Outputs
-        Cal_Res = pd.read_csv(
-            os.path.join(working_path, "nondominated_Sol_var.csv")
-        )
+        Cal_Res = pd.read_csv(config["nondominated_sol_var"])
+
         Par = Cal_Res["Par"]
         self.v_diff_M = Par[0]
         self.v_diff_S = Par[1]
