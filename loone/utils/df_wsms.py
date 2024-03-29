@@ -16,12 +16,7 @@ from loone.utils import load_config
 
 def WSMs(workspace: str):
     os.chdir(workspace)
-    for config_file in ["config.yaml", "config.yml"]:
-        if os.path.exists(config_file):
-            config = load_config(config_file)
-            break
-    else:
-        raise FileNotFoundError("Config file not found in the workspace.")
+    config = load_config(workspace)
     Data = DClass(workspace)
     year, month, day = map(int, config["start_date_entry"])
     startdate = datetime(year, month, day).date()

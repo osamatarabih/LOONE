@@ -29,8 +29,7 @@ def LOONE_NUT(
     input_data: str | None = None,
     forecast_mode: bool = False,
 ) -> pd.DataFrame:
-    """
-    Simulates nutrient (phosphorus) dynamics in the water column
+    """Simulates nutrient (phosphorus) dynamics in the water column.
 
     Args:
         workspace (str): Path to the workspace containing config file.
@@ -45,12 +44,7 @@ def LOONE_NUT(
         pd.DataFrame: A Dataframe containing an estimate of the total phosphorus concentration in the lake for a certain time series.
     """
     os.chdir(workspace)
-    for config_file in ["config.yaml", "config.yml"]:
-        if os.path.exists(config_file):
-            config = load_config(config_file)
-            break
-    else:
-        raise FileNotFoundError("Config file not found in the workspace.")
+    config = load_config(workspace)
 
     TP_Variables = TPVarClass(workspace)
 

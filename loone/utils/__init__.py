@@ -1,11 +1,12 @@
+import os
 from yaml import safe_load
 
 
-def load_config(config_path: str) -> dict:
+def load_config(workspace: str) -> dict:
     """Load the configuration file.
 
     Args:
-        config_path (str): Path to the configuration file.
+        workspace (str): Path to directory containing the config file and its associated input data.
 
     Returns:
         dict: dictionary containing the configuration parameters.
@@ -13,10 +14,11 @@ def load_config(config_path: str) -> dict:
     Raises:
         FileNotFoundError: If the configuration file does not exist.
     """
-    try:
-        with open(config_path, "r") as f:
-            config = safe_load(f)
-
-        return config
-    except FileNotFoundError as e:
-        raise FileNotFoundError(f"Error loading configuration file: {e}")
+    for config_file_name in ["config.yaml", "config.yml"]:
+        config_file = os.path.join(workspace, config_file_name)
+        if os.path.exists(config_file):
+            with open(config_file, "r") as f:
+                config = safe_load(f)
+            return config
+    else:
+        raise FileNotFoundError("Config file not found in the workspace.")

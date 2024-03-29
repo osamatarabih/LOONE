@@ -14,17 +14,10 @@ from loone.utils import load_config, additional_functions
 # This following section calculates the parameter states (trib conds, stage tests, seasonal & multi-seasonal LONINO) and sets a 4-digit code for the branch.  The branch code is used with the Routing sheet to determine release rates.
 def WCA_Stages_Cls(workspace: str, TC_LONINO_df: pd.DataFrame | None):
     os.chdir(workspace)
-    for config_file in ["config.yaml", "config.yml"]:
-        if os.path.exists(config_file):
-            config = load_config(config_file)
-            break
-    else:
-        raise FileNotFoundError("Config file not found in the workspace.")
+    config = load_config(workspace)
 
     year, month, day = map(int, config["start_date_entry"])
     startdate = datetime(year, month, day).date()
-    year, month, day = map(int, config["start_date_entry"])
-    begdateCS = datetime(year, month, day).date()
     year, month, day = map(int, config["end_date_entry"])
     enddate = datetime(year, month, day).date()
 

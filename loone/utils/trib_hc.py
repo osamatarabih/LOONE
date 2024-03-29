@@ -17,13 +17,7 @@ from loone.data import Data as DClass
 # using a weekly Trib. Condition data and Monthly LONINO data.
 def Trib_HC(workspace: str):
     os.chdir(workspace)
-    for config_file in ["config.yaml", "config.yml"]:
-        if os.path.exists(config_file):
-            config = load_config(config_file)
-            break
-    else:
-        raise FileNotFoundError("Config file not found in the workspace.")
-    os.chdir(workspace)
+    config = load_config(workspace)
     Data = DClass(workspace)
     M_var = MVarClass(config)
     # Generate weekly time step date column where frequency is 'W-Fri' to start on 01/01/2008.

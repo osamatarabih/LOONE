@@ -4,13 +4,16 @@ from loone.utils import load_config
 
 
 class Data:
+    """A class that represents the data used for running LOONE."""
+
     def __init__(self, working_path: str):
-        for config_file in ["config.yaml", "config.yml"]:
-            if os.path.exists(config_file):
-                config = load_config(config_file)
-                break
-        else:
-            raise FileNotFoundError("Config file not found in the workspace.")
+        """
+        Initializes the Data object.
+
+        Args:
+            working_path (str): The working directory path.
+        """
+        config = load_config(working_path)
         self.data_dir = working_path
 
         # Read SFWMM Daily Output File
@@ -47,9 +50,13 @@ class Data:
             os.path.join(self.data_dir, config["water_dmd"])
         )
         # read Rainfall Volume data
-        self.RF_Vol = pd.read_csv(os.path.join(self.data_dir, config["rf_vol"]))
+        self.RF_Vol = pd.read_csv(
+            os.path.join(self.data_dir, config["rf_vol"])
+        )
         # read ET Vol data
-        self.ET_Vol = pd.read_csv(os.path.join(self.data_dir, config["et_vol"]))
+        self.ET_Vol = pd.read_csv(
+            os.path.join(self.data_dir, config["et_vol"])
+        )
         # Read the C44 Runoff data which is output of SFWMM simulation.
         self.C44_Runoff = pd.read_csv(
             os.path.join(self.data_dir, config["c44ro"])
@@ -94,13 +101,15 @@ class Data:
         # include data (i.e. June 2nd to September 30th)
         self.Targ_Stg_June_1st = pd.read_csv(
             os.path.join(
-                self.data_dir, config["june_1st_lake_stage_below_11ft"],
+                self.data_dir,
+                config["june_1st_lake_stage_below_11ft"],
             ),
             parse_dates=["Date"],
         )
         self.Targ_Stg_May_1st = pd.read_csv(
             os.path.join(
-                self.data_dir, config["may_1st_lake_stage_below_11ft"],
+                self.data_dir,
+                config["may_1st_lake_stage_below_11ft"],
             ),
             parse_dates=["Date"],
         )

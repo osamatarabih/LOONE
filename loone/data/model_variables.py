@@ -10,6 +10,7 @@ from datetime import datetime, timedelta
 
 
 class M_var:
+    """Class to represents model variables."""
     def __init__(self, config: dict):
         year, month, day = map(int, config["start_date_entry"])
         startdate = datetime(year, month, day).date()

@@ -5,7 +5,6 @@ Created on Sun Jul 18 18:44:37 2021
 @author: osama
 """
 import os
-import sys
 import argparse
 import pandas as pd
 import numpy as np
@@ -27,13 +26,22 @@ from loone.data import Data as DClass
 
 
 def LOONE_Q(workspace, P_1, P_2, S77_DV, S308_DV, TP_Lake_S):
+    """This function runs the LOONE Q module.
+
+    Args:
+        workspace (str): The path to the workspace directory.
+        P_1 (float): Parameter 1.
+        P_2 (float): Parameter 2.
+        S77_DV (float): S77_DV value.
+        S308_DV (float): S308_DV value.
+        TP_Lake_S (float): TP_Lake_S value.
+
+    Returns:
+        None
+    """
     os.chdir(workspace)
-    for config_file in ["config.yaml", "config.yml"]:
-        if os.path.exists(config_file):
-            config = load_config(config_file)
-            break
-    else:
-        raise FileNotFoundError("Config file not found in the workspace.")
+    config = load_config(workspace)
+
     Data = DClass(workspace)
     M_var = MVarClass(config)
     print("LOONE Q Module is Running!")
