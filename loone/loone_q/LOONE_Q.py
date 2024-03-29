@@ -6,6 +6,7 @@ Created on Sun Jul 18 18:44:37 2021
 """
 import os
 import sys
+import argparse
 import pandas as pd
 import numpy as np
 from datetime import datetime, timedelta
@@ -1042,6 +1043,22 @@ def LOONE_Q(workspace, P_1, P_2, S77_DV, S308_DV, TP_Lake_S):
 
 
 if __name__ == "__main__":
-    args = sys.argv
-    args.pop(0)
-    LOONE_Q(*args)
+    argparser = argparse.ArgumentParser()
+    argparser.add_argument(
+        "workspace",
+        nargs=1,
+        help="The path to the working directory.",
+    )
+    argparser.add_argument("--p1", nargs=1)
+    argparser.add_argument("--p2", nargs=1)
+    argparser.add_argument("--s77_dv", nargs=1)
+    argparser.add_argument("--s308_dv", nargs=1)
+    argparser.add_argument("--tp_lake_s", nargs=1)
+    args = argparser.parse_args()
+    workspace = args.workspace[0]
+    p1 = args.p1[0] if args.p1 else 0
+    p2 = args.p2[0] if args.p2 else 0
+    s77_dv = args.s77_dv[0] if args.s77_dv else 0
+    s308_dv = args.s308_dv[0] if args.s308_dv else 0
+    tp_lake_s = args.tp_lake_s[0] if args.tp_lake_s else 0
+    LOONE_Q(workspace, p1, p2, s77_dv, s308_dv, tp_lake_s)
