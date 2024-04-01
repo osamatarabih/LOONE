@@ -1,3 +1,7 @@
+# LOONE
+*config.yaml
+*config.yml
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
@@ -27,7 +31,7 @@ share/python-wheels/
 MANIFEST
 
 # vscode
-.vscode/*
+.vscode/
 
 # Spyder project settings
 .spyderproject

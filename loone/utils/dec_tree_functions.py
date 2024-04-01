@@ -280,7 +280,16 @@ def Zone_B_Rel_Code(Zone_B_Branch_Code, Pre_defined_Variables_Opt_DecTree):
             2242,
         ):
             ZBRC = 5
-        elif Zone_B_Branch_Code in (3131, 3132, 3141, 3142, 3231, 3232, 3241, 3242):
+        elif Zone_B_Branch_Code in (
+            3131,
+            3132,
+            3141,
+            3142,
+            3231,
+            3232,
+            3241,
+            3242,
+        ):
             ZBRC = 6
         else:
             ZBRC = float("nan")

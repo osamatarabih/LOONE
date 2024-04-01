@@ -1,13 +1,4 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Fri Jun 18 17:02:28 2021
-
-@author: osama
-"""
-
-from data.tp_variables_regions import TP_Variables
-
-TP_Variables = TP_Variables
+from loone.data.tp_variables_regions import TP_Variables as TPVarClass
 
 
 def DIP_Lake(TP_Lake):
@@ -42,7 +33,14 @@ def Ads_flux(DIP_pore, Γ, Mass_sed, K_ads, Γ_inf):
 
 ## Multiply v_settle * (TP-DIP)
 def P_sed(
-    Lake_O_A, TP_Lake, DIP_Lake, Sed_burial_flux, P_sed, Mass_sed, K_decomp, v_settle
+    Lake_O_A,
+    TP_Lake,
+    DIP_Lake,
+    Sed_burial_flux,
+    P_sed,
+    Mass_sed,
+    K_decomp,
+    v_settle,
 ):
     # for value of i - 1
     P_sed_Nxt = (
@@ -59,14 +57,21 @@ def P_sed(
 def Sed_burial_flux(P_sed, Bulk_density, A_sed, v_burial, Per_H2O):
     # for value of i
     J_sedburial = (
-        Bulk_density * ((100 - Per_H2O) / 100) * 1000 * P_sed * A_sed * v_burial
+        Bulk_density
+        * ((100 - Per_H2O) / 100)
+        * 1000
+        * P_sed
+        * A_sed
+        * v_burial
     )
     return J_sedburial
 
 
 def Sor_P_burialflux(Γ, Bulk_density, A_sed, v_burial, Per_H2O):
     # for value of i
-    J_Γburial = Bulk_density * ((100 - Per_H2O) / 100) * 1000 * Γ * A_sed * v_burial
+    J_Γburial = (
+        Bulk_density * ((100 - Per_H2O) / 100) * 1000 * Γ * A_sed * v_burial
+    )
     return J_Γburial
 
 
@@ -82,6 +87,7 @@ def J_decomp(K_decomp, P_sed, Mass_sed):
 
 
 def DIP_pore(
+    workspace,
     Θ,
     DIP_pore,
     DIP_Lake,
@@ -94,6 +100,7 @@ def DIP_pore(
     K_decomp,
     v_burial,
 ):
+    TP_Variables = TPVarClass(workspace)
     # for value of i - 1
     DIP_p_Nxt = (
         (
@@ -141,6 +148,7 @@ def Diff_P(v_diff, DIP_pore, DIP_Lake, Θ, A_sed, Lake_V):
 
 #### Multiply V_settle * (TP-DIP_Lake)
 def TP_Lake_N(
+    workspace,
     L_ext,
     Atm_Dep_N,
     Θ_M,
@@ -162,16 +170,32 @@ def TP_Lake_N(
     v_diff_P,
     v_settle,
 ):
+    TP_Variables = TPVarClass(workspace)
     # for value of i - 1
     TP_L_N_Nxt = (
         (
             L_ext
             + Atm_Dep_N
-            + v_diff_M * (DIP_pore_M_N - DIP_Lake_N) * TP_Variables.A_Mud_N * Θ_M
-            + v_diff_S * (DIP_pore_S_N - DIP_Lake_N) * TP_Variables.A_Sand_N * Θ_S
-            + v_diff_R * (DIP_pore_R_N - DIP_Lake_N) * TP_Variables.A_Rock_N * Θ_R
-            + v_diff_P * (DIP_pore_P_N - DIP_Lake_N) * TP_Variables.A_Peat_N * Θ_P
-            - (Q_N2S * TP_Lake_N + v_settle * Lake_O_A_N * (TP_Lake_N - DIP_Lake_N))
+            + v_diff_M
+            * (DIP_pore_M_N - DIP_Lake_N)
+            * TP_Variables.A_Mud_N
+            * Θ_M
+            + v_diff_S
+            * (DIP_pore_S_N - DIP_Lake_N)
+            * TP_Variables.A_Sand_N
+            * Θ_S
+            + v_diff_R
+            * (DIP_pore_R_N - DIP_Lake_N)
+            * TP_Variables.A_Rock_N
+            * Θ_R
+            + v_diff_P
+            * (DIP_pore_P_N - DIP_Lake_N)
+            * TP_Variables.A_Peat_N
+            * Θ_P
+            - (
+                Q_N2S * TP_Lake_N
+                + v_settle * Lake_O_A_N * (TP_Lake_N - DIP_Lake_N)
+            )
         )
         / Lake_V_N
     ) + TP_Lake_N
@@ -179,6 +203,7 @@ def TP_Lake_N(
 
 
 def TP_Lake_S(
+    workspace,
     Atm_Dep_S,
     Q_N2S,
     TP_Lake_N,
@@ -201,16 +226,32 @@ def TP_Lake_S(
     v_diff_P,
     v_settle,
 ):
+    TP_Variables = TPVarClass(workspace)
     # for value of i - 1
     TP_L_S_Nxt = (
         (
             Atm_Dep_S
             + Q_N2S * TP_Lake_N
-            + v_diff_M * (DIP_pore_M_S - DIP_Lake_S) * TP_Variables.A_Mud_S * Θ_M
-            + v_diff_S * (DIP_pore_S_S - DIP_Lake_S) * TP_Variables.A_Sand_S * Θ_S
-            + v_diff_R * (DIP_pore_R_S - DIP_Lake_S) * TP_Variables.A_Rock_S * Θ_R
-            + v_diff_P * (DIP_pore_P_S - DIP_Lake_S) * TP_Variables.A_Peat_S * Θ_P
-            - (Q_O * TP_Lake_S + v_settle * Lake_O_A_S * (TP_Lake_S - DIP_Lake_S))
+            + v_diff_M
+            * (DIP_pore_M_S - DIP_Lake_S)
+            * TP_Variables.A_Mud_S
+            * Θ_M
+            + v_diff_S
+            * (DIP_pore_S_S - DIP_Lake_S)
+            * TP_Variables.A_Sand_S
+            * Θ_S
+            + v_diff_R
+            * (DIP_pore_R_S - DIP_Lake_S)
+            * TP_Variables.A_Rock_S
+            * Θ_R
+            + v_diff_P
+            * (DIP_pore_P_S - DIP_Lake_S)
+            * TP_Variables.A_Peat_S
+            * Θ_P
+            - (
+                Q_O * TP_Lake_S
+                + v_settle * Lake_O_A_S * (TP_Lake_S - DIP_Lake_S)
+            )
         )
         / Lake_V_S
     ) + TP_Lake_S
@@ -230,6 +271,7 @@ def TP_Lake_S(
 
 # Determine TP in the 8 regions
 def TP_L_M_N(
+    workspace,
     L_ext,
     Atm_Dep_N,
     Θ_M,
@@ -242,12 +284,16 @@ def TP_L_M_N(
     v_diff_M,
     v_settle,
 ):
+    TP_Variables = TPVarClass(workspace)
     # for value of i - 1
     TP_M_N_Nxt = (
         (
             L_ext
             + Atm_Dep_N
-            + v_diff_M * (DIP_pore_M_N - DIP_Lake_M_N) * TP_Variables.A_Mud_N * Θ_M
+            + v_diff_M
+            * (DIP_pore_M_N - DIP_Lake_M_N)
+            * TP_Variables.A_Mud_N
+            * Θ_M
             - (
                 Q_N2S * TP_Lake_M_N
                 + v_settle * Lake_O_A_M_N * (TP_Lake_M_N - DIP_Lake_M_N)
@@ -259,6 +305,7 @@ def TP_L_M_N(
 
 
 def TP_L_S_N(
+    workspace,
     L_ext,
     Atm_Dep_N,
     Θ_S,
@@ -271,12 +318,16 @@ def TP_L_S_N(
     v_diff_S,
     v_settle,
 ):
+    TP_Variables = TPVarClass(workspace)
     # for value of i - 1
     TP_S_N_Nxt = (
         (
             L_ext
             + Atm_Dep_N
-            + v_diff_S * (DIP_pore_S_N - DIP_Lake_S_N) * TP_Variables.A_Sand_N * Θ_S
+            + v_diff_S
+            * (DIP_pore_S_N - DIP_Lake_S_N)
+            * TP_Variables.A_Sand_N
+            * Θ_S
             - (
                 Q_N2S * TP_Lake_S_N
                 + v_settle * Lake_O_A_S_N * (TP_Lake_S_N - DIP_Lake_S_N)
@@ -288,6 +339,7 @@ def TP_L_S_N(
 
 
 def TP_L_R_N(
+    workspace,
     L_ext,
     Atm_Dep_N,
     Θ_R,
@@ -300,12 +352,16 @@ def TP_L_R_N(
     v_diff_R,
     v_settle,
 ):
+    TP_Variables = TPVarClass(workspace)
     # for value of i - 1
     TP_R_N_Nxt = (
         (
             L_ext
             + Atm_Dep_N
-            + v_diff_R * (DIP_pore_R_N - DIP_Lake_R_N) * TP_Variables.A_Rock_N * Θ_R
+            + v_diff_R
+            * (DIP_pore_R_N - DIP_Lake_R_N)
+            * TP_Variables.A_Rock_N
+            * Θ_R
             - (
                 Q_N2S * TP_Lake_R_N
                 + v_settle * Lake_O_A_R_N * (TP_Lake_R_N - DIP_Lake_R_N)
@@ -317,6 +373,7 @@ def TP_L_R_N(
 
 
 def TP_L_P_N(
+    workspace,
     L_ext,
     Atm_Dep_N,
     Θ_P,
@@ -329,12 +386,16 @@ def TP_L_P_N(
     v_diff_P,
     v_settle,
 ):
+    TP_Variables = TPVarClass(workspace)
     # for value of i - 1
     TP_P_N_Nxt = (
         (
             L_ext
             + Atm_Dep_N
-            + v_diff_P * (DIP_pore_P_N - DIP_Lake_P_N) * TP_Variables.A_Peat_N * Θ_P
+            + v_diff_P
+            * (DIP_pore_P_N - DIP_Lake_P_N)
+            * TP_Variables.A_Peat_N
+            * Θ_P
             - (
                 Q_N2S * TP_Lake_P_N
                 + v_settle * Lake_O_A_P_N * (TP_Lake_P_N - DIP_Lake_P_N)
@@ -346,6 +407,7 @@ def TP_L_P_N(
 
 
 def TP_L_M_S(
+    workspace,
     Atm_Dep_S,
     Q_N2S,
     TP_Lake_N,
@@ -359,11 +421,15 @@ def TP_L_M_S(
     v_diff_M,
     v_settle,
 ):
+    TP_Variables = TPVarClass(workspace)
     TP_M_S_Nxt = (
         (
             Atm_Dep_S
             + Q_N2S * TP_Lake_N
-            + v_diff_M * (DIP_pore_M_S - DIP_Lake_M_S) * TP_Variables.A_Mud_S * Θ_M
+            + v_diff_M
+            * (DIP_pore_M_S - DIP_Lake_M_S)
+            * TP_Variables.A_Mud_S
+            * Θ_M
             - (
                 Q_O * TP_Lake_M_S
                 + v_settle * Lake_O_A_M_S * (TP_Lake_M_S - DIP_Lake_M_S)
@@ -375,6 +441,7 @@ def TP_L_M_S(
 
 
 def TP_L_S_S(
+    workspace,
     Atm_Dep_S,
     Q_N2S,
     TP_Lake_N,
@@ -388,11 +455,15 @@ def TP_L_S_S(
     v_diff_S,
     v_settle,
 ):
+    TP_Variables = TPVarClass(workspace)
     TP_S_S_Nxt = (
         (
             Atm_Dep_S
             + Q_N2S * TP_Lake_N
-            + v_diff_S * (DIP_pore_S_S - DIP_Lake_S_S) * TP_Variables.A_Sand_S * Θ_S
+            + v_diff_S
+            * (DIP_pore_S_S - DIP_Lake_S_S)
+            * TP_Variables.A_Sand_S
+            * Θ_S
             - (
                 Q_O * TP_Lake_S_S
                 + v_settle * Lake_O_A_S_S * (TP_Lake_S_S - DIP_Lake_S_S)
@@ -404,6 +475,7 @@ def TP_L_S_S(
 
 
 def TP_L_R_S(
+    workspace,
     Atm_Dep_S,
     Q_N2S,
     TP_Lake_N,
@@ -417,11 +489,15 @@ def TP_L_R_S(
     v_diff_R,
     v_settle,
 ):
+    TP_Variables = TPVarClass(workspace)
     TP_R_S_Nxt = (
         (
             Atm_Dep_S
             + Q_N2S * TP_Lake_N
-            + v_diff_R * (DIP_pore_R_S - DIP_Lake_R_S) * TP_Variables.A_Rock_S * Θ_R
+            + v_diff_R
+            * (DIP_pore_R_S - DIP_Lake_R_S)
+            * TP_Variables.A_Rock_S
+            * Θ_R
             - (
                 Q_O * TP_Lake_R_S
                 + v_settle * Lake_O_A_R_S * (TP_Lake_R_S - DIP_Lake_R_S)
@@ -433,6 +509,7 @@ def TP_L_R_S(
 
 
 def TP_L_P_S(
+    workspace,
     Atm_Dep_S,
     Q_N2S,
     TP_Lake_N,
@@ -446,11 +523,15 @@ def TP_L_P_S(
     v_diff_P,
     v_settle,
 ):
+    TP_Variables = TPVarClass(workspace)
     TP_P_S_Nxt = (
         (
             Atm_Dep_S
             + Q_N2S * TP_Lake_N
-            + v_diff_P * (DIP_pore_P_S - DIP_Lake_P_S) * TP_Variables.A_Peat_S * Θ_P
+            + v_diff_P
+            * (DIP_pore_P_S - DIP_Lake_P_S)
+            * TP_Variables.A_Peat_S
+            * Θ_P
             - (
                 Q_O * TP_Lake_P_S
                 + v_settle * Lake_O_A_P_S * (TP_Lake_P_S - DIP_Lake_P_S)

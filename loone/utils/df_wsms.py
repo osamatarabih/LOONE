@@ -1,36 +1,37 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Tue May 17 00:37:38 2022
-
-@author: osama
-"""
 # This Script Interpolates each Water Shortage Management (WSMs) and each Regulation Schedule Breakpoint Zone (D, C, B, and A).
-import pandas as pd
-from datetime import datetime
-import numpy as np
-from scipy import interpolate
 import os
-from loone_config.Model_Config import Model_Config
-from data.pre_defined_variables import Pre_defined_Variables
-from data.data import Data
+import numpy as np
+import pandas as pd
+from datetime import datetime, timedelta
+from scipy import interpolate
+from loone.data import Data as DClass
+from loone.utils import load_config
 
-Working_Path = Model_Config.Working_Path
-os.chdir("%s" % Working_Path)
 
+def WSMs(workspace: str):
+    """Generate WSMs (Weather State Modifiers) based on the given workspace.
 
-def WSMs():
-    year, month, day = map(int, Pre_defined_Variables.startdate_entry)
+    Args:
+        workspace (str): The path to the workspace.
+
+    Returns:
+        None
+
+    Raises:
+        None
+    """
+
+    os.chdir(workspace)
+    config = load_config(workspace)
+    Data = DClass(workspace)
+    year, month, day = map(int, config["start_date_entry"])
     startdate = datetime(year, month, day).date()
-    year, month, day = map(int, Pre_defined_Variables.startdate_entry)
-    begdateCS = datetime(year, month, day).date()
-    year, month, day = map(int, Pre_defined_Variables.enddate_entry)
-    enddate = datetime(year, month, day).date()
+    year, month, day = map(int, config["start_date_entry"])
+    year, month, day = map(int, config["end_date_entry"])
+    # Config end date + 1 day
+    enddate = datetime(year, month, day).date() + timedelta(days=1)
 
-    # Set time frame for model run such that it starts on the defined startdate but ends on 1/1/(endyear+1)
-    # date_rng_1 = pd.date_range(start = startdate, end = '1/1/%d'%(Pre_defined_Variables.endyear+1), freq= 'D')
-    date_rng_1 = pd.date_range(
-        start=startdate, end="4/1/%d" % (Pre_defined_Variables.endyear), freq="D"
-    )
+    date_rng_1 = pd.date_range(start=startdate, end=enddate, freq="D")
     # Create a data frame with a date column
     df_WSMs = pd.DataFrame(date_rng_1, columns=["date"])
     # Generate an annual cumulative day count
@@ -44,13 +45,15 @@ def WSMs():
     for i in range(WSM_length):
         for j in Oper_Zones:
             globals()[j][i] = interpolate.interp1d(
-                Data.WSMs_RSBKs["Day"], Data.WSMs_RSBKs["%s" % j], kind="linear"
+                Data.WSMs_RSBKs["Day"],
+                Data.WSMs_RSBKs[j],
+                kind="linear",
             )(WSM_Count[i])
 
     df_WSMs["count"] = WSM_Count
     for j in Oper_Zones:
-        df_WSMs["%s" % j] = globals()[j]
-    if Pre_defined_Variables.Opt_NewTree == 1:
+        df_WSMs[j] = globals()[j]
+    if config["opt_new_tree"] == 1:
         df_WSMs["C-b"] = Data.WSMs_RSBKs["C-b_NewTree"]
     else:
         df_WSMs["C-b"] = Data.WSMs_RSBKs["C-b_NoNewTree"]
@@ -76,4 +79,4 @@ def WSMs():
     )
     df_WSMs = pd.concat([First_row, df_WSMs]).reset_index(drop=True)
 
-    df_WSMs.to_csv(os.path.join(Working_Path, "df_WSMs.csv"))
+    df_WSMs.to_csv("df_WSMs.csv")
