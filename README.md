@@ -10,7 +10,7 @@ pip install loone
 ```bash
 git clone <this repository>
 cd ./LOONE
-pip install -e
+pip install -e .
 ```
  
 ## How to Run LOONE?
