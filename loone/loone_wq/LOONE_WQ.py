@@ -45,12 +45,14 @@ def LOONE_Constituent_SimQ(workspace: str):
     LO_DIN_N_data = pd.read_csv(os.path.join(workspace, 'N_DIN.csv')) # mg/m3
     LO_DIN_S_data = pd.read_csv(os.path.join(workspace, 'S_DIN.csv')) # mg/m3
 
+    date_start = Q_in['date'].iloc[0]
+    
     RAD = RAD_data['Mean_RADT'].astype(float) * 4.6*1000 
 
     Temp = Temp_data['Water_T'].astype(float)
     DO = DO_data['Mean_DO'].astype(float)
     External_NO = NOx_In['External_NO_Ld_mg'].astype(float) # mg
-    S65E_NO = (S65E_NO_data['Data'] * 1000).astype(float) # mg/m3
+    S65E_NO = (S65E_NO_data[S65E_NO_data['date'] >= date_start]['Data'] * 1000).astype(float) # mg/m3
     
     External_Chla = Chla_In['Chla_Loads'].astype(float)*3 # mg
     S65E_Chla = S65E_Chla_data['Data'].astype(float)
@@ -74,7 +76,6 @@ def LOONE_Constituent_SimQ(workspace: str):
     # volume = LOONE_Q_Outputs['Storage'] * 1233.48 # acft to m3
     
     # Observed S77 S308 South
-    # Outflows_Obs = pd.read_csv(os.path.join(workspace, f'Flow_df_{config["schedule"]}.csv'))
     Outflows_Obs = pd.read_csv(os.path.join(workspace, f'Flow_df_3MLag.csv'))
     S77_Q = Outflows_Obs['S77_Out']
     S308_Q = Outflows_Obs['S308_Out']
