@@ -55,7 +55,7 @@ def LOONE_Constituent_SimQ(workspace: str):
     S65E_NO = (S65E_NO_data[S65E_NO_data['date'] >= date_start]['Data'] * 1000).astype(float) # mg/m3
     
     External_Chla = Chla_In['Chla_Loads'].astype(float)*3 # mg
-    S65E_Chla = S65E_Chla_data['Data'].astype(float)
+    S65E_Chla = S65E_Chla_data[S65E_Chla_data['date'] >= date_start]['Data'].astype(float)
 
     # N-S Procedure
     N_Per = 0.43
