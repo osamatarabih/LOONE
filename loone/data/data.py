@@ -127,3 +127,7 @@ class Data:
         self.Stroage_dev_df = pd.read_csv(
             os.path.join(self.data_dir, config["storage_deviation"])
         )
+        # Read calibration parameters
+        self.Cal_Par = pd.read_csv(
+            os.path.join(self.data_dir, config["calibration_parameters"])
+        )

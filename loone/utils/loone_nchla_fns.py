@@ -1,6 +1,6 @@
-#Nitrogen Model Functions
+# Nitrogen Model Functions
 
-# for NO, NH4
+# For NO, NH4
 def f_T_alt1(T,T_opt,T_min,T_max):
     import math
     if T < T_opt:
@@ -8,7 +8,7 @@ def f_T_alt1(T,T_opt,T_min,T_max):
     elif T >= T_opt:
         f_T = math.exp(-2.3*((T-T_opt)/(T_max-T_opt))**2)
     return f_T
-#For Chla
+# For Chla
 def f_T__Chla_alt1(T,T_opt,T_min,T_max,month):
     import math
     if T < T_opt and month in (6,7,8,9,10):
