@@ -22,6 +22,7 @@ Data prep
 """
 from loone.loone_q import LOONE_Q
 from loone.loone_nut import LOONE_NUT
+from loone.loone_wq import LOONE_Constituent_SimQ
 
 
 LOONE_Q(
@@ -40,6 +41,8 @@ LOONE_NUT(
     flow_df_filename="flow_df.csv",
     forecast_mode=True,
 )
+
+LOONE_Constituent_SimQ(workspace="/path/to/workspace")
 ```
 
 
@@ -184,6 +187,7 @@ may_1st_lake_stage_below_11ft: "Chance of May 1st Lake stage falling below 11.0f
 estuary_needs_water_input: "Estuary_needs_water_Input.csv"
 eaa_mia_ro_inputs: "EAA_MIA_RUNOFF_Inputs.csv"
 storage_deviation: "Storage_Dev.csv"
+calibration_parameters: "Cal_Par.csv"
 
 # tp variables regions
 z_sed: 0.05  # m
