@@ -1196,8 +1196,9 @@ def LOONE_NUT(
         pd.to_numeric(p_load_south) / MILLIGRAMS_IN_TON
     )  # tons
 
-    # Add total phosphorus (in southern region) and average phosphorus in the lake
+    # Add total phosphorus (in north and south regions) and average phosphorus in the lake
     p_lake_df["P_Lake"] = pd.to_numeric(tp_lake_mean)
+    p_lake_df["TP_Lake_N"] = pd.to_numeric(tp_lake_n)
     p_lake_df["TP_Lake_S"] = pd.to_numeric(tp_lake_s)
 
     # Set the date as the index for the dataframe
