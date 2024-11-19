@@ -72,7 +72,10 @@ def LOONE_NUT(
 
     date_rng_0 = pd.date_range(start=startdate, end=enddate, freq="D")
     load_ext = pd.read_csv(os.path.join(data_dir, loads_external_filename))
-    q_in = pd.read_csv(os.path.join(data_dir, f"LO_Inflows_BK.csv"))
+    if forecast_mode:
+        q_in = pd.read_csv(os.path.join(data_dir, f"LO_Inflows_BK_forecast.csv"))
+    else:
+        q_in = pd.read_csv(os.path.join(data_dir, f"LO_Inflows_BK.csv"))
     flow_df = pd.read_csv(os.path.join(data_dir, flow_df_filename))
     q_o = flow_df["Outflows"].values
     s77_q = loone_q["S77_Q"].values
