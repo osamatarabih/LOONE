@@ -10,11 +10,13 @@ from loone.utils import loone_nchla_fns, load_config
 from loone.data import Data as DClass
 
 
-def LOONE_Constituent_SimQ(workspace: str):
+def LOONE_WQ(workspace: str, photo_period_filename: str = 'PhotoPeriod', forecast_mode: bool = False):
     """Daily Nitrate-Nitrite NOx and Chlorophyll-a Modeling
     
     Args:
         workspace (str): The working directory path.
+        photo_period_filename (str): The filename of the photo period data. Default is 'PhotoPeriod'.
+        forecast_mode (bool): The forecast mode flag.
     
     Returns:
         list: The results of the simulation.
@@ -26,7 +28,12 @@ def LOONE_Constituent_SimQ(workspace: str):
     data = DClass(workspace)
     
     # Read Required Data
-    Q_in = pd.read_csv(os.path.join(workspace, 'LO_Inflows_BK.csv'))
+    if forecast_mode:
+        flow_path = os.path.join(workspace, f'LO_Inflows_BK_forecast.csv')
+    else:
+        flow_path = os.path.join(workspace, 'LO_Inflows_BK.csv')
+
+    Q_in = pd.read_csv(os.path.join(workspace, flow_path))
     Temp_data = pd.read_csv(os.path.join(workspace, 'Filled_WaterT.csv'))
     DO_data = pd.read_csv(os.path.join(workspace, 'LO_DO_Clean_daily.csv'))
     RAD_data = pd.read_csv(os.path.join(workspace, 'LO_RADT_data.csv'))
@@ -34,12 +41,13 @@ def LOONE_Constituent_SimQ(workspace: str):
     Chla_N_data = pd.read_csv(os.path.join(workspace, 'N_Merged_Chla.csv')) # microgram/L
     Chla_S_data = pd.read_csv(os.path.join(workspace, 'S_Merged_Chla.csv')) # microgram/L
     NOx_In = pd.read_csv(os.path.join(workspace, 'LO_External_Loadings_NO.csv')) # mg
-    S65E_NO_data = pd.read_csv(os.path.join(workspace, 'water_quality_S65E_NITRATE+NITRITE-N_Interpolated.csv')) # mg/m3
+    S65E_basename = f'water_quality_S65E_NITRATE+NITRITE-N_Interpolated_forecast.csv' if forecast_mode else 'water_quality_S65E_NITRATE+NITRITE-N_Interpolated.csv'
+    S65E_NO_data = pd.read_csv(os.path.join(workspace, S65E_basename)) # mg/m3
     Chla_In = pd.read_csv(os.path.join(workspace, 'Chla_Loads_In.csv')) # mg
-    S65E_Chla_data = pd.read_csv(os.path.join(workspace, 'S65E_Chla_Merged.csv')) # mg/m3
+    S65E_Chla_basename = 'S65E_Chla_Merged_forecast.csv' if forecast_mode else 'S65E_Chla_Merged.csv'
+    S65E_Chla_data = pd.read_csv(os.path.join(workspace, S65E_Chla_basename)) # mg/m3
 
-    Photoperiod = pd.read_csv(os.path.join(workspace, 'PhotoPeriod.csv'))
-    Photoperiod['Date'] = pd.to_datetime(Photoperiod['Date'])
+    Photoperiod = pd.read_csv(os.path.join(workspace, f'{photo_period_filename}.csv'))
     LO_DIP_N_data = pd.read_csv(os.path.join(workspace, 'N_OP.csv')) # mg/m3
     LO_DIP_S_data = pd.read_csv(os.path.join(workspace, 'S_OP.csv')) # mg/m3
     LO_DIN_N_data = pd.read_csv(os.path.join(workspace, 'N_DIN.csv')) # mg/m3
@@ -52,10 +60,10 @@ def LOONE_Constituent_SimQ(workspace: str):
     Temp = Temp_data['Water_T'].astype(float)
     DO = DO_data['Mean_DO'].astype(float)
     External_NO = NOx_In['External_NO_Ld_mg'].astype(float) # mg
-    S65E_NO = (S65E_NO_data[S65E_NO_data['date'] >= date_start]['Data'] * 1000).astype(float) # mg/m3
+    S65E_NO = (S65E_NO_data[S65E_NO_data['date'] >= date_start]['Data'] * 1000).astype(float).tolist() # mg/m3
     
     External_Chla = Chla_In['Chla_Loads'].astype(float)*3 # mg
-    S65E_Chla = S65E_Chla_data[S65E_Chla_data['date'] >= date_start]['Data'].astype(float)
+    S65E_Chla = S65E_Chla_data[S65E_Chla_data['date'] >= date_start]['Data'].astype(float).tolist()
 
     # N-S Procedure
     N_Per = 0.43
@@ -113,7 +121,7 @@ def LOONE_Constituent_SimQ(workspace: str):
     Atm_Deposition_N = N_Per * Atm_Deposition
     Atm_Deposition_S = S_Per * Atm_Deposition
     
-    # Calibration parameters 
+    # Calibration parameters
     Cal_Par_NO = data.Cal_Par['Par_NO']
     Cal_Par_Chla = data.Cal_Par['Par_Chla']
  
@@ -319,6 +327,7 @@ def LOONE_Constituent_SimQ(workspace: str):
         if Storage_dev[i] >= 0:
             Q_I_M[i] = Q_I[i] + Storage_dev[i] * 1233.48 # m3/d
             Q_O_M[i] = Q_O[i]
+
             External_NO_M[i] = External_NO[i] + Q_I_M[i] * S65E_NO[i]            
             External_Chla_M[i] = External_Chla[i] + Q_I_M[i] * S65E_Chla[i]    
 
@@ -340,7 +349,6 @@ def LOONE_Constituent_SimQ(workspace: str):
         Denit_R_N_T_NO[i] = Denit_R_N_NO[i]*Theta_deni**(Temp[i]-20) 
         Denit_R_S_NO[i] = loone_nchla_fns.Denit_Rate('%s'%Nit_Denit_Opt,Tot_denit_R,kden0_NO,kden_NO,NO_S[i],K_Nitr_NO,DO[i],KDO_NO,DO_Cr_d,DO_Opt_d)
         Denit_R_S_T_NO[i] = Denit_R_S_NO[i]*Theta_deni**(Temp[i]-20) 
-    
     
         fT_NO[i] = loone_nchla_fns.f_T_alt1(Temp[i],T_opt_NO,T_min_NO,T_max_NO)
         fL_NO[i] = loone_nchla_fns.f_L_alt1(Photoperiod['Data'].iloc[i],RAD[i],Kw_NO,Kc_NO,Sim_Chla[i],z[i],K1_NO,K2_NO)
@@ -371,18 +379,18 @@ def LOONE_Constituent_SimQ(workspace: str):
         Chla_Load_South[i] = TotRegSo[i]*1233.48 *Sim_Chla_S[i] # mg/d P
 
     print("Exporting Module Outputs!")
-
+    
     Nitro_Model_Output['NO_N'] = pd.to_numeric(NO_N)
     Nitro_Model_Output['NO_S'] = pd.to_numeric(NO_S)
     Nitro_Model_Output['NO_M'] = pd.to_numeric(NO_MEAN)    
-    
     Nitro_Model_Output['Sim_Chla'] = pd.to_numeric(Sim_Chla)
     Nitro_Model_Output['Sim_Chla_N'] = pd.to_numeric(Sim_Chla_N)
     Nitro_Model_Output['Sim_Chla_S'] = pd.to_numeric(Sim_Chla_S)
     Nitro_Model_Output['Water Temp'] = pd.to_numeric(Temp) # C
 
-    Nitro_Model_Output = Nitro_Model_Output.set_index(['date'])
+    Nitro_Model_Output = Nitro_Model_Output.set_index('date')
     Nitro_Model_Output.index = pd.to_datetime(Nitro_Model_Output.index, unit = 'ns')
+    
     Nitro_Mod_Out_M =  Nitro_Model_Output.resample('ME').mean()
     Nitro_Model_Output = Nitro_Model_Output.reset_index()
     Nitro_Mod_Out_M = Nitro_Mod_Out_M.reset_index()
@@ -400,7 +408,9 @@ def LOONE_Constituent_SimQ(workspace: str):
     
     Constit_Loads_df = Constit_Loads_df.set_index('date')
     Constit_Loads_df.index = pd.to_datetime(Constit_Loads_df.index, unit = 'ns')
+
     Constit_Loads_M = Constit_Loads_df.resample('ME').sum()
+    Constit_Loads_df = Constit_Loads_df.reset_index()
     Constit_Loads_M = Constit_Loads_M.reset_index()
     
     
@@ -423,10 +433,20 @@ def LOONE_Constituent_SimQ(workspace: str):
     Smr_Mnth_Chla_Cal_arr = np.asarray(Smr_Mnth_Chla_Cal)
 
     if config['sim_type'] in [0, 1]:
-        return [Constit_Loads_M,Nitro_Mod_Out_M,Smr_Mnth_NOx_StL_arr,Smr_Mnth_Chla_StL_arr,Smr_Mnth_NOx_Cal_arr,Smr_Mnth_Chla_Cal_arr]
+        variables_dict = {
+            'Constit_Loads': Constit_Loads_df,
+            'Nitro_Model_Output': Nitro_Model_Output,
+            'Constit_Loads_M': Constit_Loads_M,
+            'Nitro_Mod_Out_M': Nitro_Mod_Out_M,
+        }
+        return_list = list(variables_dict.values())
+        
+        for k, v in variables_dict.items():
+            file_name = f'{k}_forecast' if forecast_mode else k
+            v.to_csv(os.path.join(workspace, f'{file_name}.csv'), index=False)
+        return return_list
     else:
-        return [Smr_Mnth_NOx_StL_arr,Smr_Mnth_Chla_StL_arr,Smr_Mnth_NOx_Cal_arr,Smr_Mnth_Chla_Cal_arr,Nitro_Model_Output]
-    
+        return_list = [Smr_Mnth_NOx_StL_arr,Smr_Mnth_Chla_StL_arr,Smr_Mnth_NOx_Cal_arr,Smr_Mnth_Chla_Cal_arr,Nitro_Model_Output]
     
 
     # Algae_Opt_Mnth_NOx_StL = []
@@ -465,5 +485,5 @@ if __name__ == "__main__":
     workspace = args.workspace[0]
     
     # Run LOONE_Constituent_SimQ
-    LOONE_Constituent_SimQ(workspace)
+    LOONE_WQ(workspace)
     
