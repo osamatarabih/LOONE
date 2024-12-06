@@ -69,7 +69,7 @@ def LOONE_WQ(workspace: str, photo_period_filename: str = 'PhotoPeriod', forecas
     N_Per = 0.43
     S_Per = 0.57
     
-    Storage_dev = data.Stroage_dev_df['DS_dev'].astype(float) # acft
+    Storage_dev = data.Storage_dev_df['DS_dev'].astype(float) # acft
     Q_I = Q_in['Inflows_cmd'].astype(float) # m3
 
    

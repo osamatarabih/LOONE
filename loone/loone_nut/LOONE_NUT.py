@@ -89,7 +89,7 @@ def LOONE_NUT(
     stage_lo = sto_stage["Stage_ft"].values
     storage = sto_stage["Storage_acft"].values
     n_rows = len(q_in.index)
-    storage_dev = Data.Stroage_dev_df["DS_dev"]
+    storage_dev = Data.Storage_dev_df["DS_dev"]
     l_ext = load_ext["TP_Loads_In_mg"]  # mg
     atm_dep_n = TP_Variables.N_Per * load_ext["Atm_Loading_mg"]
     atm_dep_s = TP_Variables.S_Per * load_ext["Atm_Loading_mg"]

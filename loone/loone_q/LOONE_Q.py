@@ -306,7 +306,7 @@ def LOONE_Q(workspace, p1, p2, s77_dv, s308_dv, tp_lake_s):
     M_var.Storage[1] = StartStorage
     # Flood = np.zeros(n_rows, dtype = object)
     ##Here, I will insert the Storage Deviaiton Values as Input!
-    Storage_dev = Data.Stroage_dev_df["DS_dev"]
+    Storage_dev = Data.Storage_dev_df["DS_dev"]
     # Create a Choose Function for AP Post Baseflow
     # if Pre_defined_Variables.Opt_AdapProt == 0:
     #     C = 450
