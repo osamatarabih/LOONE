@@ -91,8 +91,8 @@ def LOONE_NUT(
     n_rows = len(q_in.index)
     storage_dev = Data.Storage_dev_df["DS_dev"]
     l_ext = load_ext["TP_Loads_In_mg"]  # mg
-    atm_dep_n = TP_Variables.N_Per * load_ext["Atm_Loading_mg"]
-    atm_dep_s = TP_Variables.S_Per * load_ext["Atm_Loading_mg"]
+    atm_dep_n = TP_Variables.northern_percentage * load_ext["Atm_Loading_mg"]
+    atm_dep_s = TP_Variables.southern_percentage * load_ext["Atm_Loading_mg"]
 
     # Read Shear Stress driven by Wind Speed
     wind_shear_str = pd.read_csv(
@@ -276,88 +276,88 @@ def LOONE_NUT(
     p_sed_r_s[0] = 300  # mg/kg
     p_sed_p_s[0] = 200  # mg/kg
     Θ_m = _calculate_porosity(
-        TP_Variables.Bulk_density_M,
-        TP_Variables.Particle_density_M,
-        TP_Variables.Per_H2O_M,
+        TP_Variables.bulk_density_mud,
+        TP_Variables.particle_density_mud,
+        TP_Variables.water_content_mud,
     )
     Θ_s = _calculate_porosity(
-        TP_Variables.Bulk_density_S,
-        TP_Variables.Particle_density_S,
-        TP_Variables.Per_H2O_S,
+        TP_Variables.bulk_density_sand,
+        TP_Variables.particle_density_sand,
+        TP_Variables.water_content_sand,
     )
     Θ_r = _calculate_porosity(
-        TP_Variables.Bulk_density_R,
-        TP_Variables.Particle_density_R,
-        TP_Variables.Per_H2O_R,
+        TP_Variables.bulk_density_rock,
+        TP_Variables.particle_density_rock,
+        TP_Variables.water_content_rock,
     )
     Θ_p = _calculate_porosity(
-        TP_Variables.Bulk_density_P,
-        TP_Variables.Particle_density_P,
-        TP_Variables.Per_H2O_P,
+        TP_Variables.bulk_density_peat,
+        TP_Variables.particle_density_peat,
+        TP_Variables.water_content_peat,
     )
 
     # Mass of sediment in surfacial mix Mud layer in the North Region(kg)
     mass_sed_m_n = _calculate_mass_sediment(
-        TP_Variables.A_Mud_N,
-        TP_Variables.Z_sed,
-        TP_Variables.Per_H2O_M,
-        TP_Variables.Bulk_density_M,
+        TP_Variables.area_mud_north,
+        TP_Variables.sediment_depth,
+        TP_Variables.water_content_mud,
+        TP_Variables.bulk_density_mud,
     )
 
     # Mass of sediment in surfacial mix Sand layer in the North Region(kg)
     mass_sed_s_n = _calculate_mass_sediment(
-        TP_Variables.A_Sand_N,
-        TP_Variables.Z_sed,
-        TP_Variables.Per_H2O_S,
-        TP_Variables.Bulk_density_S,
+        TP_Variables.area_sand_north,
+        TP_Variables.sediment_depth,
+        TP_Variables.water_content_sand,
+        TP_Variables.bulk_density_sand,
     )
 
     # Mass of sediment in surfacial mix Rock layer in the North Region(kg)
     mass_sed_r_n = _calculate_mass_sediment(
-        TP_Variables.A_Rock_N,
-        TP_Variables.Z_sed,
-        TP_Variables.Per_H2O_R,
-        TP_Variables.Bulk_density_R,
+        TP_Variables.area_rock_north,
+        TP_Variables.sediment_depth,
+        TP_Variables.water_content_rock,
+        TP_Variables.bulk_density_rock,
     )
 
     # Mass of sediment in surfacial mix Peat layer in the North Region(kg)
     mass_sed_p_n = _calculate_mass_sediment(
-        TP_Variables.A_Peat_N,
-        TP_Variables.Z_sed,
-        TP_Variables.Per_H2O_P,
-        TP_Variables.Bulk_density_P,
+        TP_Variables.area_peat_north,
+        TP_Variables.sediment_depth,
+        TP_Variables.water_content_peat,
+        TP_Variables.bulk_density_peat,
     )
 
     # Mass of sediment in surfacial mix Mud layer in the South Region(kg)
     mass_sed_m_s = _calculate_mass_sediment(
-        TP_Variables.A_Mud_S,
-        TP_Variables.Z_sed,
-        TP_Variables.Per_H2O_M,
-        TP_Variables.Bulk_density_M,
+        TP_Variables.area_mud_south,
+        TP_Variables.sediment_depth,
+        TP_Variables.water_content_mud,
+        TP_Variables.bulk_density_mud,
     )
 
     # Mass of sediment in surfacial mix Sand layer in the South Region(kg)
     mass_sed_s_s = _calculate_mass_sediment(
-        TP_Variables.A_Sand_S,
-        TP_Variables.Z_sed,
-        TP_Variables.Per_H2O_S,
-        TP_Variables.Bulk_density_S,
+        TP_Variables.area_sand_south,
+        TP_Variables.sediment_depth,
+        TP_Variables.water_content_sand,
+        TP_Variables.bulk_density_sand,
     )
 
     # Mass of sediment in surfacial mix Rock layer in the South Region(kg)
     mass_sed_r_s = _calculate_mass_sediment(
-        TP_Variables.A_Rock_S,
-        TP_Variables.Z_sed,
-        TP_Variables.Per_H2O_R,
-        TP_Variables.Bulk_density_R,
+        TP_Variables.area_rock_south,
+        TP_Variables.sediment_depth,
+        TP_Variables.water_content_rock,
+        TP_Variables.bulk_density_rock,
     )
 
     # Mass of sediment in surfacial mix Peat layer in the South Region(kg)
     mass_sed_p_s = _calculate_mass_sediment(
-        TP_Variables.A_Peat_S,
-        TP_Variables.Z_sed,
-        TP_Variables.Per_H2O_P,
-        TP_Variables.Bulk_density_P,
+        TP_Variables.area_peat_south,
+        TP_Variables.sediment_depth,
+        TP_Variables.water_content_peat,
+        TP_Variables.bulk_density_peat,
     )
 
     for i in range(n_rows - 2):
@@ -378,85 +378,85 @@ def LOONE_NUT(
         lo_wd[i] = stage_lo[i] * METERS_IN_FOOT - LO_BL
         lake_o_storage_n[i] = (
             storage[i]
-            * TP_Variables.N_Per
+            * TP_Variables.northern_percentage
             * SQUARE_METERS_IN_ACRE
             * METERS_IN_FOOT_3
         )  # m3
         lake_o_storage_s[i] = (
             storage[i]
-            * TP_Variables.S_Per
+            * TP_Variables.southern_percentage
             * SQUARE_METERS_IN_ACRE
             * METERS_IN_FOOT_3
         )  # m3
         lake_o_a_n[i] = (
-            stage_2_ar[i] * TP_Variables.N_Per * SQUARE_METERS_IN_ACRE
+            stage_2_ar[i] * TP_Variables.northern_percentage * SQUARE_METERS_IN_ACRE
         )  # m2
         lake_o_a_s[i] = (
-            stage_2_ar[i] * TP_Variables.S_Per * SQUARE_METERS_IN_ACRE
+            stage_2_ar[i] * TP_Variables.southern_percentage * SQUARE_METERS_IN_ACRE
         )  # m2
         lake_o_a_m_n[i] = _calculate_sediment_area(
             lake_o_a_n[i],
-            TP_Variables.A_Mud_N,
-            TP_Variables.A_Mud_N,
-            TP_Variables.A_Sand_N,
-            TP_Variables.A_Rock_N,
-            TP_Variables.A_Peat_N,
+            TP_Variables.area_mud_north,
+            TP_Variables.area_mud_north,
+            TP_Variables.area_sand_north,
+            TP_Variables.area_rock_north,
+            TP_Variables.area_peat_north,
         )
         lake_o_a_s_n[i] = _calculate_sediment_area(
             lake_o_a_n[i],
-            TP_Variables.A_Sand_N,
-            TP_Variables.A_Mud_N,
-            TP_Variables.A_Sand_N,
-            TP_Variables.A_Rock_N,
-            TP_Variables.A_Peat_N,
+            TP_Variables.area_sand_north,
+            TP_Variables.area_mud_north,
+            TP_Variables.area_sand_north,
+            TP_Variables.area_rock_north,
+            TP_Variables.area_peat_north,
         )
         lake_o_a_r_n[i] = _calculate_sediment_area(
             lake_o_a_n[i],
-            TP_Variables.A_Rock_N,
-            TP_Variables.A_Mud_N,
-            TP_Variables.A_Sand_N,
-            TP_Variables.A_Rock_N,
-            TP_Variables.A_Peat_N,
+            TP_Variables.area_rock_north,
+            TP_Variables.area_mud_north,
+            TP_Variables.area_sand_north,
+            TP_Variables.area_rock_north,
+            TP_Variables.area_peat_north,
         )
         lake_o_a_p_n[i] = _calculate_sediment_area(
             lake_o_a_n[i],
-            TP_Variables.A_Peat_N,
-            TP_Variables.A_Mud_N,
-            TP_Variables.A_Sand_N,
-            TP_Variables.A_Rock_N,
-            TP_Variables.A_Peat_N,
+            TP_Variables.area_peat_north,
+            TP_Variables.area_mud_north,
+            TP_Variables.area_sand_north,
+            TP_Variables.area_rock_north,
+            TP_Variables.area_peat_north,
         )
         lake_o_a_m_s[i] = _calculate_sediment_area(
             lake_o_a_s[i],
-            TP_Variables.A_Mud_S,
-            TP_Variables.A_Mud_S,
-            TP_Variables.A_Sand_S,
-            TP_Variables.A_Rock_S,
-            TP_Variables.A_Peat_S,
+            TP_Variables.area_mud_south,
+            TP_Variables.area_mud_south,
+            TP_Variables.area_sand_south,
+            TP_Variables.area_rock_south,
+            TP_Variables.area_peat_south,
         )
         lake_o_a_s_s[i] = _calculate_sediment_area(
             lake_o_a_s[i],
-            TP_Variables.A_Sand_S,
-            TP_Variables.A_Mud_S,
-            TP_Variables.A_Sand_S,
-            TP_Variables.A_Rock_S,
-            TP_Variables.A_Peat_S,
+            TP_Variables.area_sand_south,
+            TP_Variables.area_mud_south,
+            TP_Variables.area_sand_south,
+            TP_Variables.area_rock_south,
+            TP_Variables.area_peat_south,
         )
         lake_o_a_r_s[i] = _calculate_sediment_area(
             lake_o_a_s[i],
-            TP_Variables.A_Rock_S,
-            TP_Variables.A_Mud_S,
-            TP_Variables.A_Sand_S,
-            TP_Variables.A_Rock_S,
-            TP_Variables.A_Peat_S,
+            TP_Variables.area_rock_south,
+            TP_Variables.area_mud_south,
+            TP_Variables.area_sand_south,
+            TP_Variables.area_rock_south,
+            TP_Variables.area_peat_south,
         )
         lake_o_a_p_s[i] = _calculate_sediment_area(
             lake_o_a_s[i],
-            TP_Variables.A_Peat_S,
-            TP_Variables.A_Mud_S,
-            TP_Variables.A_Sand_S,
-            TP_Variables.A_Rock_S,
-            TP_Variables.A_Peat_S,
+            TP_Variables.area_peat_south,
+            TP_Variables.area_mud_south,
+            TP_Variables.area_sand_south,
+            TP_Variables.area_rock_south,
+            TP_Variables.area_peat_south,
         )
 
         dip_lake_n[i] = TP_MBFR.DIP_Lake(tp_lake_n[i])
@@ -473,11 +473,11 @@ def LOONE_NUT(
             c_2_c,
             c_2_s,
             nu_d[i],
-            TP_Variables.A_Mud_N,
-            TP_Variables.A_Peat_N,
-            TP_Variables.A_Sand_N,
-            TP_Variables.A_Rock_N,
-            TP_Variables.A_N,
+            TP_Variables.area_mud_north,
+            TP_Variables.area_peat_north,
+            TP_Variables.area_sand_north,
+            TP_Variables.area_rock_north,
+            TP_Variables.total_area_north,
         )
 
         v_settle_s[i] = _calculate_settling_velocity(
@@ -490,37 +490,37 @@ def LOONE_NUT(
             c_2_c,
             c_2_s,
             nu_d[i],
-            TP_Variables.A_Mud_S,
-            TP_Variables.A_Peat_S,
-            TP_Variables.A_Sand_S,
-            TP_Variables.A_Rock_S,
-            TP_Variables.A_S,
+            TP_Variables.area_mud_south,
+            TP_Variables.area_peat_south,
+            TP_Variables.area_sand_south,
+            TP_Variables.area_rock_south,
+            TP_Variables.total_area_south,
         )
 
         # Calculate desorption fluxes for the North and South regions (for mud, sand, rock, and peat)
         j_des_m_n[i] = TP_MBFR.Des_flux(
-            Γ_m_n[i], mass_sed_m_n, TP_Variables.K_des_M
+            Γ_m_n[i], mass_sed_m_n, TP_Variables.desorption_rate_mud
         )
         j_des_s_n[i] = TP_MBFR.Des_flux(
-            Γ_s_n[i], mass_sed_s_n, TP_Variables.K_des_S
+            Γ_s_n[i], mass_sed_s_n, TP_Variables.desorption_rate_sand
         )
         j_des_r_n[i] = TP_MBFR.Des_flux(
-            Γ_r_n[i], mass_sed_r_n, TP_Variables.K_des_R
+            Γ_r_n[i], mass_sed_r_n, TP_Variables.desorption_rate_rock
         )
         j_des_p_n[i] = TP_MBFR.Des_flux(
-            Γ_p_n[i], mass_sed_p_n, TP_Variables.K_des_P
+            Γ_p_n[i], mass_sed_p_n, TP_Variables.desorption_rate_peat
         )
         j_des_m_s[i] = TP_MBFR.Des_flux(
-            Γ_m_s[i], mass_sed_m_s, TP_Variables.K_des_M
+            Γ_m_s[i], mass_sed_m_s, TP_Variables.desorption_rate_mud
         )
         j_des_s_s[i] = TP_MBFR.Des_flux(
-            Γ_s_s[i], mass_sed_s_s, TP_Variables.K_des_S
+            Γ_s_s[i], mass_sed_s_s, TP_Variables.desorption_rate_sand
         )
         j_des_r_s[i] = TP_MBFR.Des_flux(
-            Γ_r_s[i], mass_sed_r_s, TP_Variables.K_des_R
+            Γ_r_s[i], mass_sed_r_s, TP_Variables.desorption_rate_rock
         )
         j_des_p_s[i] = TP_MBFR.Des_flux(
-            Γ_p_s[i], mass_sed_p_s, TP_Variables.K_des_P
+            Γ_p_s[i], mass_sed_p_s, TP_Variables.desorption_rate_peat
         )
 
         # Calculate adsorption fluxes for the North and South regions
@@ -528,115 +528,115 @@ def LOONE_NUT(
             dip_pore_m_n[i],
             Γ_m_n[i],
             mass_sed_m_n,
-            TP_Variables.K_ads_M,
-            TP_Variables.Γ_inf,
+            TP_Variables.adsorption_rate_mud,
+            TP_Variables.inorganic_fraction,
         )
         j_ads_s_n[i] = TP_MBFR.Ads_flux(
             dip_pore_s_n[i],
             Γ_s_n[i],
             mass_sed_s_n,
-            TP_Variables.K_ads_S,
-            TP_Variables.Γ_inf,
+            TP_Variables.adsorption_rate_sand,
+            TP_Variables.inorganic_fraction,
         )
         j_ads_r_n[i] = TP_MBFR.Ads_flux(
             dip_pore_r_n[i],
             Γ_r_n[i],
             mass_sed_r_n,
-            TP_Variables.K_ads_R,
-            TP_Variables.Γ_inf,
+            TP_Variables.adsorption_rate_rock,
+            TP_Variables.inorganic_fraction,
         )
         j_ads_p_n[i] = TP_MBFR.Ads_flux(
             dip_pore_p_n[i],
             Γ_p_n[i],
             mass_sed_p_n,
-            TP_Variables.K_ads_P,
-            TP_Variables.Γ_inf,
+            TP_Variables.adsorption_rate_peat,
+            TP_Variables.inorganic_fraction,
         )
         j_ads_m_s[i] = TP_MBFR.Ads_flux(
             dip_pore_m_s[i],
             Γ_m_s[i],
             mass_sed_m_s,
-            TP_Variables.K_ads_M,
-            TP_Variables.Γ_inf,
+            TP_Variables.adsorption_rate_mud,
+            TP_Variables.inorganic_fraction,
         )
         j_ads_s_s[i] = TP_MBFR.Ads_flux(
             dip_pore_s_s[i],
             Γ_s_s[i],
             mass_sed_s_s,
-            TP_Variables.K_ads_S,
-            TP_Variables.Γ_inf,
+            TP_Variables.adsorption_rate_sand,
+            TP_Variables.inorganic_fraction,
         )
         j_ads_r_s[i] = TP_MBFR.Ads_flux(
             dip_pore_r_s[i],
             Γ_r_s[i],
             mass_sed_r_s,
-            TP_Variables.K_ads_R,
-            TP_Variables.Γ_inf,
+            TP_Variables.adsorption_rate_rock,
+            TP_Variables.inorganic_fraction,
         )
         j_ads_p_s[i] = TP_MBFR.Ads_flux(
             dip_pore_p_s[i],
             Γ_p_s[i],
             mass_sed_p_s,
-            TP_Variables.K_ads_P,
-            TP_Variables.Γ_inf,
+            TP_Variables.adsorption_rate_peat,
+            TP_Variables.inorganic_fraction,
         )
 
         # Calculate the sediment burial fluxes for the North and South regions (for mud, sand, rock, and peat)
         j_sedburial_m_n[i] = TP_MBFR.Sed_burial_flux(
             p_sed_m_n[i],
-            TP_Variables.Bulk_density_M,
-            TP_Variables.A_Mud_N,
-            TP_Variables.v_burial_M,
-            TP_Variables.Per_H2O_M,
+            TP_Variables.bulk_density_mud,
+            TP_Variables.area_mud_north,
+            TP_Variables.burial_velocity_mud,
+            TP_Variables.water_content_mud,
         )
         j_sedburial_s_n[i] = TP_MBFR.Sed_burial_flux(
             p_sed_s_n[i],
-            TP_Variables.Bulk_density_S,
-            TP_Variables.A_Sand_N,
-            TP_Variables.v_burial_S,
-            TP_Variables.Per_H2O_S,
+            TP_Variables.bulk_density_sand,
+            TP_Variables.area_sand_north,
+            TP_Variables.burial_velocity_sand,
+            TP_Variables.water_content_sand,
         )
         j_sedburial_r_n[i] = TP_MBFR.Sed_burial_flux(
             p_sed_r_n[i],
-            TP_Variables.Bulk_density_R,
-            TP_Variables.A_Rock_N,
-            TP_Variables.v_burial_R,
-            TP_Variables.Per_H2O_R,
+            TP_Variables.bulk_density_rock,
+            TP_Variables.area_rock_north,
+            TP_Variables.burial_velocity_rock,
+            TP_Variables.water_content_rock,
         )
         j_sedburial_p_n[i] = TP_MBFR.Sed_burial_flux(
             p_sed_p_n[i],
-            TP_Variables.Bulk_density_P,
-            TP_Variables.A_Peat_N,
-            TP_Variables.v_burial_P,
-            TP_Variables.Per_H2O_P,
+            TP_Variables.bulk_density_peat,
+            TP_Variables.area_peat_north,
+            TP_Variables.burial_velocity_peat,
+            TP_Variables.water_content_peat,
         )
         j_sedburial_m_s[i] = TP_MBFR.Sed_burial_flux(
             p_sed_m_s[i],
-            TP_Variables.Bulk_density_M,
-            TP_Variables.A_Mud_S,
-            TP_Variables.v_burial_M,
-            TP_Variables.Per_H2O_M,
+            TP_Variables.bulk_density_mud,
+            TP_Variables.area_mud_south,
+            TP_Variables.burial_velocity_mud,
+            TP_Variables.water_content_mud,
         )
         j_sedburial_s_s[i] = TP_MBFR.Sed_burial_flux(
             p_sed_s_s[i],
-            TP_Variables.Bulk_density_S,
-            TP_Variables.A_Sand_S,
-            TP_Variables.v_burial_S,
-            TP_Variables.Per_H2O_S,
+            TP_Variables.bulk_density_sand,
+            TP_Variables.area_sand_south,
+            TP_Variables.burial_velocity_sand,
+            TP_Variables.water_content_sand,
         )
         j_sedburial_r_s[i] = TP_MBFR.Sed_burial_flux(
             p_sed_r_s[i],
-            TP_Variables.Bulk_density_R,
-            TP_Variables.A_Rock_S,
-            TP_Variables.v_burial_R,
-            TP_Variables.Per_H2O_R,
+            TP_Variables.bulk_density_rock,
+            TP_Variables.area_rock_south,
+            TP_Variables.burial_velocity_rock,
+            TP_Variables.water_content_rock,
         )
         j_sedburial_p_s[i] = TP_MBFR.Sed_burial_flux(
             p_sed_p_s[i],
-            TP_Variables.Bulk_density_P,
-            TP_Variables.A_Peat_S,
-            TP_Variables.v_burial_P,
-            TP_Variables.Per_H2O_P,
+            TP_Variables.bulk_density_peat,
+            TP_Variables.area_peat_south,
+            TP_Variables.burial_velocity_peat,
+            TP_Variables.water_content_peat,
         )
 
         # Calculate the sediment resuspension for the North and South regions (for mud, sand, rock, and peat)
@@ -673,7 +673,7 @@ def LOONE_NUT(
             j_sedburial_m_n[i],
             p_sed_m_n[i],
             mass_sed_m_n,
-            TP_Variables.K_decomp_M,
+            TP_Variables.decomposition_rate_mud,
             v_settle_n[i],
             sed_resusp_m_n[i],
             lake_o_storage_n[i],
@@ -685,7 +685,7 @@ def LOONE_NUT(
             j_sedburial_s_n[i],
             p_sed_s_n[i],
             mass_sed_s_n,
-            TP_Variables.K_decomp_S,
+            TP_Variables.decomposition_rate_sand,
             v_settle_n[i],
             sed_resusp_s_n[i],
             lake_o_storage_n[i],
@@ -697,7 +697,7 @@ def LOONE_NUT(
             j_sedburial_r_n[i],
             p_sed_r_n[i],
             mass_sed_r_n,
-            TP_Variables.K_decomp_R,
+            TP_Variables.decomposition_rate_rock,
             v_settle_n[i],
             sed_resusp_r_n[i],
             lake_o_storage_n[i],
@@ -709,7 +709,7 @@ def LOONE_NUT(
             j_sedburial_p_n[i],
             p_sed_p_n[i],
             mass_sed_p_n,
-            TP_Variables.K_decomp_P,
+            TP_Variables.decomposition_rate_peat,
             v_settle_n[i],
             sed_resusp_p_n[i],
             lake_o_storage_n[i],
@@ -721,7 +721,7 @@ def LOONE_NUT(
             j_sedburial_m_s[i],
             p_sed_m_s[i],
             mass_sed_m_s,
-            TP_Variables.K_decomp_M,
+            TP_Variables.decomposition_rate_mud,
             v_settle_s[i],
             sed_resusp_m_s[i],
             lake_o_storage_s[i],
@@ -733,7 +733,7 @@ def LOONE_NUT(
             j_sedburial_s_s[i],
             p_sed_s_s[i],
             mass_sed_s_s,
-            TP_Variables.K_decomp_S,
+            TP_Variables.decomposition_rate_sand,
             v_settle_s[i],
             sed_resusp_s_s[i],
             lake_o_storage_s[i],
@@ -745,7 +745,7 @@ def LOONE_NUT(
             j_sedburial_r_s[i],
             p_sed_r_s[i],
             mass_sed_r_s,
-            TP_Variables.K_decomp_R,
+            TP_Variables.decomposition_rate_rock,
             v_settle_s[i],
             sed_resusp_r_s[i],
             lake_o_storage_s[i],
@@ -757,7 +757,7 @@ def LOONE_NUT(
             j_sedburial_p_s[i],
             p_sed_p_s[i],
             mass_sed_p_s,
-            TP_Variables.K_decomp_P,
+            TP_Variables.decomposition_rate_peat,
             v_settle_s[i],
             sed_resusp_p_s[i],
             lake_o_storage_s[i],
@@ -766,59 +766,59 @@ def LOONE_NUT(
         # Calculate the burial fluxes for the North and South regions (for mud, sand, rock, and peat)
         j_Γburial_m_n[i] = TP_MBFR.Sor_P_burialflux(
             Γ_m_n[i],
-            TP_Variables.Bulk_density_M,
-            TP_Variables.A_Mud_N,
-            TP_Variables.v_burial_M,
-            TP_Variables.Per_H2O_M,
+            TP_Variables.bulk_density_mud,
+            TP_Variables.area_mud_north,
+            TP_Variables.burial_velocity_mud,
+            TP_Variables.water_content_mud,
         )
         j_Γburial_s_n[i] = TP_MBFR.Sor_P_burialflux(
             Γ_s_n[i],
-            TP_Variables.Bulk_density_S,
-            TP_Variables.A_Sand_N,
-            TP_Variables.v_burial_S,
-            TP_Variables.Per_H2O_S,
+            TP_Variables.bulk_density_sand,
+            TP_Variables.area_sand_north,
+            TP_Variables.burial_velocity_sand,
+            TP_Variables.water_content_sand,
         )
         j_Γburial_r_n[i] = TP_MBFR.Sor_P_burialflux(
             Γ_r_n[i],
-            TP_Variables.Bulk_density_R,
-            TP_Variables.A_Rock_N,
-            TP_Variables.v_burial_R,
-            TP_Variables.Per_H2O_R,
+            TP_Variables.bulk_density_rock,
+            TP_Variables.area_rock_north,
+            TP_Variables.burial_velocity_rock,
+            TP_Variables.water_content_rock,
         )
         j_Γburial_p_n[i] = TP_MBFR.Sor_P_burialflux(
             Γ_p_n[i],
-            TP_Variables.Bulk_density_P,
-            TP_Variables.A_Peat_N,
-            TP_Variables.v_burial_P,
-            TP_Variables.Per_H2O_P,
+            TP_Variables.bulk_density_peat,
+            TP_Variables.area_peat_north,
+            TP_Variables.burial_velocity_peat,
+            TP_Variables.water_content_peat,
         )
         j_Γburial_m_s[i] = TP_MBFR.Sor_P_burialflux(
             Γ_m_s[i],
-            TP_Variables.Bulk_density_M,
-            TP_Variables.A_Mud_S,
-            TP_Variables.v_burial_M,
-            TP_Variables.Per_H2O_M,
+            TP_Variables.bulk_density_mud,
+            TP_Variables.area_mud_south,
+            TP_Variables.burial_velocity_mud,
+            TP_Variables.water_content_mud,
         )
         j_Γburial_s_s[i] = TP_MBFR.Sor_P_burialflux(
             Γ_s_s[i],
-            TP_Variables.Bulk_density_S,
-            TP_Variables.A_Sand_S,
-            TP_Variables.v_burial_S,
-            TP_Variables.Per_H2O_S,
+            TP_Variables.bulk_density_sand,
+            TP_Variables.area_sand_south,
+            TP_Variables.burial_velocity_sand,
+            TP_Variables.water_content_sand,
         )
         j_Γburial_r_s[i] = TP_MBFR.Sor_P_burialflux(
             Γ_r_s[i],
-            TP_Variables.Bulk_density_R,
-            TP_Variables.A_Rock_S,
-            TP_Variables.v_burial_R,
-            TP_Variables.Per_H2O_R,
+            TP_Variables.bulk_density_rock,
+            TP_Variables.area_rock_south,
+            TP_Variables.burial_velocity_rock,
+            TP_Variables.water_content_rock,
         )
         j_Γburial_p_s[i] = TP_MBFR.Sor_P_burialflux(
             Γ_p_s[i],
-            TP_Variables.Bulk_density_P,
-            TP_Variables.A_Peat_S,
-            TP_Variables.v_burial_P,
-            TP_Variables.Per_H2O_P,
+            TP_Variables.bulk_density_peat,
+            TP_Variables.area_peat_south,
+            TP_Variables.burial_velocity_peat,
+            TP_Variables.water_content_peat,
         )
 
         # Calculate the phosphorus concentration for the next time step for the North and South regions (for mud, sand, rock, and peat)
@@ -881,28 +881,28 @@ def LOONE_NUT(
 
         # Calculate the decomposition rates for the North and South regions (for mud, sand, rock, and peat)
         j_decomp_m_n[i] = TP_MBFR.J_decomp(
-            TP_Variables.K_decomp_M, p_sed_m_n[i], mass_sed_m_n
+            TP_Variables.decomposition_rate_mud, p_sed_m_n[i], mass_sed_m_n
         )
         j_decomp_s_n[i] = TP_MBFR.J_decomp(
-            TP_Variables.K_decomp_S, p_sed_s_n[i], mass_sed_s_n
+            TP_Variables.decomposition_rate_sand, p_sed_s_n[i], mass_sed_s_n
         )
         j_decomp_r_n[i] = TP_MBFR.J_decomp(
-            TP_Variables.K_decomp_R, p_sed_r_n[i], mass_sed_r_n
+            TP_Variables.decomposition_rate_rock, p_sed_r_n[i], mass_sed_r_n
         )
         j_decomp_p_n[i] = TP_MBFR.J_decomp(
-            TP_Variables.K_decomp_P, p_sed_p_n[i], mass_sed_p_n
+            TP_Variables.decomposition_rate_peat, p_sed_p_n[i], mass_sed_p_n
         )
         j_decomp_m_s[i] = TP_MBFR.J_decomp(
-            TP_Variables.K_decomp_M, p_sed_m_s[i], mass_sed_m_s
+            TP_Variables.decomposition_rate_mud, p_sed_m_s[i], mass_sed_m_s
         )
         j_decomp_s_s[i] = TP_MBFR.J_decomp(
-            TP_Variables.K_decomp_S, p_sed_s_s[i], mass_sed_s_s
+            TP_Variables.decomposition_rate_sand, p_sed_s_s[i], mass_sed_s_s
         )
         j_decomp_r_s[i] = TP_MBFR.J_decomp(
-            TP_Variables.K_decomp_R, p_sed_r_s[i], mass_sed_r_s
+            TP_Variables.decomposition_rate_rock, p_sed_r_s[i], mass_sed_r_s
         )
         j_decomp_p_s[i] = TP_MBFR.J_decomp(
-            TP_Variables.K_decomp_P, p_sed_p_s[i], mass_sed_p_s
+            TP_Variables.decomposition_rate_peat, p_sed_p_s[i], mass_sed_p_s
         )
 
         # Calculate the DIP pore concentration for the North and South regions (for mud, sand, rock, and peat)
@@ -915,10 +915,10 @@ def LOONE_NUT(
             j_ads_m_n[i],
             p_sed_m_n[i],
             mass_sed_m_n,
-            TP_Variables.v_diff_M,
-            TP_Variables.A_Mud_N,
-            TP_Variables.K_decomp_M,
-            TP_Variables.v_burial_M,
+            TP_Variables.diffusion_velocity_mud,
+            TP_Variables.area_mud_north,
+            TP_Variables.decomposition_rate_mud,
+            TP_Variables.burial_velocity_mud,
         )
         dip_pore_s_n[i + 1] = _calculate_DIP_pore(
             workspace,
@@ -929,10 +929,10 @@ def LOONE_NUT(
             j_ads_s_n[i],
             p_sed_s_n[i],
             mass_sed_s_n,
-            TP_Variables.v_diff_S,
-            TP_Variables.A_Sand_N,
-            TP_Variables.K_decomp_S,
-            TP_Variables.v_burial_S,
+            TP_Variables.diffusion_velocity_sand,
+            TP_Variables.area_sand_north,
+            TP_Variables.decomposition_rate_sand,
+            TP_Variables.burial_velocity_sand,
         )
         dip_pore_r_n[i + 1] = _calculate_DIP_pore(
             workspace,
@@ -943,10 +943,10 @@ def LOONE_NUT(
             j_ads_r_n[i],
             p_sed_r_n[i],
             mass_sed_r_n,
-            TP_Variables.v_diff_R,
-            TP_Variables.A_Rock_N,
-            TP_Variables.K_decomp_R,
-            TP_Variables.v_burial_R,
+            TP_Variables.diffusion_velocity_rock,
+            TP_Variables.area_rock_north,
+            TP_Variables.decomposition_rate_rock,
+            TP_Variables.burial_velocity_rock,
         )
         dip_pore_p_n[i + 1] = _calculate_DIP_pore(
             workspace,
@@ -957,10 +957,10 @@ def LOONE_NUT(
             j_ads_p_n[i],
             p_sed_p_n[i],
             mass_sed_p_n,
-            TP_Variables.v_diff_P,
-            TP_Variables.A_Peat_N,
-            TP_Variables.K_decomp_P,
-            TP_Variables.v_burial_P,
+            TP_Variables.diffusion_velocity_peat,
+            TP_Variables.area_peat_north,
+            TP_Variables.decomposition_rate_peat,
+            TP_Variables.burial_velocity_peat,
         )
         dip_pore_m_s[i + 1] = _calculate_DIP_pore(
             workspace,
@@ -971,10 +971,10 @@ def LOONE_NUT(
             j_ads_m_s[i],
             p_sed_m_s[i],
             mass_sed_m_s,
-            TP_Variables.v_diff_M,
-            TP_Variables.A_Mud_S,
-            TP_Variables.K_decomp_M,
-            TP_Variables.v_burial_M,
+            TP_Variables.diffusion_velocity_mud,
+            TP_Variables.area_mud_south,
+            TP_Variables.decomposition_rate_mud,
+            TP_Variables.burial_velocity_mud,
         )
         dip_pore_s_s[i + 1] = _calculate_DIP_pore(
             workspace,
@@ -985,10 +985,10 @@ def LOONE_NUT(
             j_ads_s_s[i],
             p_sed_s_s[i],
             mass_sed_s_s,
-            TP_Variables.v_diff_S,
-            TP_Variables.A_Sand_S,
-            TP_Variables.K_decomp_S,
-            TP_Variables.v_burial_S,
+            TP_Variables.diffusion_velocity_sand,
+            TP_Variables.area_sand_south,
+            TP_Variables.decomposition_rate_sand,
+            TP_Variables.burial_velocity_sand,
         )
         dip_pore_r_s[i + 1] = _calculate_DIP_pore(
             workspace,
@@ -999,10 +999,10 @@ def LOONE_NUT(
             j_ads_r_s[i],
             p_sed_r_s[i],
             mass_sed_r_s,
-            TP_Variables.v_diff_R,
-            TP_Variables.A_Rock_S,
-            TP_Variables.K_decomp_R,
-            TP_Variables.v_burial_R,
+            TP_Variables.diffusion_velocity_rock,
+            TP_Variables.area_rock_south,
+            TP_Variables.decomposition_rate_rock,
+            TP_Variables.burial_velocity_rock,
         )
         dip_pore_p_s[i + 1] = _calculate_DIP_pore(
             workspace,
@@ -1013,10 +1013,10 @@ def LOONE_NUT(
             j_ads_p_s[i],
             p_sed_p_s[i],
             mass_sed_p_s,
-            TP_Variables.v_diff_P,
-            TP_Variables.A_Peat_S,
-            TP_Variables.K_decomp_P,
-            TP_Variables.v_burial_P,
+            TP_Variables.diffusion_velocity_peat,
+            TP_Variables.area_peat_south,
+            TP_Variables.decomposition_rate_peat,
+            TP_Variables.burial_velocity_peat,
         )
 
         # Calculate the settling phosphorus for the North and South regions
@@ -1037,67 +1037,67 @@ def LOONE_NUT(
 
         # Calculate the diffusion phosphorus for the North and South regions (for mud, sand, rock, and peat)
         p_diff_m_n[i] = TP_MBFR.Diff_P(
-            TP_Variables.v_diff_M,
+            TP_Variables.diffusion_velocity_mud,
             dip_pore_m_n[i],
             dip_lake_n[i],
             Θ_m,
-            TP_Variables.A_Mud_N,
+            TP_Variables.area_mud_north,
             lake_o_storage_n[i],
         )
         p_diff_s_n[i] = TP_MBFR.Diff_P(
-            TP_Variables.v_diff_S,
+            TP_Variables.diffusion_velocity_sand,
             dip_pore_s_n[i],
             dip_lake_n[i],
             Θ_s,
-            TP_Variables.A_Sand_N,
+            TP_Variables.area_sand_north,
             lake_o_storage_n[i],
         )
         p_diff_r_n[i] = TP_MBFR.Diff_P(
-            TP_Variables.v_diff_R,
+            TP_Variables.diffusion_velocity_rock,
             dip_pore_r_n[i],
             dip_lake_n[i],
             Θ_r,
-            TP_Variables.A_Rock_N,
+            TP_Variables.area_rock_north,
             lake_o_storage_n[i],
         )
         p_diff_p_n[i] = TP_MBFR.Diff_P(
-            TP_Variables.v_diff_P,
+            TP_Variables.diffusion_velocity_peat,
             dip_pore_p_n[i],
             dip_lake_n[i],
             Θ_p,
-            TP_Variables.A_Peat_N,
+            TP_Variables.area_peat_north,
             lake_o_storage_n[i],
         )
         p_diff_m_s[i] = TP_MBFR.Diff_P(
-            TP_Variables.v_diff_M,
+            TP_Variables.diffusion_velocity_mud,
             dip_pore_m_s[i],
             dip_lake_s[i],
             Θ_m,
-            TP_Variables.A_Mud_S,
+            TP_Variables.area_mud_south,
             lake_o_storage_s[i],
         )
         p_diff_s_s[i] = TP_MBFR.Diff_P(
-            TP_Variables.v_diff_S,
+            TP_Variables.diffusion_velocity_sand,
             dip_pore_s_s[i],
             dip_lake_s[i],
             Θ_s,
-            TP_Variables.A_Sand_S,
+            TP_Variables.area_sand_south,
             lake_o_storage_s[i],
         )
         p_diff_r_s[i] = TP_MBFR.Diff_P(
-            TP_Variables.v_diff_R,
+            TP_Variables.diffusion_velocity_rock,
             dip_pore_r_s[i],
             dip_lake_s[i],
             Θ_r,
-            TP_Variables.A_Rock_S,
+            TP_Variables.area_rock_south,
             lake_o_storage_s[i],
         )
         p_diff_p_s[i] = TP_MBFR.Diff_P(
-            TP_Variables.v_diff_P,
+            TP_Variables.diffusion_velocity_peat,
             dip_pore_p_s[i],
             dip_lake_s[i],
             Θ_p,
-            TP_Variables.A_Peat_S,
+            TP_Variables.area_peat_south,
             lake_o_storage_s[i],
         )
 
@@ -1119,10 +1119,10 @@ def LOONE_NUT(
             lake_o_a_n[i],
             tp_lake_n[i],
             lake_o_storage_n[i],
-            TP_Variables.v_diff_M,
-            TP_Variables.v_diff_S,
-            TP_Variables.v_diff_R,
-            TP_Variables.v_diff_P,
+            TP_Variables.diffusion_velocity_mud,
+            TP_Variables.diffusion_velocity_sand,
+            TP_Variables.diffusion_velocity_rock,
+            TP_Variables.diffusion_velocity_peat,
             v_settle_n[i],
             sed_resusp_m_n[i],
             sed_resusp_s_n[i],
@@ -1147,10 +1147,10 @@ def LOONE_NUT(
             lake_o_a_s[i],
             tp_lake_s[i],
             lake_o_storage_s[i],
-            TP_Variables.v_diff_M,
-            TP_Variables.v_diff_S,
-            TP_Variables.v_diff_R,
-            TP_Variables.v_diff_P,
+            TP_Variables.diffusion_velocity_mud,
+            TP_Variables.diffusion_velocity_sand,
+            TP_Variables.diffusion_velocity_rock,
+            TP_Variables.diffusion_velocity_peat,
             v_settle_s[i],
             sed_resusp_m_s[i],
             sed_resusp_s_s[i],

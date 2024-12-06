@@ -110,7 +110,7 @@ def DIP_pore(
             + K_decomp * P_sed * Mass_sed
             - v_burial * Θ * A_sed * DIP_pore
         )
-        / (Θ * TP_Variables.Z_sed * A_sed)
+        / (Θ * TP_Variables.sediment_depth * A_sed)
     ) + DIP_pore
     return DIP_p_Nxt
 
@@ -178,19 +178,19 @@ def TP_Lake_N(
             + Atm_Dep_N
             + v_diff_M
             * (DIP_pore_M_N - DIP_Lake_N)
-            * TP_Variables.A_Mud_N
+            * TP_Variables.area_mud_north
             * Θ_M
             + v_diff_S
             * (DIP_pore_S_N - DIP_Lake_N)
-            * TP_Variables.A_Sand_N
+            * TP_Variables.area_sand_north
             * Θ_S
             + v_diff_R
             * (DIP_pore_R_N - DIP_Lake_N)
-            * TP_Variables.A_Rock_N
+            * TP_Variables.area_rock_north
             * Θ_R
             + v_diff_P
             * (DIP_pore_P_N - DIP_Lake_N)
-            * TP_Variables.A_Peat_N
+            * TP_Variables.area_peat_north
             * Θ_P
             - (
                 Q_N2S * TP_Lake_N
@@ -234,19 +234,19 @@ def TP_Lake_S(
             + Q_N2S * TP_Lake_N
             + v_diff_M
             * (DIP_pore_M_S - DIP_Lake_S)
-            * TP_Variables.A_Mud_S
+            * TP_Variables.area_mud_south
             * Θ_M
             + v_diff_S
             * (DIP_pore_S_S - DIP_Lake_S)
-            * TP_Variables.A_Sand_S
+            * TP_Variables.area_sand_south
             * Θ_S
             + v_diff_R
             * (DIP_pore_R_S - DIP_Lake_S)
-            * TP_Variables.A_Rock_S
+            * TP_Variables.area_rock_south
             * Θ_R
             + v_diff_P
             * (DIP_pore_P_S - DIP_Lake_S)
-            * TP_Variables.A_Peat_S
+            * TP_Variables.area_peat_south
             * Θ_P
             - (
                 Q_O * TP_Lake_S
@@ -292,7 +292,7 @@ def TP_L_M_N(
             + Atm_Dep_N
             + v_diff_M
             * (DIP_pore_M_N - DIP_Lake_M_N)
-            * TP_Variables.A_Mud_N
+            * TP_Variables.area_mud_north
             * Θ_M
             - (
                 Q_N2S * TP_Lake_M_N
@@ -326,7 +326,7 @@ def TP_L_S_N(
             + Atm_Dep_N
             + v_diff_S
             * (DIP_pore_S_N - DIP_Lake_S_N)
-            * TP_Variables.A_Sand_N
+            * TP_Variables.area_sand_north
             * Θ_S
             - (
                 Q_N2S * TP_Lake_S_N
@@ -360,7 +360,7 @@ def TP_L_R_N(
             + Atm_Dep_N
             + v_diff_R
             * (DIP_pore_R_N - DIP_Lake_R_N)
-            * TP_Variables.A_Rock_N
+            * TP_Variables.area_rock_north
             * Θ_R
             - (
                 Q_N2S * TP_Lake_R_N
@@ -394,7 +394,7 @@ def TP_L_P_N(
             + Atm_Dep_N
             + v_diff_P
             * (DIP_pore_P_N - DIP_Lake_P_N)
-            * TP_Variables.A_Peat_N
+            * TP_Variables.area_peat_north
             * Θ_P
             - (
                 Q_N2S * TP_Lake_P_N
@@ -428,7 +428,7 @@ def TP_L_M_S(
             + Q_N2S * TP_Lake_N
             + v_diff_M
             * (DIP_pore_M_S - DIP_Lake_M_S)
-            * TP_Variables.A_Mud_S
+            * TP_Variables.area_mud_south
             * Θ_M
             - (
                 Q_O * TP_Lake_M_S
@@ -462,7 +462,7 @@ def TP_L_S_S(
             + Q_N2S * TP_Lake_N
             + v_diff_S
             * (DIP_pore_S_S - DIP_Lake_S_S)
-            * TP_Variables.A_Sand_S
+            * TP_Variables.area_sand_south
             * Θ_S
             - (
                 Q_O * TP_Lake_S_S
@@ -496,7 +496,7 @@ def TP_L_R_S(
             + Q_N2S * TP_Lake_N
             + v_diff_R
             * (DIP_pore_R_S - DIP_Lake_R_S)
-            * TP_Variables.A_Rock_S
+            * TP_Variables.area_rock_south
             * Θ_R
             - (
                 Q_O * TP_Lake_R_S
@@ -530,7 +530,7 @@ def TP_L_P_S(
             + Q_N2S * TP_Lake_N
             + v_diff_P
             * (DIP_pore_P_S - DIP_Lake_P_S)
-            * TP_Variables.A_Peat_S
+            * TP_Variables.area_peat_south
             * Θ_P
             - (
                 Q_O * TP_Lake_P_S

@@ -8,80 +8,91 @@ class TP_Variables:
     def __init__(self, working_path: str):
         os.chdir(working_path)
         config = load_config(working_path)
-        self.Z_sed = config['z_sed']
-        self.Per_H2O_M = config['per_h2o_m']
-        self.Per_H2O_S = config['per_h2o_s']
-        self.Per_H2O_R = config['per_h2o_r']
-        self.Per_H2O_P = config['per_h2o_p']
-        self.N_Per = config['n_per']
-        self.S_Per = config['s_per']
-        ####
-        self.Bulk_density_M = config['bulk_density_m']
-        self.Bulk_density_S = config['bulk_density_s']
-        self.Bulk_density_R = config['bulk_density_r']
-        self.Bulk_density_P = config['bulk_density_p']
-        ####
-        self.Particle_density_M = config['particle_density_m']
-        self.Particle_density_S = config['particle_density_s']
-        self.Particle_density_R = config['particle_density_r']
-        self.Particle_density_P = config['particle_density_p']
-        ####
-        self.A_Mud_N = config['a_mud_n']
-        self.A_Mud_S = config['a_mud_s']
-        self.A_Sand_N = config['a_sand_n']
-        self.A_Sand_S = config['a_sand_s']
-        self.A_Rock_N = config['a_rock_n']
-        self.A_Rock_S = config['a_rock_s']
-        self.A_Peat_N = config['a_peat_n']
-        self.A_Peat_S = config['a_peat_s']
-        self.A_N = self.A_Mud_N + self.A_Sand_N + self.A_Rock_N + self.A_Peat_N
-        self.A_S = self.A_Mud_S + self.A_Sand_S + self.A_Rock_S + self.A_Peat_S
-        A_tot = self.A_N + self.A_S
-        self.Per_M_N = self.A_Mud_N / A_tot
-        self.Per_M_S = self.A_Mud_S / A_tot
-        self.Per_S_N = self.A_Sand_N / A_tot
-        self.Per_S_S = self.A_Sand_S / A_tot
-        self.Per_R_N = self.A_Rock_N / A_tot
-        self.Per_R_S = self.A_Rock_S / A_tot
-        self.Per_P_N = self.A_Peat_N / A_tot
-        self.Per_P_S = self.A_Peat_S / A_tot
 
-        self.Per_M_NN = self.A_Mud_N / self.A_N
-        self.Per_M_SS = self.A_Mud_S / self.A_S
-        self.Per_S_NN = self.A_Sand_N / self.A_N
-        self.Per_S_SS = self.A_Sand_S / self.A_S
-        self.Per_R_NN = self.A_Rock_N / self.A_N
-        self.Per_R_SS = self.A_Rock_S / self.A_S
-        self.Per_P_NN = self.A_Peat_N / self.A_N
-        self.Per_P_SS = self.A_Peat_S / self.A_S
-        self.Γ_inf = 91  # (mg/kg)
-        #####Monthly
-        self.v_burial_M = config["v_burial_m"]
-        self.v_burial_S = config["v_burial_s"]
-        self.v_burial_R = config["v_burial_r"]
-        self.v_burial_P = config["v_burial_p"]
+        # Sediment properties
+        self.sediment_depth = config['z_sed']
+        self.water_content_mud = config['per_h2o_m']
+        self.water_content_sand = config['per_h2o_s']
+        self.water_content_rock = config['per_h2o_r']
+        self.water_content_peat = config['per_h2o_p']
+        self.northern_percentage = config['n_per']
+        self.southern_percentage = config['s_per']
+
+        # Bulk density
+        self.bulk_density_mud = config['bulk_density_m']
+        self.bulk_density_sand = config['bulk_density_s']
+        self.bulk_density_rock = config['bulk_density_r']
+        self.bulk_density_peat = config['bulk_density_p']
+
+        # # Particle density
+        self.particle_density_mud = config['particle_density_m']
+        self.particle_density_sand = config['particle_density_s']
+        self.particle_density_rock = config['particle_density_r']
+        self.particle_density_peat = config['particle_density_p']
+
+        # # Area of sediments
+        self.area_mud_north = config['a_mud_n']
+        self.area_mud_south = config['a_mud_s']
+        self.area_sand_north = config['a_sand_n']
+        self.area_sand_south = config['a_sand_s']
+        self.area_rock_north = config['a_rock_n']
+        self.area_rock_south = config['a_rock_s']
+        self.area_peat_north = config['a_peat_n']
+        self.area_peat_south = config['a_peat_s']
+
+        self.total_area_north = self.area_mud_north + self.area_sand_north + self.area_rock_north + self.area_peat_north
+        self.total_area_south = self.area_mud_south + self.area_sand_south + self.area_rock_south + self.area_peat_south
+        total_area = self.total_area_north + self.total_area_south
+
+        # Percentage calculations
+        self.percentage_mud_north = self.area_mud_north / total_area
+        self.percentage_mud_south = self.area_mud_south / total_area
+        self.percentage_sand_north = self.area_sand_north / total_area
+        self.percentage_sand_south = self.area_sand_south / total_area
+        self.percentage_rock_north = self.area_rock_north / total_area
+        self.percentage_rock_south = self.area_rock_south / total_area
+        self.percentage_peat_north = self.area_peat_north / total_area
+        self.percentage_peat_south = self.area_peat_south / total_area
+
+        self.percentage_mud_north_n = self.area_mud_north / self.total_area_north
+        self.percentage_mud_south_s = self.area_mud_south / self.total_area_south
+        self.percentage_sand_north_n = self.area_sand_north / self.total_area_north
+        self.percentage_sand_south_s = self.area_sand_south / self.total_area_south
+        self.percentage_rock_north_n = self.area_rock_north / self.total_area_north
+        self.percentage_rock_south_s = self.area_rock_south / self.total_area_south
+        self.percentage_peat_north_n = self.area_peat_north / self.total_area_north
+        self.percentage_peat_south_s = self.area_peat_south / self.total_area_south
+
+        self.inorganic_fraction = 91  # (mg/kg)
+
+        # Burial velocities
+        self.burial_velocity_mud = config["v_burial_m"]
+        self.burial_velocity_sand = config["v_burial_s"]
+        self.burial_velocity_rock = config["v_burial_r"]
+        self.burial_velocity_peat = config["v_burial_p"]
 
         # Read Calibration Outputs
-        Cal_Res = pd.read_csv(config["nondominated_sol_var"])
+        calibration_results = pd.read_csv(config["nondominated_sol_var"])
+        parameters = calibration_results["Par"]
 
-        Par = Cal_Res["Par"]
-        self.v_diff_M = Par[0]
-        self.v_diff_S = Par[1]
-        self.v_diff_R = Par[2]
-        self.v_diff_P = Par[3]
-        ####
-        self.K_decomp_M = Par[4]
-        self.K_decomp_S = Par[5]
-        self.K_decomp_R = Par[6]
-        self.K_decomp_P = Par[7]
-        ###
-        self.K_des_M = Par[8]
-        self.K_des_S = Par[9]
-        self.K_des_R = Par[10]
-        self.K_des_P = Par[11]
-        ####
-        self.K_ads_M = Par[12]
-        self.K_ads_S = Par[13]
-        self.K_ads_R = Par[14]
-        self.K_ads_P = Par[15]
-        # v_settle = Par[16]
+        self.diffusion_velocity_mud = parameters[0]
+        self.diffusion_velocity_sand = parameters[1]
+        self.diffusion_velocity_rock = parameters[2]
+        self.diffusion_velocity_peat = parameters[3]
+
+        self.decomposition_rate_mud = parameters[4]
+        self.decomposition_rate_sand = parameters[5]
+        self.decomposition_rate_rock = parameters[6]
+        self.decomposition_rate_peat = parameters[7]
+
+        self.desorption_rate_mud = parameters[8]
+        self.desorption_rate_sand = parameters[9]
+        self.desorption_rate_rock = parameters[10]
+        self.desorption_rate_peat = parameters[11]
+
+        self.adsorption_rate_mud = parameters[12]
+        self.adsorption_rate_sand = parameters[13]
+        self.adsorption_rate_rock = parameters[14]
+        self.adsorption_rate_peat = parameters[15]
+
+        # self.settling_velocity = parameters[16]  # Uncomment if needed
