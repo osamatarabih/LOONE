@@ -73,9 +73,9 @@ def LOONE_NUT(
     date_rng_0 = pd.date_range(start=startdate, end=enddate, freq="D")
     load_ext = pd.read_csv(os.path.join(data_dir, loads_external_filename))
     if forecast_mode:
-        q_in = pd.read_csv(os.path.join(data_dir, f"LO_Inflows_BK_forecast.csv"))
+        q_in = pd.read_csv(os.path.join(data_dir, "LO_Inflows_BK_forecast.csv"))
     else:
-        q_in = pd.read_csv(os.path.join(data_dir, f"LO_Inflows_BK.csv"))
+        q_in = pd.read_csv(os.path.join(data_dir, "LO_Inflows_BK.csv"))
     flow_df = pd.read_csv(os.path.join(data_dir, flow_df_filename))
     q_o = flow_df["Outflows"].values
     s77_q = loone_q["S77_Q"].values
@@ -84,7 +84,7 @@ def LOONE_NUT(
         70.0456 / SECONDS_IN_DAY
     )
     sto_stage = pd.read_csv(
-        os.path.join(data_dir, f"Average_LO_Storage_3MLag.csv")
+        os.path.join(data_dir, "Average_LO_Storage_3MLag.csv")
     )
     stage_lo = sto_stage["Stage_ft"].values
     storage = sto_stage["Storage_acft"].values
@@ -96,13 +96,13 @@ def LOONE_NUT(
 
     # Read Shear Stress driven by Wind Speed
     wind_shear_str = pd.read_csv(
-        os.path.join(data_dir, f"WindShearStress.csv")
+        os.path.join(data_dir, "WindShearStress.csv")
     )
     w_ss = wind_shear_str["ShearStress"]  # Dyne/cm2
     nu_ts = pd.read_csv(os.path.join(data_dir, "nu.csv"))
     LO_BL = 0.5  # m (Bed Elevation of LO)
     g = 9.8  # m/s2 gravitational acceleration
-    cal_res = pd.read_csv(os.path.join(data_dir, f"nondominated_Sol_var.csv"))
+    cal_res = pd.read_csv(os.path.join(data_dir, "nondominated_Sol_var.csv"))
     par = cal_res["Par"]
     d_c = par[20]  # m (particle diameter 10 microm /1E6 to convert to m) clay
     d_s = par[21]  # m sand
@@ -1219,7 +1219,7 @@ def LOONE_NUT(
     return p_lake_df
 
 
-def _calculate_porosity(bulk_density, particle_density, water_content):
+def _calculate_porosity(bulk_density: float, particle_density: float, water_content: float) -> float:
     """
     Calculate the porosity of a sediment.
 
@@ -1236,7 +1236,7 @@ def _calculate_porosity(bulk_density, particle_density, water_content):
     )
 
 
-def _calculate_mass_sediment(area, thickness, water_content, bulk_density):
+def _calculate_mass_sediment(area: float, thickness: float, water_content: float, bulk_density: float) -> float:
     """
     Calculate the mass of sediment.
 
@@ -1305,8 +1305,8 @@ def _calculate_DIP_pore(
 
 
 def _calculate_sediment_area(
-    lake_overall_area, area_type, area_mud, area_sand, area_rock, area_peat
-):
+    lake_overall_area: float, area_type: float, area_mud: float, area_sand: float, area_rock: float, area_peat: float
+) -> float:
     """
     Calculate the area of a specific type of sediment in a region of a lake.
 
@@ -1329,21 +1329,21 @@ def _calculate_sediment_area(
 
 
 def _calculate_settling_velocity(
-    gas_constant,
-    gravity,
-    clay_diameter,
-    sand_diameter,
-    clay_drag_coefficient,
-    sand_drag_coefficient,
-    clay_lift_coefficient,
-    sand_lift_coefficient,
-    dynamic_viscosity,
-    mud_area,
-    peat_area,
-    sand_area,
-    rock_area,
-    total_area,
-):
+    gas_constant: float,
+    gravity: float,
+    clay_diameter: float,
+    sand_diameter: float,
+    clay_drag_coefficient: float,
+    sand_drag_coefficient: float,
+    clay_lift_coefficient: float,
+    sand_lift_coefficient: float,
+    dynamic_viscosity: float,
+    mud_area: float,
+    peat_area: float,
+    sand_area: float,
+    rock_area: float,
+    total_area: float,
+) -> float:
     """
     Calculate the settling velocity for a region of a lake.
 
@@ -1395,15 +1395,15 @@ def _calculate_settling_velocity(
 
 
 def _calculate_sediment_resuspension(
-    sedimentation_constant,
-    time_delay,
-    E_1,
-    E_2,
-    wind_shear_stress,
-    critical_shear_stress,
-    lake_oxygen_water_depth,
-    sediment_proportion,
-):
+    sedimentation_constant: float,
+    time_delay: float,
+    E_1: float,
+    E_2: float,
+    wind_shear_stress: float,
+    critical_shear_stress: float,
+    lake_oxygen_water_depth: float,
+    sediment_proportion: float,
+) -> float:
     """
     Calculate the sediment resuspension.
 
@@ -1439,17 +1439,17 @@ def _calculate_sediment_resuspension(
 
 
 def _calculate_next_sediment(
-    lake_oxygen_area,
-    total_phosphorus_lake,
-    dissolved_inorganic_phosphorus_lake,
-    sediment_burial_flux,
-    current_sediment_phosphorus,
-    current_sediment_mass,
-    decomposition_constant,
-    settling_velocity,
-    sediment_resuspension,
-    lake_oxygen_storage,
-):
+    lake_oxygen_area: float,
+    total_phosphorus_lake: float,
+    dissolved_inorganic_phosphorus_lake: float,
+    sediment_burial_flux: float,
+    current_sediment_phosphorus: float,
+    current_sediment_mass: float,
+    decomposition_constant: float,
+    settling_velocity: float,
+    sediment_resuspension: float,
+    lake_oxygen_storage: float,
+) -> float:
     """
     Calculate the next sediment value based on various parameters.
 
@@ -1485,12 +1485,12 @@ def _calculate_next_sediment(
 
 
 def _calculate_next_concentration(
-    adsorption_rate,
-    desorption_rate,
-    burial_rate,
-    current_concentration,
-    sediment_mass,
-):
+    adsorption_rate: float,
+    desorption_rate: float,
+    burial_rate: float,
+    current_concentration: float,
+    sediment_mass: float,
+) -> float:
     """
     Calculate the concentration of phosphorus in the sediment at the next time step.
 
@@ -1519,32 +1519,32 @@ def _calculate_next_concentration(
 
 
 def _calculate_next_total_phosphorus_concentration(
-    workspace,
-    external_loading,
-    atmospheric_deposition,
-    mixing_factor_M,
-    mixing_factor_S,
-    mixing_factor_R,
-    mixing_factor_P,
-    pore_water_DIP_M,
-    pore_water_DIP_S,
-    pore_water_DIP_R,
-    pore_water_DIP_P,
-    lake_DIP,
-    flow_rate_N2S,
-    lake_oxygen_concentration,
-    current_tp_concentration,
-    lake_oxygen_storage,
-    vertical_diffusion_M,
-    vertical_diffusion_S,
-    vertical_diffusion_R,
-    vertical_diffusion_P,
-    vertical_settling,
-    sediment_resuspension_M,
-    sediment_resuspension_S,
-    sediment_resuspension_R,
-    sediment_resuspension_P,
-):
+    workspace: str,
+    external_loading: float,
+    atmospheric_deposition: float,
+    mixing_factor_M: float,
+    mixing_factor_S: float,
+    mixing_factor_R: float,
+    mixing_factor_P: float,
+    pore_water_DIP_M: float,
+    pore_water_DIP_S: float,
+    pore_water_DIP_R: float,
+    pore_water_DIP_P: float,
+    lake_DIP: float,
+    flow_rate_N2S: float,
+    lake_oxygen_concentration: float,
+    current_tp_concentration: float,
+    lake_oxygen_storage: float,
+    vertical_diffusion_M: float,
+    vertical_diffusion_S: float,
+    vertical_diffusion_R: float,
+    vertical_diffusion_P: float,
+    vertical_settling: float,
+    sediment_resuspension_M: float,
+    sediment_resuspension_S: float,
+    sediment_resuspension_R: float,
+    sediment_resuspension_P: float,
+) -> float:
     """
     Calculates the next total phosphorus (TP) concentration in the lake.
 
