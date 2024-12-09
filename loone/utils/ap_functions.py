@@ -1,4 +1,4 @@
-def thc_class_normal_or_above(tributary_hydrologic_condition, thc_threshold):
+def thc_class_normal_or_above(tributary_hydrologic_condition: float, thc_threshold: float) -> bool:
     """
     Determines if the tributary hydrologic condition (THC) is normal or above.
 
@@ -13,122 +13,128 @@ def thc_class_normal_or_above(tributary_hydrologic_condition, thc_threshold):
 
 
 def LStgCorres(
-    month,
-    WSMs_WSM1,
-    Targ_Stg_df_Pre_defined_Variables_LowChance,
-    Pre_defined_Variables_Opt_LChance_line,
-    Pre_defined_Variables_LowChance,
-):
+    month: int,
+    wsm1: float,
+    target_stage: float,
+    option: int,
+    low_chance: int,
+) -> float:
     """
     Calculates the lake stage that is to be used with LowChance_Check.
 
     Args:
         month (int): The current month of the year (1-12).
-        WSMs_WSM1 (float): A parameter from a water surface model.
-        Targ_Stg_df_Pre_defined_Variables_LowChance (float): The target stage value under low chance conditions.
-        Pre_defined_Variables_Opt_LChance_line (int): The option value being used for Opt_LChance_line (in pre_defined_variables.py).
-        Pre_defined_Variables_LowChance (int): A predefined variable related to the low chance conditions.
+        wsm1 (float): A parameter from a water surface model.
+        target_stage (float): The target stage value under low chance conditions.
+        option (int): The option value being used for Opt_LChance_line (in pre_defined_variables.py).
+        low_chance (int): A predefined variable related to the low chance conditions.
 
     Returns:
         float: The calculated corresponding lake stage.
     """
-    if Pre_defined_Variables_Opt_LChance_line == 1:
-        if month > 5 and month < 10:
-            St = WSMs_WSM1
+    if option == 1:
+        if 5 < month < 10:
+            stage = wsm1
         else:
-            St = WSMs_WSM1 + 0.5
-    elif Pre_defined_Variables_LowChance == 1 or (month > 5 and month < 10):
-        St = -999
+            stage = wsm1 + 0.5
+    elif low_chance == 1 or (5 < month < 10):
+        stage = -999
     else:
-        St = Targ_Stg_df_Pre_defined_Variables_LowChance
-    return St
+        stage = target_stage
+    return stage
 
 
-def LowChance_Check(lake_o_stage_ap, lstg_corres):
+def LowChance_Check(lake_stage: float, corresponding_stage: float) -> bool:
     """
-    Checks if the stage (water level) of Lake Okeechobee is greater than a given corresponding stage.
-    Used to determine if there is a low chance of the stage falling below a certain level on june 1st.
+    Determines if the Lake Okeechobee stage is greater than a corresponding stage,
+    indicating a low chance of the stage falling below a certain level by June 1st.
 
     Args:
-        Lake_O_Stage_AP (float): The stage (water level) of Lake Okeechobee.
-        LStgCorres (float): The corresponding stage (water level) to compare with.
+        lake_stage (float): The current water level of Lake Okeechobee.
+        corresponding_stage (float): The reference water level to compare against.
 
     Returns:
-        bool: True if the Lake Okeechobee stage (water level) is greater than the corresponding stage, False otherwise.
+        bool: True if the Lake Okeechobee stage is greater than the corresponding stage, False otherwise.
     """
-    return lake_o_stage_ap > lstg_corres
+    return lake_stage > corresponding_stage
 
 
-def Forecast_D_Sal(Pre_defined_Variables_OptSalFcast):
+def Forecast_D_Sal(opt_sal_fcast: int) -> float:
     """
-    Calculates the forecasted daily salinity at a specific location based on the provided option?
+    Calculates the forecasted daily salinity at a specific location based on the provided option.
 
     Args:
-        OptSalFcast (int): The option being used for salinity forecast.
+        opt_sal_fcast (int): The option being used for salinity forecast.
 
     Returns:
         float: The forecasted daily salinity at the specified location.
     """
     import numpy as np
 
-    if Pre_defined_Variables_OptSalFcast == 1:
+    forecast = np.nan  # Default to NaN if option is not handled
+
+    if opt_sal_fcast == 1:
+        # Add logic for option 1
         pass
-    elif Pre_defined_Variables_OptSalFcast == 2:
+    elif opt_sal_fcast == 2:
+        # Add logic for option 2
         pass
-    elif Pre_defined_Variables_OptSalFcast == 3:
-        F = np.nan
-    return F
+    elif opt_sal_fcast == 3:
+        forecast = np.nan
+
+    return forecast
 
 
-def n30d_mavg(Pre_defined_Variables_OptSalFcast):
+def n30d_mavg(opt_sal_fcast: int) -> float:
     """
     Calculates the 30-day moving average salinity (psu).
 
     Args:
-        Pre_defined_Variables_OptSalFcast (int): Option for salinity forecast.
+        opt_sal_fcast (int): Option for salinity forecast.
 
     Returns:
         float: The 30-day moving average salinity.
     """
     import numpy as np
 
-    if Pre_defined_Variables_OptSalFcast == 1:
+    moving_avg_salinity = np.nan
+
+    if opt_sal_fcast == 1:
+        # Logic for option 1
         pass
-    elif Pre_defined_Variables_OptSalFcast == 2:
+    elif opt_sal_fcast == 2:
+        # Logic for option 2
         pass
-    elif Pre_defined_Variables_OptSalFcast == 3:
-        F = np.nan
-    return F
+    elif opt_sal_fcast == 3:
+        moving_avg_salinity = np.nan
+
+    return moving_avg_salinity
 
 
 def n30davgForecast(
-    Estuary_needs_water,
-    n30d_mavg_i2iplus13,
-    Pre_defined_Variables_OptSalFcast,
-    Pre_defined_Variables_CE_SalThreshold,
-):
+    estuary_needs_water: float,
+    moving_avg_2weeks: list,
+    opt_sal_fcast: int,
+    sal_threshold: float,
+) -> bool:
     """
-    Calculates whether the 30 day average forecast salinity is greater than the defined CE_SalThreshold psu within 2wks.
+    Determines if the 30-day average forecast salinity exceeds the defined salinity threshold within two weeks.
 
     Args:
-        Estuary_needs_water (float): The current water needs of the Estuary.
-        n30d_mavg_i2iplus13 (list): A list of two weeks worth of data from a list of 30-day moving average values.
-        Pre_defined_Variables_OptSalFcast (int): The salinity forecast option being used.
-        Pre_defined_Variables_CE_SalThreshold (float): The predefined salinity threshold value for Caloosahatchee Estuary.
+        estuary_needs_water (float): The current water needs of the estuary.
+        moving_avg_2weeks (list): Two weeks' worth of 30-day moving average salinity values.
+        opt_sal_fcast (int): The salinity forecast option being used.
+        sal_threshold (float): The predefined salinity threshold for the Caloosahatchee Estuary.
 
     Returns:
-        bool: True if the 30-day average forecast salinity is greater than the defined CE_SalThreshold psu within 2wks, False otherwise.
+        bool: True if the 30-day average forecast salinity exceeds the threshold within two weeks, False otherwise.
     """
-    if Pre_defined_Variables_OptSalFcast == 3:
-        Est = Estuary_needs_water
-    elif max(n30d_mavg_i2iplus13) > Pre_defined_Variables_CE_SalThreshold:
-        Est = True
-    else:
-        Est = False
-    return Est
+    if opt_sal_fcast == 3:
+        return estuary_needs_water
+    return max(moving_avg_2weeks) > sal_threshold
 
 
-def LORS08_bf_rel(S77BS_AP, n30davgForecast):
+def LORS08_bf_rel(S77BS_AP: float, n30davgForecast: bool) -> bool:
     """
     Returns whether or not the LORS08 schedule suggests baseflow release.
 
@@ -146,221 +152,364 @@ def LORS08_bf_rel(S77BS_AP, n30davgForecast):
 
 
 def LDS_LC6_1(
-    Late_Dry_Season,
-    LowChance_Check,
-    Pre_defined_Variables_Late_Dry_Season_Option,
-):
+    late_dry_season: bool, low_chance_check: bool, option: int
+) -> bool:
     """
-    Calculates the value of LDS_LC6_1 based on the provided parameters. LDS_LC6_1 stands for Late Dry Season Low Chance 6/1.
+    Calculates the value of late_dry_season_low_chance based on the provided parameters.
 
     Args:
-        Late_Dry_Season (bool): Whether or not it is a late dry season.
-        LowChance_Check (bool): The result of the LowChance_Check function (see above).
-        Pre_defined_Variables_Late_Dry_Season_Option (int): The value being used for the Late_Dry_Season_Option.
+        late_dry_season (bool): Whether or not it is a late dry season.
+        low_chance_check (bool): The result of the low_chance_check function (see above).
+        option (int): The value being used for the late_dry_season_option.
 
     Returns:
-        bool: PLACEHOLDER.
+        bool: The calculated value of late_dry_season_low_chance.
     """
-    if Pre_defined_Variables_Late_Dry_Season_Option == 1:
-        if Late_Dry_Season == True:
-            LD = LowChance_Check
+    if option == 1:
+        late_dry_season_low_chance = low_chance_check if late_dry_season else False
+    else:
+        late_dry_season_low_chance = low_chance_check
+    return late_dry_season_low_chance
+
+
+def S_O(late_dry_season_low_chance: bool, baseflow_release_from_lake_okeechobee: float) -> int:
+    """
+    Calculates the salinity output based on the provided parameters.
+
+    Args:
+        late_dry_season_low_chance (bool): Whether or not there is a low chance of rainfall in the late dry season.
+        baseflow_release_from_lake_okeechobee (float): The baseflow release from Lake Okeechobee.
+
+    Returns:
+        int: The salinity output (0 or 1).
+    """
+    if not late_dry_season_low_chance:
+        if baseflow_release_from_lake_okeechobee > 0:
+            salinity_output = 1
         else:
-            LD = False
+            salinity_output = 0
     else:
-        LD = LowChance_Check
-    return LD
+        salinity_output = 0
+    return salinity_output
 
 
-def S_O(LDS_LC6_1, S77BS_AP):
-    if LDS_LC6_1 == False:
-        if S77BS_AP > 0:
-            S = 1
-        else:
-            S = 0
+def All_4(lors08_baseflow_release: bool, late_dry_season_low_chance_6_1: bool) -> bool:
+    """
+    Determines whether all four conditions are met to trigger a baseflow release.
+
+    Args:
+        lors08_baseflow_release (bool): Whether or not the LORS08 schedule suggests baseflow release.
+        late_dry_season_low_chance_6_1 (bool): Whether or not there is a low chance of rainfall in the late dry season.
+
+    Returns:
+        bool: Whether or not all four conditions are met.
+    """
+    if lors08_baseflow_release:
+        all_four_conditions_met = late_dry_season_low_chance_6_1
     else:
-        S = 0
-    return S
+        all_four_conditions_met = False
+    return all_four_conditions_met
 
 
-def All_4(LORS08_bf_rel, LDS_LC6_1):
-    if LORS08_bf_rel == True:
-        All = LDS_LC6_1
-    else:
-        All = False
-    return All
+def Sabf(lake_o_schedule_zone: int) -> bool:
+    """
+    Calculates the baseflow allowed value based on the Lake Okeechobee schedule zone.
+
+    Args:
+        lake_o_schedule_zone (int): The Lake Okeechobee schedule zone.
+
+    Returns:
+        bool: The baseflow allowed value (True or False).
+    """
+    return lake_o_schedule_zone > 3
 
 
-def Sabf(Lake_O_Schedule_Zone):
-    if Lake_O_Schedule_Zone > 3:
-        Sa = True
-    else:
-        Sa = False
-    return Sa
+def lake_o_schedule_zone_meets_condition(lake_o_schedule_zone: int) -> bool:
+    """
+    Determines whether the specified Lake Okeechobee schedule zone allows for a specific condition.
+
+    Args:
+        lake_o_schedule_zone (int): The schedule zone of Lake Okeechobee.
+
+    Returns:
+        bool: True if the schedule zone is 3, otherwise False.
+    """
+    return lake_o_schedule_zone == 3
 
 
-def Swbf(Lake_O_Schedule_Zone):
-    if Lake_O_Schedule_Zone == 3:
-        Sw = True
-    else:
-        Sw = False
-    return Sw
+def Swbu(lake_o_schedule_zone: int) -> bool:
+    """
+    Determines whether the specified Lake Okeechobee schedule zone allows for a specific condition.
+
+    Args:
+        lake_o_schedule_zone (int): The schedule zone of Lake Okeechobee.
+
+    Returns:
+        bool: True if the schedule zone is 2, otherwise False.
+    """
+    return lake_o_schedule_zone == 2
 
 
-def Swbu(Lake_O_Schedule_Zone):
-    if Lake_O_Schedule_Zone == 2:
-        Swb = True
-    else:
-        Swb = False
-    return Swb
+def All_4andStage(all_four: bool, sabf: bool) -> bool:
+    """
+    Checks if all four conditions are met and the stage is above the baseflow.
+
+    Args:
+        all_four (bool): Whether all four conditions are met.
+        sabf (bool): Whether the stage is above the baseflow.
+
+    Returns:
+        bool: True if all four conditions are met and the stage is above the baseflow, otherwise False.
+    """
+    return all_four and sabf
 
 
-def All_4andStage(All_4, Sabf):
-    if All_4 == True and Sabf == True:
-        AAA = True
-    else:
-        AAA = False
-    return AAA
+def All_4andStagein(all_four: bool, sabf: bool) -> bool:
+    """
+    Checks if all four conditions are met and the stage is not above the baseflow.
+
+    Args:
+        all_four (bool): Whether all four conditions are met.
+        sabf (bool): Whether the stage is above the baseflow.
+
+    Returns:
+        bool: True if all four conditions are met and the stage is not above the baseflow, otherwise False.
+    """
+    return all_four and not sabf
 
 
-def All_4andStagein(All_4, Sabf):
-    if All_4 == True and Sabf == False:
-        AAA = True
-    else:
-        AAA = False
-    return AAA
+def P_AP_BF_Stg(
+    lake_o_schedule_zone: int, s77bs_ap: float
+) -> bool:
+    """
+    Checks if the Lake Okeechobee schedule zone and S77BS AP meet the conditions
+    for post-AP baseflow stage.
 
+    Args:
+        lake_o_schedule_zone (int): The schedule zone of Lake Okeechobee.
+        s77bs_ap (float): The S77BS AP value.
 
-def P_AP_BF_Stg(Lake_O_Schedule_Zone, S77BS_AP):
-    if (
-        Lake_O_Schedule_Zone > 3 and Lake_O_Schedule_Zone < 7
-    ) and S77BS_AP > 0:
-        P = True
-    else:
-        P = False
-    return P
+    Returns:
+        bool: True if the conditions are met, otherwise False.
+    """
+    return 3 < lake_o_schedule_zone < 7 and s77bs_ap > 0
 
 
 def Logic_test_1(
-    All_4andStage, P_AP_BF_Stg, Pre_defined_Variables_Opt_NoAP_above_BF_SB
-):
-    if Pre_defined_Variables_Opt_NoAP_above_BF_SB == 0:
-        Logic = All_4andStage
+    all_four_and_stage: bool, p_ap_bf_stg: bool, no_ap_above_bf_sb: int
+) -> bool:
+    """
+    Determines whether all four conditions are met and the stage is above the
+    baseflow, or if the post-AP baseflow stage conditions are met.
+
+    Args:
+        all_four_and_stage (bool): Whether all four conditions are met and the
+            stage is above the baseflow.
+        p_ap_bf_stg (bool): Whether the post-AP baseflow stage conditions are
+            met.
+        no_ap_above_bf_sb (int): The option to not allow AP above baseflow
+            stage in the S77BS zone.
+
+    Returns:
+        bool: True if all four conditions are met and the stage is above the
+            baseflow, or if the post-AP baseflow stage conditions are met,
+            otherwise False.
+    """
+    if no_ap_above_bf_sb == 0:
+        logic = all_four_and_stage
     else:
-        Logic = P_AP_BF_Stg
-    return Logic
+        logic = p_ap_bf_stg
+    return logic
 
 
-def Post_Ap_Baseflow(Logic_test_1, S77BS_AP, All_4andStagein, Choose_1):
-    if Logic_test_1 == True:
-        PB = S77BS_AP
-    elif All_4andStagein == True:
-        PB = min(S77BS_AP, Choose_1)
+def Post_Ap_Baseflow(
+    logic_test_1: bool, s77bs_ap: float, all_4and_stagein: bool, choose_1: float
+) -> float:
+    """
+    Calculates the post-AP baseflow.
+
+    Args:
+        logic_test_1 (bool): Whether the logic test 1 conditions are met.
+        s77bs_ap (float): The S77BS AP value.
+        all_4and_stagein (bool): Whether all four conditions are met and the stage
+            is not above the baseflow.
+        choose_1 (float): The value to choose if all four conditions are met and
+            the stage is not above the baseflow.
+
+    Returns:
+        float: The post-AP baseflow value.
+    """
+    if logic_test_1:
+        post_ap_baseflow = s77bs_ap
+    elif all_4and_stagein:
+        post_ap_baseflow = min(s77bs_ap, choose_1)
     else:
-        PB = 0
-    return PB
+        post_ap_baseflow = 0
+    return post_ap_baseflow
 
 
 def S77RSplusPreAPS77bsf(
-    S77RS_Pre_AP_S77_Baseflow,
-    Lake_O_Schedule_Zone,
-    Pre_defined_Variables_Opt_CEews_LOWSM,
-):
-    if Pre_defined_Variables_Opt_CEews_LOWSM == 0:
-        if S77RS_Pre_AP_S77_Baseflow == 0 and Lake_O_Schedule_Zone > 1:
-            S77RSPAPS77bsf = True
-        else:
-            S77RSPAPS77bsf = False
-    elif S77RS_Pre_AP_S77_Baseflow == 0:
-        S77RSPAPS77bsf = True
+    s77rs_pre_ap_s77_baseflow: float, lake_o_schedule_zone: int,
+    pre_defined_variables_opt_ceews_lowsm: int
+) -> bool:
+    """Determines whether the S77RS plus pre-AP S77 baseflow is active.
+
+    Args:
+        s77rs_pre_ap_s77_baseflow (float): The S77RS pre-AP S77 baseflow value.
+        lake_o_schedule_zone (int): The Lake Okeechobee schedule zone.
+        pre_defined_variables_opt_ceews_lowsm (int): The pre-defined variable
+            option for CE EWS LO WSM.
+
+    Returns:
+        bool: Whether the S77RS plus pre-AP S77 baseflow is active.
+    """
+    if pre_defined_variables_opt_ceews_lowsm == 0:
+        result = s77rs_pre_ap_s77_baseflow == 0 and lake_o_schedule_zone > 1
+    elif s77rs_pre_ap_s77_baseflow == 0:
+        result = True
     else:
-        S77RSPAPS77bsf = False
-    return S77RSPAPS77bsf
+        result = False
+    return result
 
 
-def AndEstNeedsLakeWater(n30davgForecast, S77RSplusPreAPS77bsf):
-    if n30davgForecast == True and S77RSplusPreAPS77bsf == True:
-        AENLW = True
-    else:
-        AENLW = False
-    return AENLW
+def AndEstNeedsLakeWater(n30davg_forecast: bool, s77rs_plus_pre_ap_s77bsf: bool) -> bool:
+    """
+    Determines if both the 30-day average forecast and the S77RS plus pre-AP S77 baseflow conditions are met.
+
+    Args:
+        n30davg_forecast (bool): Whether the 30-day average forecast condition is met.
+        s77rs_plus_pre_ap_s77bsf (bool): Whether the S77RS plus pre-AP S77 baseflow condition is met.
+
+    Returns:
+        bool: True if both conditions are met, otherwise False.
+    """
+    return n30davg_forecast and s77rs_plus_pre_ap_s77bsf
 
 
-def AndLowChance61stagelessth11(LDS_LC6_1, AndEstNeedsLakeWater):
-    if LDS_LC6_1 == True and AndEstNeedsLakeWater == True:
-        ALC = True
-    else:
-        ALC = False
-    return ALC
+def AndLowChance61stagelessth11(
+    late_dry_season_low_chance: bool, and_est_needs_lake_water: bool,
+) -> bool:
+    """Determines if both the late dry season low chance condition and the estuary needs lake water condition are met.
+
+    Args:
+        late_dry_season_low_chance (bool): Whether the late dry season low chance condition is met.
+        and_est_needs_lake_water (bool): Whether the estuary needs lake water condition is met.
+
+    Returns:
+        bool: True if both conditions are met, otherwise False.
+    """
+    return late_dry_season_low_chance and and_est_needs_lake_water
 
 
 def ATHCnora(
-    AndLowChance61stagelessth11,
-    THC_Class_normal_or_above,
-    Late_Dry_Season,
-    Pre_defined_Variables_Opt_THCbypLateDS,
-):
-    if Pre_defined_Variables_Opt_THCbypLateDS == 1:
-        if AndLowChance61stagelessth11 == True and (
-            THC_Class_normal_or_above == True or Late_Dry_Season == True
-        ):
-            AT = True
-        else:
-            AT = False
+    and_low_chance_61_stage_less_than_h11: bool,
+    thc_class_normal_or_above: bool,
+    late_dry_season: bool,
+    pre_defined_variables_opt_thc_byp_late_ds: int,
+) -> bool:
+    """
+    Determines if the adaptive threshold for hydrologic conditions is not required
+    or above.
+
+    Args:
+        and_low_chance_61_stage_less_than_h11 (bool): Whether the late dry season
+            low chance condition and the stage is less than 11 feet condition are
+            met.
+        thc_class_normal_or_above (bool): Whether the tributary hydrologic
+            condition is normal or above.
+        late_dry_season (bool): Whether it is late dry season.
+        pre_defined_variables_opt_thc_byp_late_ds (int): The pre-defined variable
+            option for THC by-passing late dry season.
+
+    Returns:
+        bool: True if the adaptive threshold for hydrologic conditions is not
+            required or above, otherwise False.
+    """
+    if pre_defined_variables_opt_thc_byp_late_ds == 1:
+        at_nora = and_low_chance_61_stage_less_than_h11 and (
+            thc_class_normal_or_above or late_dry_season
+        )
     else:
-        if (
-            AndLowChance61stagelessth11 == True
-            and THC_Class_normal_or_above == True
-        ):
-            AT = True
-        else:
-            AT = False
-    return AT
+        at_nora = and_low_chance_61_stage_less_than_h11 and thc_class_normal_or_above
+    return at_nora
 
 
 def Choose_PAPEWS_1(
-    WSM_Zone,
-    Pre_defined_Variables_APCB1,
-    Pre_defined_Variables_APCB2,
-    Pre_defined_Variables_APCB3,
-    Pre_defined_Variables_APCB4,
-):
-    if WSM_Zone == 1:
-        C1 = Pre_defined_Variables_APCB1 / 100
-    elif WSM_Zone == 2:
-        C1 = Pre_defined_Variables_APCB2 / 100
-    elif WSM_Zone == 3:
-        C1 = Pre_defined_Variables_APCB3 / 100
-    elif WSM_Zone == 4:
-        C1 = Pre_defined_Variables_APCB4 / 100
-    else:
-        C1 = -9999
-    return C1
+    wsm_zone: int,
+    a_pape_ws_1_cb1: float,
+    a_pape_ws_1_cb2: float,
+    a_pape_ws_1_cb3: float,
+    a_pape_ws_1_cb4: float,
+) -> float:
+    """
+    Choose one of four coefficients based on the WSM zone.
+
+    Args:
+        wsm_zone (int): The WSM zone.
+        a_pape_ws_1_cb1 (float): Coefficient for zone 1.
+        a_pape_ws_1_cb2 (float): Coefficient for zone 2.
+        a_pape_ws_1_cb3 (float): Coefficient for zone 3.
+        a_pape_ws_1_cb4 (float): Coefficient for zone 4.
+
+    Returns:
+        float: The chosen coefficient.
+    """
+    coefficients = {
+        1: a_pape_ws_1_cb1,
+        2: a_pape_ws_1_cb2,
+        3: a_pape_ws_1_cb3,
+        4: a_pape_ws_1_cb4,
+    }
+
+    return coefficients.get(wsm_zone, -9999) / 100
 
 
-def Choose_PAPEWS_2(
-    Pre_defined_Variables_Opt_CEews_LOWSM, Pre_defined_Variables_CalEst_ews
-):
-    if Pre_defined_Variables_Opt_CEews_LOWSM + 1 == 1:
-        C2 = 0
-    elif Pre_defined_Variables_Opt_CEews_LOWSM + 1 == 2:
-        C2 = Pre_defined_Variables_CalEst_ews
-    elif Pre_defined_Variables_Opt_CEews_LOWSM + 1 == 3:
-        C2 = 300
-    return C2
+def Choose_PAPEWS_2(opt_ce_ews_low_sm: int, cal_est_ews: float) -> float:
+    """
+    Choose one of four coefficients based on the CE EWS LO WSM option.
+
+    Args:
+        opt_ce_ews_low_sm (int): The CE EWS LO WSM option.
+        cal_est_ews (float): The calibrated estimate of EWS.
+
+    Returns:
+        float: The chosen coefficient.
+    """
+    coefficient_map = {
+        1: 0,
+        2: cal_est_ews,
+        3: 300,
+    }
+
+    return coefficient_map.get(opt_ce_ews_low_sm, -9999)
 
 
 def Post_AP_EWS(
-    ATHCnora,
-    WSM_Zone,
-    Choose_PAPEWS_1,
-    Choose_PAPEWS_2,
-    Pre_defined_Variables_CalEst_ews,
-):
-    if ATHCnora == True:
-        if WSM_Zone == 0:
-            PAEW = Pre_defined_Variables_CalEst_ews
+    athc_nora: bool,
+    wsm_zone: int,
+    choose_pape_ws_1: float,
+    choose_pape_ws_2: float,
+    pre_defined_variables_cal_est_ews: float,
+) -> float:
+    """Calculate the post-AP EWS value.
+
+    Args:
+        athc_nora (bool): Whether the adaptive threshold for hydrologic conditions
+            is not required or above.
+        wsm_zone (int): The WSM zone.
+        choose_pape_ws_1 (float): The chosen coefficient for PAPEWS_1.
+        choose_pape_ws_2 (float): The chosen coefficient for PAPEWS_2.
+        pre_defined_variables_cal_est_ews (float): The pre-defined variable calibrated
+            estimate of EWS.
+
+    Returns:
+        float: The post-AP EWS value.
+    """
+    if athc_nora:
+        if wsm_zone == 0:
+            pape_ws = pre_defined_variables_cal_est_ews
         else:
-            PAEW = (1 - Choose_PAPEWS_1) * Choose_PAPEWS_2
+            pape_ws = (1 - choose_pape_ws_1) * choose_pape_ws_2
     else:
-        PAEW = 0
-    return PAEW
+        pape_ws = 0
+    return pape_ws

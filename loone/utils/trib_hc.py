@@ -10,6 +10,21 @@ from loone.data import Data as DClass
 # I determine daily values for the Tributary conditions and Seasonal/Multi-Seasonal LONINO classes
 # using a weekly Trib. Condition data and Monthly LONINO data.
 def Trib_HC(workspace: str):
+    """
+    This function generates daily values for the Tributary conditions and Seasonal/Multi-Seasonal LONINO classes
+    using a weekly Trib. Condition data and Monthly LONINO data.
+
+    It generates the Tributary Condition Dataframe, Trib_Cond_df, and the LONINO Dataframe, LONINO_df.
+    It uses the Trib_Cond_df to calculate the Tributary Condition Index (TCI) and the LONINO_df to calculate
+    the LONINO seasonal and multi-seasonal classes.
+
+    Finally, it generates a daily date range, TC_LONINO_df, and assigns the TCI, LONINO seasonal, and LONINO
+    multi-seasonal classes to this dataframe.
+
+    Returns:
+        TC_LONINO_df (pd.DataFrame): A dataframe with the daily values of the Tributary conditions and Seasonal/Multi-Seasonal LONINO classes.
+
+    """
     os.chdir(workspace)
     config = load_config(workspace)
     Data = DClass(workspace)

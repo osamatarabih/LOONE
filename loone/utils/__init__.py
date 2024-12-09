@@ -24,32 +24,26 @@ def load_config(workspace: str) -> dict:
         raise FileNotFoundError("Config file not found in the workspace.")
 
 
-def leap_year(y):
+def leap_year(year: int) -> bool:
     """Determines if a given year is a leap year.
 
     A leap year is exactly divisible by 4 except for century years (years ending with 00).
     The century year is a leap year only if it is perfectly divisible by 400.
 
     Args:
-        y (int): The year to check.
+        year (int): The year to check.
 
     Returns:
         bool: True if the year is a leap year, False otherwise.
     """
-    if y % 400 == 0:
-        return True
-    if y % 100 == 0:
-        return False
-    if y % 4 == 0:
-        return True
-    else:
-        return False
+    return year % 4 == 0 and (year % 100 != 0 or year % 400 == 0)
 
 
 def replicate(
-    year, day_num, x, targ_stg
-):  # Where x is the percentage value (i.e., 10,20,30,40,50,60)
-    """Retrieves the value from the target stage DataFrame corresponding to the given day and percentage. Takes leap years into account.
+    year: int, day_num: int, x: int, targ_stg: dict
+) -> float:  # Where x is the percentage value (i.e., 10,20,30,40,50,60)
+    """Retrieves the value from the target stage DataFrame corresponding to the given day and percentage.
+    Takes leap years into account.
 
     Args:
         year (int): The year that day_num is in.
@@ -67,7 +61,7 @@ def replicate(
         day_num_adj = day_num + (1 if day_num >= 60 else 0)
     day_value = (
         leap_day_val
-        if day_num_adj == 60 and leap_year(year) == True
+        if day_num_adj == 60 and leap_year(year)
         else targ_stg[f"{x}%"].iloc[day_num_adj - 1]
     )
     return day_value

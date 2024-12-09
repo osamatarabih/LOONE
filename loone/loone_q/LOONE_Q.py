@@ -482,7 +482,7 @@ def LOONE_Q(workspace, p1, p2, s77_dv, s308_dv, tp_lake_s):
             M_var.DecTree_Relslevel[i + 2],
             config["pls_day_switch"],
         )
-        M_var.Release_Level[i + 2] = lo_functions.Release_Level(
+        M_var.Release_Level[i + 2] = lo_functions.release_level(
             M_var.Release_Level[i + 1],
             M_var.Lake_Stage[i + 1],
             TC_LONINO_df.at[i, "Tributary_Condition"],
