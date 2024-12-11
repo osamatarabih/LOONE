@@ -33,6 +33,7 @@ def WCA_Stages_Cls(workspace: str, TC_LONINO_df: pd.DataFrame | None):
 
     # Read the WCA Stage data
     WCA_Stages = pd.read_csv(os.path.join(workspace, "WCA_Stages_Inputs.csv"))
+    WCA_Stages.columns = WCA_Stages.columns.str.strip()
     # Read WCA3A_REG inputs
     # Note that I added a date column in the first column and I copied values of Feb28 to the Feb29!
     WCA3A_REG = pd.read_csv(os.path.join(workspace, "WCA3A_REG_Inputs.csv"))
