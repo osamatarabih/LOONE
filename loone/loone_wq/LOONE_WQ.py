@@ -475,5 +475,5 @@ if __name__ == "__main__":
     args = argparser.parse_args()
     workspace = args.workspace[0]
 
-    # Run LOONE_Constituent_SimQ
+    # Run LOONE_WQ
     LOONE_WQ(workspace)
