@@ -224,7 +224,7 @@ def Sabf(lake_o_schedule_zone: int) -> bool:
     return lake_o_schedule_zone > 3
 
 
-def lake_o_schedule_zone_meets_condition(lake_o_schedule_zone: int) -> bool:
+def Swbf(lake_o_schedule_zone: int) -> bool:
     """
     Determines whether the specified Lake Okeechobee schedule zone allows for a specific condition.
 
