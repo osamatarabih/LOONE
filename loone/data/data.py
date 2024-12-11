@@ -459,8 +459,8 @@ class Data:
             config["estuary_needs_water_input"],
         )
 
-        # Read the CSV file into a DataFrame, parsing the 'Date' column
-        self.Estuary_needs_water = pd.read_csv(file_path, parse_dates=["Date"])
+        # Read the CSV file into a DataFrame
+        self.Estuary_needs_water = pd.read_csv(file_path)
 
     def _read_eaa_mia_runoff(self, config: dict) -> None:
         """
@@ -483,8 +483,8 @@ class Data:
             config["eaa_mia_ro_inputs"],
         )
 
-        # Read the CSV file into a DataFrame, parsing the 'Date' column
-        self.EAA_MIA_RUNOFF = pd.read_csv(file_path, parse_dates=["Date"])
+        # Read the CSV file into a DataFrame
+        self.EAA_MIA_RUNOFF = pd.read_csv(file_path)
 
     def _read_storage_deviation(self, config: dict) -> None:
         """
