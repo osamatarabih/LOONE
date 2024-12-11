@@ -2,7 +2,7 @@ import os
 import numpy as np
 import pandas as pd
 from datetime import datetime
-from loone.utils import load_config, is_leap_year
+from loone.utils import load_config, leap_year
 
 
 # This following section calculates the parameter states (trib conds, stage tests, seasonal & multi-seasonal LONINO) and sets a 4-digit code for the branch.  The branch code is used with the Routing sheet to determine release rates.
@@ -70,14 +70,14 @@ def WCA_Stages_Cls(workspace: str, TC_LONINO_df: pd.DataFrame | None):
             float: The value from the WCA3A_REG DataFrame corresponding to the day number and the given percentage.
         """
         leap_day_val = WCA3A_REG[config["wca3a_reg_zone"]].iloc[59]
-        if is_leap_year(year) is True:
+        if leap_year(year) is True:
             day_num_adj = day_num
         else:
             day_num_adj = day_num + (1 if day_num >= 60 else 0)
         day_value = (
             leap_day_val
             if day_num_adj == 60
-            and is_leap_year(year) is True
+            and leap_year(year) is True
             else WCA3A_REG[config["wca3a_reg_zone"]].iloc[day_num_adj - 1]
         )
         return day_value
@@ -107,13 +107,13 @@ def WCA_Stages_Cls(workspace: str, TC_LONINO_df: pd.DataFrame | None):
             float: The value from the WCA3A_REG DataFrame corresponding to the day number.
         """
         leap_day_val = WCA3A_REG["WCA2Areg"].iloc[59]
-        if is_leap_year(year):
+        if leap_year(year):
             day_num_adj = day_num
         else:
             day_num_adj = day_num + (1 if day_num >= 60 else 0)
         day_value = (
             leap_day_val
-            if day_num_adj == 60 and is_leap_year(year)
+            if day_num_adj == 60 and leap_year(year)
             else WCA3A_REG["WCA2Areg"].iloc[day_num_adj - 1]
         )
         return day_value
