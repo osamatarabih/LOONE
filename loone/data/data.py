@@ -310,14 +310,14 @@ class Data:
         Args:
             config (dict): A dictionary containing the configuration paths,
                            specifically the paths to the 'c43ro_monthly',
-                           'c44ro_monthly', and 'sltrib_monthly' CSV files.
+                           'c44ro_nonthly', and 'sltrib_monthly' CSV files.
 
         Returns:
             None
         """
         # Construct the full file paths for the mean monthly basin runoffs CSVs
         c43ro_file_path = os.path.join(self.data_dir, config["c43ro_monthly"])
-        c44ro_file_path = os.path.join(self.data_dir, config["c44ro_monthly"])
+        c44ro_file_path = os.path.join(self.data_dir, config["c44ro_nonthly"])
         sltrib_file_path = os.path.join(self.data_dir, config["sltrib_monthly"])
 
         # Read the CSV files into DataFrames
