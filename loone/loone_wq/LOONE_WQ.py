@@ -28,49 +28,46 @@ def LOONE_WQ(workspace: str, photo_period_filename: str = 'PhotoPeriod', forecas
     data = DClass(workspace)
 
     # Read Required Data
-    if forecast_mode:
-        flow_path = os.path.join(workspace, 'LO_Inflows_BK_forecast.csv')
-    else:
-        flow_path = os.path.join(workspace, 'LO_Inflows_BK.csv')
+    flow_path = os.path.join(workspace, 'LO_Inflows_BK_forecast.csv' if forecast_mode else 'LO_Inflows_BK.csv')
 
-    Q_in = pd.read_csv(os.path.join(workspace, flow_path))
-    Temp_data = pd.read_csv(os.path.join(workspace, 'Filled_WaterT.csv'))
-    DO_data = pd.read_csv(os.path.join(workspace, 'LO_DO_Clean_daily.csv'))
-    RAD_data = pd.read_csv(os.path.join(workspace, 'LO_RADT_data.csv'))
-    Storage = pd.read_csv(os.path.join(workspace, 'Average_LO_Storage_3MLag.csv'))
-    Chla_N_data = pd.read_csv(os.path.join(workspace, 'N_Merged_Chla.csv'))  # microgram/L
-    Chla_S_data = pd.read_csv(os.path.join(workspace, 'S_Merged_Chla.csv'))  # microgram/L
-    NOx_In = pd.read_csv(os.path.join(workspace, 'LO_External_Loadings_NO.csv'))  # mg
-    S65E_basename = 'water_quality_S65E_NITRATE+NITRITE-N_Interpolated_forecast.csv' if forecast_mode else 'water_quality_S65E_NITRATE+NITRITE-N_Interpolated.csv'
-    S65E_NO_data = pd.read_csv(os.path.join(workspace, S65E_basename))  # mg/m3
-    Chla_In = pd.read_csv(os.path.join(workspace, 'Chla_Loads_In.csv'))  # mg
-    S65E_Chla_basename = 'S65E_Chla_Merged_forecast.csv' if forecast_mode else 'S65E_Chla_Merged.csv'
-    S65E_Chla_data = pd.read_csv(os.path.join(workspace, S65E_Chla_basename))  # mg/m3
+    inflows = pd.read_csv(os.path.join(workspace, flow_path))
+    temperature_data = pd.read_csv(os.path.join(workspace, 'Filled_WaterT.csv'))
+    dissolved_oxygen = pd.read_csv(os.path.join(workspace, 'LO_DO_Clean_daily.csv'))
+    radiation_data = pd.read_csv(os.path.join(workspace, 'LO_RADT_data.csv'))
+    storage_data = pd.read_csv(os.path.join(workspace, 'Average_LO_Storage_3MLag.csv'))
+    chlorophyll_a_north_data = pd.read_csv(os.path.join(workspace, 'N_Merged_Chla.csv'))  # microgram/L
+    chlorophyll_a_south_data = pd.read_csv(os.path.join(workspace, 'S_Merged_Chla.csv'))  # microgram/L
+    external_nitrate_loadings = pd.read_csv(os.path.join(workspace, 'LO_External_Loadings_NO.csv'))  # mg
+    s65e_basename = 'water_quality_S65E_NITRATE+NITRITE-N_Interpolated_forecast.csv' if forecast_mode else 'water_quality_S65E_NITRATE+NITRITE-N_Interpolated.csv'
+    s65e_nitrate_data = pd.read_csv(os.path.join(workspace, s65e_basename))  # mg/m3
+    chlorophyll_a_loads_in = pd.read_csv(os.path.join(workspace, 'Chla_Loads_In.csv'))  # mg
+    s65e_chlorophyll_a_basename = 'S65E_Chla_Merged_forecast.csv' if forecast_mode else 'S65E_Chla_Merged.csv'
+    s65e_chlorophyll_a_data = pd.read_csv(os.path.join(workspace, s65e_chlorophyll_a_basename))  # mg/m3
 
-    Photoperiod = pd.read_csv(os.path.join(workspace, f'{photo_period_filename}.csv'))
-    LO_DIP_N_data = pd.read_csv(os.path.join(workspace, 'N_OP.csv'))  # mg/m3
-    LO_DIP_S_data = pd.read_csv(os.path.join(workspace, 'S_OP.csv'))  # mg/m3
-    LO_DIN_N_data = pd.read_csv(os.path.join(workspace, 'N_DIN.csv'))  # mg/m3
-    LO_DIN_S_data = pd.read_csv(os.path.join(workspace, 'S_DIN.csv'))  # mg/m3
+    photoperiod = pd.read_csv(os.path.join(workspace, f'{photo_period_filename}.csv'))
+    lo_orthophosphate_north_data = pd.read_csv(os.path.join(workspace, 'N_OP.csv'))  # mg/m3
+    lo_orthophosphate_south_data = pd.read_csv(os.path.join(workspace, 'S_OP.csv'))  # mg/m3
+    lo_dissolved_inorganic_nitrogen_north_data = pd.read_csv(os.path.join(workspace, 'N_DIN.csv'))  # mg/m3
+    lo_dissolved_inorganic_nitrogen_south_data = pd.read_csv(os.path.join(workspace, 'S_DIN.csv'))  # mg/m3
 
-    date_start = Q_in['date'].iloc[0]
+    date_start = inflows['date'].iloc[0]
 
-    RAD = RAD_data['Mean_RADT'].astype(float) * 4.6 * 1000
+    rad = radiation_data['Mean_RADT'].astype(float) * 4.6 * 1000
 
-    Temp = Temp_data['Water_T'].astype(float)
-    DO = DO_data['Mean_DO'].astype(float)
-    External_NO = NOx_In['External_NO_Ld_mg'].astype(float)  # mg
-    S65E_NO = (S65E_NO_data[S65E_NO_data['date'] >= date_start]['Data'] * 1000).astype(float).tolist()  # mg/m3
+    temperature = temperature_data['Water_T'].astype(float)
+    dissolved_oxygen = dissolved_oxygen['Mean_DO'].astype(float)
+    external_nitrite_nitrate = external_nitrate_loadings['External_NO_Ld_mg'].astype(float)  # mg
+    s65e_nitrite_nitrate = (s65e_nitrate_data[s65e_nitrate_data['date'] >= date_start]['Data'] * 1000).astype(float).tolist()  # mg/m3
 
-    External_Chla = Chla_In['Chla_Loads'].astype(float) * 3  # mg
-    S65E_Chla = S65E_Chla_data[S65E_Chla_data['date'] >= date_start]['Data'].astype(float).tolist()
+    external_chlorophyll_a = chlorophyll_a_loads_in['Chla_Loads'].astype(float) * 3  # mg
+    s65e_chlorophyll_a = s65e_chlorophyll_a_data[s65e_chlorophyll_a_data['date'] >= date_start]['Data'].astype(float).tolist()
 
     # N-S Procedure
     N_Per = 0.43
     S_Per = 0.57
 
-    Storage_dev = data.Storage_dev_df['DS_dev'].astype(float)  # acft
-    Q_I = Q_in['Inflows_cmd'].astype(float)  # m3
+    storage_dev = data.Storage_dev_df['DS_dev'].astype(float)  # acft
+    q_i = inflows['Inflows_cmd'].astype(float)  # m3
 
     # Simulated Q
     # S77_Q = LOONE_Q_Outputs['S77_Q'] * 0.0283168 * 86400  # cfs to cubic meters per day
@@ -83,46 +80,48 @@ def LOONE_WQ(workspace: str, photo_period_filename: str = 'PhotoPeriod', forecas
     # volume = LOONE_Q_Outputs['Storage'] * 1233.48  # acft to m3
 
     # Observed S77 S308 South
-    Outflows_Obs = pd.read_csv(os.path.join(workspace, 'Flow_df_3MLag.csv'))
-    S77_Q = Outflows_Obs['S77_Out']
-    S308_Q = Outflows_Obs['S308_Out']
-    TotRegSo = Outflows_Obs[['S351_Out', 'S354_Out', 'S352_Out', 'L8_Out']].sum(axis=1) / 1233.48    # m3/day to acft
+    outflows_observed = pd.read_csv(os.path.join(workspace, 'Flow_df_3MLag.csv'))
+    s77_outflow = outflows_observed['S77_Out']
+    s308_outflow = outflows_observed['S308_Out']
+    total_regional_outflow_south = outflows_observed[['S351_Out', 'S354_Out', 'S352_Out', 'L8_Out']].sum(axis=1) / 1233.48    # m3/day to acft
 
     # Observed Stage and Storage
-    Stage = Storage['Stage_ft'].astype(float) * 0.3048  # m
-    volume = Storage['Storage_cmd'].astype(float)  # m3
+    stage = storage_data['Stage_ft'].astype(float) * 0.3048  # m
+    volume = storage_data['Storage_cmd'].astype(float)  # m3
 
-    volume_N = volume * N_Per
-    volume_S = volume * S_Per
+    volume_north = volume * N_Per
+    volume_south = volume * S_Per
 
-    Q_O = S77_Q + S308_Q + TotRegSo * 1233.48  # cmd
+    q_o = s77_outflow + s308_outflow + total_regional_outflow_south * 1233.48  # cmd
 
-    NH4_N_Obs = LO_DIN_N_data['NH4'].astype(float)  # mg/m3
-    NH4_S_Obs = LO_DIN_S_data['NH4'].astype(float)  # mg/m3
-    NH4_Obs = (NH4_N_Obs + NH4_S_Obs) / 2
-    NOx_N_Obs = LO_DIN_N_data['NO'].astype(float)  # mg/m3
-    NOx_S_Obs = LO_DIN_S_data['NO'].astype(float)  # mg/m3
-    NOx_Obs = (NOx_N_Obs + NOx_S_Obs) / 2
-    Chla_N = Chla_N_data['Chla'].astype(float)  # microgram/L = mg/m3
-    Chla_S = Chla_S_data['Chla'].astype(float)  # microgram/L = mg/m3
-    Chla = (Chla_N + Chla_S) / 2
-    DIN_N_Obs = LO_DIN_N_data['DIN'].astype(float)
-    DIN_S_Obs = LO_DIN_S_data['DIN'].astype(float)
-    DIN_Obs = (DIN_N_Obs + DIN_S_Obs) / 2
-    DIP_N_Obs = LO_DIP_N_data['OP'].astype(float)
-    DIP_S_Obs = LO_DIP_S_data['OP'].astype(float)
-    DIP_Obs = (DIP_N_Obs + DIP_S_Obs) / 2
+    ammonium_north_observed = lo_dissolved_inorganic_nitrogen_north_data['NH4'].astype(float)  # mg/m3
+    ammonium_south_observed = lo_dissolved_inorganic_nitrogen_south_data['NH4'].astype(float)  # mg/m3
+    ammonium_observed = (ammonium_north_observed + ammonium_south_observed) / 2
+    nitrogen_oxide_north_observed = lo_dissolved_inorganic_nitrogen_north_data['NO'].astype(float)  # mg/m3
+    nitrogen_oxide_south_observed = lo_dissolved_inorganic_nitrogen_south_data['NO'].astype(float)  # mg/m3
+    nitrogen_oxide_observed = (nitrogen_oxide_north_observed + nitrogen_oxide_south_observed) / 2
+    chlorophyll_a_north = chlorophyll_a_north_data['Chla'].astype(float)  # microgram/L = mg/m3
+    chlorophyll_a_south = chlorophyll_a_south_data['Chla'].astype(float)  # microgram/L = mg/m3
+    chlorophyll_a = (chlorophyll_a_north + chlorophyll_a_south) / 2
+    dissolved_inorganic_nitrogen_north_observed = lo_dissolved_inorganic_nitrogen_north_data['DIN'].astype(float)
+    dissolved_inorganic_nitrogen_south_observed = lo_dissolved_inorganic_nitrogen_south_data['DIN'].astype(float)
+    dissolved_inorganic_nitrogen_observed = (dissolved_inorganic_nitrogen_north_observed +
+                                             dissolved_inorganic_nitrogen_south_observed) / 2
+    dissolved_inorganic_phosphorus_north_observed = lo_orthophosphate_north_data['OP'].astype(float)
+    dissolved_inorganic_phosphorus_south_observed = lo_orthophosphate_south_data['OP'].astype(float)
+    dissolved_inorganic_phosphorus_observed = (dissolved_inorganic_phosphorus_north_observed +
+                                               dissolved_inorganic_phosphorus_south_observed) / 2
 
-    Nit_Denit_Opt = 'Opt1'
+    nit_denit_opt = 'Opt1'
 
     # NO Atmospheric Deposition
-    Atm_Deposition = (714.6 * 1000 * 1000)  # mg/day
-    Atm_Deposition_N = N_Per * Atm_Deposition
-    Atm_Deposition_S = S_Per * Atm_Deposition
+    atmospheric_deposition = (714.6 * 1000 * 1000)  # mg/day
+    atmospheric_deposition_north = N_Per * atmospheric_deposition
+    atmospheric_deposition_south = S_Per * atmospheric_deposition
 
     # Calibration parameters
-    Cal_Par_NO = data.Cal_Par['Par_NO']
-    Cal_Par_Chla = data.Cal_Par['Par_Chla']
+    calibration_parameter_no = data.Cal_Par['Par_NO']
+    calibration_parameter_chla = data.Cal_Par['Par_Chla']
 
     # nitrification
     # Either a simple method where Nit_R_T = nitrification rate in water column (Tot_nit_R) * Temp Coeff for nitrification * (T-20)
@@ -133,14 +132,14 @@ def LOONE_WQ(workspace: str, photo_period_filename: str = 'PhotoPeriod', forecas
     # Option 2
     # Fam = Cam and fox = (1-foxmin) * (Cox-Coxc/Coxo-Coxc) ^10a + foxmin
     # The nitrification rate for the simple method
-    Tot_nit_R = 0.3
+    total_nitrification_rate = 0.3
     # nitrification parameters for the detailed method
-    kni0_NO = Cal_Par_NO[0]
-    kni0_Chla = Cal_Par_Chla[0]
-    kni_NO = Cal_Par_NO[1]
-    kni_Chla = Cal_Par_Chla[1]
+    kni0_no = calibration_parameter_no[0]
+    kni0_chla = calibration_parameter_chla[0]
+    kni_no = calibration_parameter_no[1]
+    kni_chla = calibration_parameter_chla[1]
 
-    Theta_ni = 1.06
+    theta_ni = 1.06
 
     # Denitrification
     # Either a simple method where Denit_R_T = denitrification rate in water column (Tot_denit_R) * Temp Coeff for denitrification * (T-20)
@@ -151,87 +150,87 @@ def LOONE_WQ(workspace: str, photo_period_filename: str = 'PhotoPeriod', forecas
     # Option 2
     # Fni = Cni and fox = (Coxc-Cox/Coxc-Coxo)
     # The denitrification rate for the simple method
-    Tot_denit_R = 0.1
+    total_denitrification_rate = 0.1
     # The denitrification rate for the simple method
-    kden0_NO = Cal_Par_NO[2]
-    kden0_Chla = Cal_Par_Chla[2]
+    kden0_no = calibration_parameter_no[2]
+    kden0_chla = calibration_parameter_chla[2]
 
-    kden_NO = Cal_Par_NO[3]
-    kden_Chla = Cal_Par_Chla[3]
+    kden_no = calibration_parameter_no[3]
+    kden_chla = calibration_parameter_chla[3]
 
-    Theta_deni = 1.06
+    theta_deni = 1.06
 
     # Light Attenuation due to water Kw and algae Kc
-    Kw_NO = Cal_Par_NO[4]  # 1.7
-    Kw_Chla = Cal_Par_Chla[4]  # 1.7
-    Kc_NO = Cal_Par_NO[5]  # 0.029
-    Kc_Chla = Cal_Par_Chla[5]  # 0.029
+    Kw_NO = calibration_parameter_no[4]  # 1.7
+    Kw_Chla = calibration_parameter_chla[4]  # 1.7
+    Kc_NO = calibration_parameter_no[5]  # 0.029
+    Kc_Chla = calibration_parameter_chla[5]  # 0.029
     # Light limitation and inhibition coefficients K1 and K2
-    K1_NO = Cal_Par_NO[6]  # 100
-    K1_Chla = Cal_Par_Chla[6]  # 100
-    K2_NO = Cal_Par_NO[7]  # 700
-    K2_Chla = Cal_Par_Chla[7]  # 700
+    K1_NO = calibration_parameter_no[6]  # 100
+    K1_Chla = calibration_parameter_chla[6]  # 100
+    K2_NO = calibration_parameter_no[7]  # 700
+    K2_Chla = calibration_parameter_chla[7]  # 700
     # Maximum Phytoplankton growth rate
-    G_max_NO = Cal_Par_NO[8]  # 1.5
-    G_max_Chla = Cal_Par_Chla[8]  # 1.5
+    G_max_NO = calibration_parameter_no[8]  # 1.5
+    G_max_Chla = calibration_parameter_chla[8]  # 1.5
 
     # Half Saturation Coefficients
-    K_NH_NO = Cal_Par_NO[9]  # 0.1
-    K_NH_Chla = Cal_Par_Chla[9]  # 0.1
-    K_Nitr_NO = Cal_Par_NO[10]
-    K_Nitr_Chla = Cal_Par_Chla[10]
+    K_NH_NO = calibration_parameter_no[9]  # 0.1
+    K_NH_Chla = calibration_parameter_chla[9]  # 0.1
+    K_Nitr_NO = calibration_parameter_no[10]
+    K_Nitr_Chla = calibration_parameter_chla[10]
     K_DIN_NO = K_NH_NO + K_Nitr_NO
     K_DIN_Chla = K_NH_Chla + K_Nitr_Chla
-    KP_NO = Cal_Par_NO[11]
-    KP_Chla = Cal_Par_Chla[11]
-    K_TN_NO = Cal_Par_NO[12]  # 0.1
-    K_TN_Chla = Cal_Par_Chla[12]  # 0.1
-    YNOChla_NO = Cal_Par_NO[13]  # 0.1
-    YNOChla_Chla = Cal_Par_Chla[13]  # 0.1
+    KP_NO = calibration_parameter_no[11]
+    KP_Chla = calibration_parameter_chla[11]
+    K_TN_NO = calibration_parameter_no[12]  # 0.1
+    K_TN_Chla = calibration_parameter_chla[12]  # 0.1
+    YNOChla_NO = calibration_parameter_no[13]  # 0.1
+    YNOChla_Chla = calibration_parameter_chla[13]  # 0.1
 
     # Temperatures
-    T_opt_NO = Cal_Par_NO[14]  # 15 # C
-    T_min_NO = Cal_Par_NO[15]  # 10 # C
-    T_max_NO = Cal_Par_NO[16]  # 30 # C
+    T_opt_NO = calibration_parameter_no[14]  # 15 # C
+    T_min_NO = calibration_parameter_no[15]  # 10 # C
+    T_max_NO = calibration_parameter_no[16]  # 30 # C
 
-    T_opt_Chla = Cal_Par_Chla[14]  # 15 # C
-    T_min_Chla = Cal_Par_Chla[15]  # 10 # C
-    T_max_Chla = Cal_Par_Chla[16]  # 30 # C
+    T_opt_Chla = calibration_parameter_chla[14]  # 15 # C
+    T_min_Chla = calibration_parameter_chla[15]  # 10 # C
+    T_max_Chla = calibration_parameter_chla[16]  # 30 # C
 
     # Dissolved Oxygen
-    KDO_NO = Cal_Par_NO[17]
-    KDO_Chla = Cal_Par_Chla[17]
+    KDO_NO = calibration_parameter_no[17]
+    KDO_Chla = calibration_parameter_chla[17]
 
     # Sediment Release
-    S_NO_NO = Cal_Par_NO[18]  # mg/m2/d
-    S_NO_Chla = Cal_Par_Chla[18]  # mg/m2/d
+    S_NO_NO = calibration_parameter_no[18]  # mg/m2/d
+    S_NO_Chla = calibration_parameter_chla[18]  # mg/m2/d
 
     Theta_NO = 1.06
-    NO_Temp_Adj = Theta_NO ** (Temp - 20)
+    NO_Temp_Adj = Theta_NO ** (temperature - 20)
     Area = 1730 * 1E6  # m2
     Area_N = Area * N_Per
     Area_S = Area * S_Per
 
-    X = len(Q_in.index)
+    X = len(inflows.index)
 
     # Nitrogen and Phosphorus Limiting
-    f_P_NO = DIP_Obs / (KP_NO + DIP_Obs)
-    f_P_Chla = DIP_Obs / (KP_Chla + DIP_Obs)
+    f_P_NO = dissolved_inorganic_phosphorus_observed / (KP_NO + dissolved_inorganic_phosphorus_observed)
+    f_P_Chla = dissolved_inorganic_phosphorus_observed / (KP_Chla + dissolved_inorganic_phosphorus_observed)
 
-    f_N_NO = DIN_Obs / (K_DIN_NO + DIN_Obs)
-    f_N_Chla = DIN_Obs / (K_DIN_Chla + DIN_Obs)
+    f_N_NO = dissolved_inorganic_nitrogen_observed / (K_DIN_NO + dissolved_inorganic_nitrogen_observed)
+    f_N_Chla = dissolved_inorganic_nitrogen_observed / (K_DIN_Chla + dissolved_inorganic_nitrogen_observed)
 
-    f_P_N_NO = DIP_N_Obs / (KP_NO + DIP_N_Obs)
-    f_P_N_Chla = DIP_N_Obs / (KP_Chla + DIP_N_Obs)
+    f_P_N_NO = dissolved_inorganic_phosphorus_north_observed / (KP_NO + dissolved_inorganic_phosphorus_north_observed)
+    f_P_N_Chla = dissolved_inorganic_phosphorus_north_observed / (KP_Chla + dissolved_inorganic_phosphorus_north_observed)
 
-    f_P_S_NO = DIP_S_Obs / (KP_NO + DIP_S_Obs)
-    f_P_S_Chla = DIP_S_Obs / (KP_Chla + DIP_S_Obs)
+    f_P_S_NO = dissolved_inorganic_phosphorus_south_observed / (KP_NO + dissolved_inorganic_phosphorus_south_observed)
+    f_P_S_Chla = dissolved_inorganic_phosphorus_south_observed / (KP_Chla + dissolved_inorganic_phosphorus_south_observed)
 
-    f_N_N_NO = DIN_N_Obs / (K_DIN_NO + DIN_N_Obs)
-    f_N_N_Chla = DIN_N_Obs / (K_DIN_Chla + DIN_N_Obs)
+    f_N_N_NO = dissolved_inorganic_nitrogen_north_observed / (K_DIN_NO + dissolved_inorganic_nitrogen_north_observed)
+    f_N_N_Chla = dissolved_inorganic_nitrogen_north_observed / (K_DIN_Chla + dissolved_inorganic_nitrogen_north_observed)
 
-    f_N_S_NO = DIN_S_Obs / (K_DIN_NO + DIN_S_Obs)
-    f_N_S_Chla = DIN_S_Obs / (K_DIN_Chla + DIN_S_Obs)
+    f_N_S_NO = dissolved_inorganic_nitrogen_south_observed / (K_DIN_NO + dissolved_inorganic_nitrogen_south_observed)
+    f_N_S_Chla = dissolved_inorganic_nitrogen_south_observed / (K_DIN_Chla + dissolved_inorganic_nitrogen_south_observed)
 
     Q_I_M = np.zeros(X, dtype=object)
     Q_O_M = np.zeros(X, dtype=object)
@@ -279,143 +278,165 @@ def LOONE_WQ(workspace: str, photo_period_filename: str = 'PhotoPeriod', forecas
     for i in range(X):
         z[i] = 2.5
 
-    fox_min = Cal_Par_NO[19]
-    DO_Cr_n = Cal_Par_NO[20]
-    DO_Opt_n = Cal_Par_NO[21]
-    a = Cal_Par_NO[22]
-    DO_Cr_d = Cal_Par_NO[23]
-    DO_Opt_d = Cal_Par_NO[24]
+    fox_min = calibration_parameter_no[19]
+    DO_Cr_n = calibration_parameter_no[20]
+    DO_Opt_n = calibration_parameter_no[21]
+    a = calibration_parameter_no[22]
+    DO_Cr_d = calibration_parameter_no[23]
+    DO_Opt_d = calibration_parameter_no[24]
 
-    vc = Cal_Par_Chla[28]  # phytoplankton settling velocity (m/d).
+    vc = calibration_parameter_chla[28]  # phytoplankton settling velocity (m/d).
 
-    K_r = Cal_Par_Chla[25]
+    K_r = calibration_parameter_chla[25]
     Theta_r = 1.06
-    K_r_T = K_r * Theta_r ** (Temp - 20)
+    K_r_T = K_r * Theta_r ** (temperature - 20)
 
-    YNHChla = Cal_Par_Chla[26]  # 0.05
+    YNHChla = calibration_parameter_chla[26]  # 0.05
     # Chla mortality
-    k_m = Cal_Par_Chla[27]
+    k_m = calibration_parameter_chla[27]
     Theta_m = 1.06
-    K_m_T = k_m * Theta_m ** (Temp - 20)
+    K_m_T = k_m * Theta_m ** (temperature - 20)
 
-    Im = Cal_Par_Chla[31]
+    Im = calibration_parameter_chla[31]
 
     Grazing = 0
     Theta_G = 1.06
-    Grazing_T = Grazing * Theta_G ** (Temp - 20)
+    Grazing_T = Grazing * Theta_G ** (temperature - 20)
     # Initial values
-    NO_N[0] = NOx_N_Obs[0]
-    NO_S[0] = NOx_S_Obs[0]
+    NO_N[0] = nitrogen_oxide_north_observed[0]
+    NO_S[0] = nitrogen_oxide_south_observed[0]
 
     NO_MEAN[0] = (NO_N[0] + NO_S[0]) * 0.5
 
-    Sim_Chla_N[0] = Chla_N[0]
-    Sim_Chla_S[0] = Chla_S[0]
-    Sim_Chla[0] = Chla[0]
+    Sim_Chla_N[0] = chlorophyll_a_north[0]
+    Sim_Chla_S[0] = chlorophyll_a_south[0]
+    Sim_Chla[0] = chlorophyll_a[0]
 
-    Nitro_Model_Output = pd.DataFrame(Q_in['date'], columns=['date'])
-    Nitro_Model_Output['date'] = pd.to_datetime(Nitro_Model_Output['date'])
+    nitro_model_output = pd.DataFrame(inflows['date'], columns=['date'])
+    nitro_model_output['date'] = pd.to_datetime(nitro_model_output['date'])
     print("LOONE Nitrogen Module is Running!")
     for i in range(X - 1):
         # print(Nitro_Model_Output['date'].iloc[i])
 
-        if Storage_dev[i] >= 0:
-            Q_I_M[i] = Q_I[i] + Storage_dev[i] * 1233.48  # m3/d
-            Q_O_M[i] = Q_O[i]
+        if storage_dev[i] >= 0:
+            Q_I_M[i] = q_i[i] + storage_dev[i] * 1233.48  # m3/d
+            Q_O_M[i] = q_o[i]
 
-            External_NO_M[i] = External_NO[i] + Q_I_M[i] * S65E_NO[i]
-            External_Chla_M[i] = External_Chla[i] + Q_I_M[i] * S65E_Chla[i]
+            External_NO_M[i] = external_nitrite_nitrate[i] + Q_I_M[i] * s65e_nitrite_nitrate[i]
+            External_Chla_M[i] = external_chlorophyll_a[i] + Q_I_M[i] * s65e_chlorophyll_a[i]
 
         else:
-            Q_O_M[i] = Q_O[i] - Storage_dev[i] * 1233.48  # m3/d
-            Q_I_M[i] = Q_I[i]
-            External_NO_M[i] = External_NO[i]
-            External_Chla_M[i] = External_Chla[i]
+            Q_O_M[i] = q_o[i] - storage_dev[i] * 1233.48  # m3/d
+            Q_I_M[i] = q_i[i]
+            External_NO_M[i] = external_nitrite_nitrate[i]
+            External_Chla_M[i] = external_chlorophyll_a[i]
 
         Q_N2S[i] = (Q_I_M[i] * 1 + Q_O_M[i] * 0)
 
         t = np.linspace(1, 2, num=2)
-        Nit_R_N_NO[i] = loone_nchla_fns.Nit_Rate('%s' % Nit_Denit_Opt, Tot_nit_R, kni0_NO, kni_NO, NH4_N_Obs[i], K_NH_NO, DO[i], KDO_NO, fox_min, DO_Cr_n, DO_Opt_n, a)
-        Nit_R_N_T_NO[i] = Nit_R_N_NO[i] * Theta_ni ** (Temp[i] - 20)
-        Nit_R_S_NO[i] = loone_nchla_fns.Nit_Rate('%s' % Nit_Denit_Opt, Tot_nit_R, kni0_NO, kni_NO, NH4_S_Obs[i], K_NH_NO, DO[i], KDO_NO, fox_min, DO_Cr_n, DO_Opt_n, a)
-        Nit_R_S_T_NO[i] = Nit_R_S_NO[i] * Theta_ni ** (Temp[i] - 20)
+        Nit_R_N_NO[i] = loone_nchla_fns.Nit_Rate('%s' % nit_denit_opt, total_nitrification_rate, kni0_no, kni_no,
+                                                 ammonium_north_observed[i], K_NH_NO, dissolved_oxygen[i], KDO_NO,
+                                                 fox_min, DO_Cr_n, DO_Opt_n, a)
+        Nit_R_N_T_NO[i] = Nit_R_N_NO[i] * theta_ni ** (temperature[i] - 20)
+        Nit_R_S_NO[i] = loone_nchla_fns.Nit_Rate('%s' % nit_denit_opt, total_nitrification_rate, kni0_no, kni_no,
+                                                 ammonium_south_observed[i], K_NH_NO, dissolved_oxygen[i], KDO_NO,
+                                                 fox_min, DO_Cr_n, DO_Opt_n, a)
+        Nit_R_S_T_NO[i] = Nit_R_S_NO[i] * theta_ni ** (temperature[i] - 20)
 
-        Denit_R_N_NO[i] = loone_nchla_fns.Denit_Rate('%s' % Nit_Denit_Opt, Tot_denit_R, kden0_NO, kden_NO, NO_N[i], K_Nitr_NO, DO[i], KDO_NO, DO_Cr_d, DO_Opt_d)
-        Denit_R_N_T_NO[i] = Denit_R_N_NO[i] * Theta_deni ** (Temp[i] - 20)
-        Denit_R_S_NO[i] = loone_nchla_fns.Denit_Rate('%s' % Nit_Denit_Opt, Tot_denit_R, kden0_NO, kden_NO, NO_S[i], K_Nitr_NO, DO[i], KDO_NO, DO_Cr_d, DO_Opt_d)
-        Denit_R_S_T_NO[i] = Denit_R_S_NO[i] * Theta_deni ** (Temp[i] - 20)
+        Denit_R_N_NO[i] = loone_nchla_fns.Denit_Rate('%s' % nit_denit_opt, total_denitrification_rate, kden0_no,
+                                                     kden_no, NO_N[i], K_Nitr_NO, dissolved_oxygen[i], KDO_NO, DO_Cr_d,
+                                                     DO_Opt_d)
+        Denit_R_N_T_NO[i] = Denit_R_N_NO[i] * theta_deni ** (temperature[i] - 20)
+        Denit_R_S_NO[i] = loone_nchla_fns.Denit_Rate('%s' % nit_denit_opt, total_denitrification_rate, kden0_no,
+                                                     kden_no, NO_S[i], K_Nitr_NO, dissolved_oxygen[i], KDO_NO, DO_Cr_d,
+                                                     DO_Opt_d)
+        Denit_R_S_T_NO[i] = Denit_R_S_NO[i] * theta_deni ** (temperature[i] - 20)
 
-        fT_NO[i] = loone_nchla_fns.f_T_alt1(Temp[i], T_opt_NO, T_min_NO, T_max_NO)
-        fL_NO[i] = loone_nchla_fns.f_L_alt1(Photoperiod['Data'].iloc[i], RAD[i], Kw_NO, Kc_NO, Sim_Chla[i], z[i], K1_NO, K2_NO)
+        fT_NO[i] = loone_nchla_fns.f_T_alt1(temperature[i], T_opt_NO, T_min_NO, T_max_NO)
+        fL_NO[i] = loone_nchla_fns.f_L_alt1(photoperiod['Data'].iloc[i], rad[i], Kw_NO, Kc_NO, Sim_Chla[i], z[i],
+                                            K1_NO, K2_NO)
 
-        DfEq_Res_N = odeint(loone_nchla_fns.NOx_N_DiffEq, NO_N[i], t, args=(External_NO[i], Atm_Deposition_N, Q_N2S[i], Nit_R_N_T_NO[i], Denit_R_N_T_NO[i], NH4_N_Obs[i], volume_N[i], G_max_NO, fT_NO[i], fL_NO[i], f_P_N_NO[i], f_N_N_NO[i], K_NH_NO, K_TN_NO, YNOChla_NO, Sim_Chla_N[i], S_NO_NO, Area_N, NO_Temp_Adj[i], ))
+        DfEq_Res_N = odeint(loone_nchla_fns.NOx_N_DiffEq, NO_N[i], t,
+                            args=(external_nitrite_nitrate[i], atmospheric_deposition_north, Q_N2S[i], Nit_R_N_T_NO[i],
+                                  Denit_R_N_T_NO[i], ammonium_north_observed[i], volume_north[i], G_max_NO, fT_NO[i],
+                                  fL_NO[i], f_P_N_NO[i], f_N_N_NO[i], K_NH_NO, K_TN_NO, YNOChla_NO, Sim_Chla_N[i],
+                                  S_NO_NO, Area_N, NO_Temp_Adj[i], ))
         NO_N[i + 1] = DfEq_Res_N[:, 0][1]
-        DfEq_Res_S = odeint(loone_nchla_fns.NOx_S_DiffEq, NO_S[i], t, args=(Atm_Deposition_S, Q_N2S[i], Q_O_M[i], NO_N[i], Nit_R_S_T_NO[i], Denit_R_S_T_NO[i], NH4_S_Obs[i], volume_S[i], G_max_NO, fT_NO[i], fL_NO[i], f_P_S_NO[i], f_N_S_NO[i], K_NH_NO, K_TN_NO, YNOChla_NO, Sim_Chla_S[i], S_NO_NO, Area_S, NO_Temp_Adj[i], ))
+        DfEq_Res_S = odeint(loone_nchla_fns.NOx_S_DiffEq, NO_S[i], t,
+                            args=(atmospheric_deposition_south, Q_N2S[i], Q_O_M[i], NO_N[i], Nit_R_S_T_NO[i],
+                                  Denit_R_S_T_NO[i], ammonium_south_observed[i], volume_south[i], G_max_NO, fT_NO[i],
+                                  fL_NO[i], f_P_S_NO[i], f_N_S_NO[i], K_NH_NO, K_TN_NO, YNOChla_NO, Sim_Chla_S[i],
+                                  S_NO_NO, Area_S, NO_Temp_Adj[i], ))
         NO_S[i + 1] = DfEq_Res_S[:, 0][1]
         NO_MEAN[i + 1] = (NO_N[i + 1] + NO_S[i + 1]) * 0.5
 
-        NO_Load_Cal[i] = S77_Q[i] * NO_S[i]  # mg/d P
-        NO_Load_StL[i] = S308_Q[i] * NO_S[i]  # mg/d P
-        NO_Load_South[i] = TotRegSo[i] * 1233.48 * NO_S[i]  # mg/d P
+        NO_Load_Cal[i] = s77_outflow[i] * NO_S[i]  # mg/d P
+        NO_Load_StL[i] = s308_outflow[i] * NO_S[i]  # mg/d P
+        NO_Load_South[i] = total_regional_outflow_south[i] * 1233.48 * NO_S[i]  # mg/d P
 
         ##### Chla
-        fT_Chla[i] = loone_nchla_fns.f_T__Chla_alt1(Temp[i], T_opt_Chla, T_min_Chla, T_max_Chla, Nitro_Model_Output['date'].iloc[i].month)
+        fT_Chla[i] = loone_nchla_fns.f_T__Chla_alt1(temperature[i], T_opt_Chla, T_min_Chla, T_max_Chla,
+                                                    nitro_model_output['date'].iloc[i].month)
 
-        fL_Chla[i] = loone_nchla_fns.f_L_alt1(Photoperiod['Data'].iloc[i], RAD[i], Kw_Chla, Kc_Chla, Sim_Chla[i], z[i], K1_Chla, K2_Chla) * 1.2 if Nitro_Model_Output['date'].iloc[i].month in (6, 7, 8, 9, 10) else loone_nchla_fns.f_L_alt1(Photoperiod['Data'].iloc[i], RAD[i], Kw_Chla, Kc_Chla, Sim_Chla[i], z[i], K1_Chla, K2_Chla) * 1
+        fL_Chla[i] = loone_nchla_fns.f_L_alt1(photoperiod['Data'].iloc[i], rad[i], Kw_Chla, Kc_Chla, Sim_Chla[i], z[i], K1_Chla, K2_Chla) * 1.2 if nitro_model_output['date'].iloc[i].month in (6, 7, 8, 9, 10) else loone_nchla_fns.f_L_alt1(photoperiod['Data'].iloc[i], rad[i], Kw_Chla, Kc_Chla, Sim_Chla[i], z[i], K1_Chla, K2_Chla) * 1
 
-        Sim_Chla_N[i + 1] = loone_nchla_fns.Chla_N_alt1(External_Chla_M[i], Q_N2S[i], Sim_Chla_N[i], vc, z[i], K_m_T[i], K_r_T[i], 0, G_max_Chla, fT_Chla[i], fL_Chla[i], f_P_N_Chla[i], f_N_N_Chla[i], volume_N[i])
-        Sim_Chla_S[i + 1] = loone_nchla_fns.Chla_S_alt1(Q_N2S[i], Q_O_M[i], Sim_Chla_N[i], Sim_Chla_S[i], vc, z[i], K_m_T[i], K_r_T[i], 0, G_max_Chla, fT_Chla[i], fL_Chla[i], f_P_S_Chla[i], f_N_S_Chla[i], volume_S[i])
+        Sim_Chla_N[i + 1] = loone_nchla_fns.Chla_N_alt1(External_Chla_M[i], Q_N2S[i], Sim_Chla_N[i], vc, z[i],
+                                                        K_m_T[i], K_r_T[i], 0, G_max_Chla, fT_Chla[i], fL_Chla[i],
+                                                        f_P_N_Chla[i], f_N_N_Chla[i], volume_north[i])
+        Sim_Chla_S[i + 1] = loone_nchla_fns.Chla_S_alt1(Q_N2S[i], Q_O_M[i], Sim_Chla_N[i], Sim_Chla_S[i], vc, z[i],
+                                                        K_m_T[i], K_r_T[i], 0, G_max_Chla, fT_Chla[i], fL_Chla[i],
+                                                        f_P_S_Chla[i], f_N_S_Chla[i], volume_south[i])
         Sim_Chla[i + 1] = (Sim_Chla_N[i + 1] + Sim_Chla_S[i + 1]) / 2
 
-        Chla_Load_Cal[i] = S77_Q[i] * Sim_Chla_S[i]  # mg/d P
-        Chla_Load_StL[i] = S308_Q[i] * Sim_Chla_S[i]  # mg/d P
-        Chla_Load_South[i] = TotRegSo[i] * 1233.48 * Sim_Chla_S[i]  # mg/d P
+        Chla_Load_Cal[i] = s77_outflow[i] * Sim_Chla_S[i]  # mg/d P
+        Chla_Load_StL[i] = s308_outflow[i] * Sim_Chla_S[i]  # mg/d P
+        Chla_Load_South[i] = total_regional_outflow_south[i] * 1233.48 * Sim_Chla_S[i]  # mg/d P
 
     print("Exporting Module Outputs!")
 
-    Nitro_Model_Output['NO_N'] = pd.to_numeric(NO_N)
-    Nitro_Model_Output['NO_S'] = pd.to_numeric(NO_S)
-    Nitro_Model_Output['NO_M'] = pd.to_numeric(NO_MEAN)
-    Nitro_Model_Output['Sim_Chla'] = pd.to_numeric(Sim_Chla)
-    Nitro_Model_Output['Sim_Chla_N'] = pd.to_numeric(Sim_Chla_N)
-    Nitro_Model_Output['Sim_Chla_S'] = pd.to_numeric(Sim_Chla_S)
-    Nitro_Model_Output['Water Temp'] = pd.to_numeric(Temp)  # C
+    nitro_model_output['NO_N'] = pd.to_numeric(NO_N)
+    nitro_model_output['NO_S'] = pd.to_numeric(NO_S)
+    nitro_model_output['NO_M'] = pd.to_numeric(NO_MEAN)
+    nitro_model_output['Sim_Chla'] = pd.to_numeric(Sim_Chla)
+    nitro_model_output['Sim_Chla_N'] = pd.to_numeric(Sim_Chla_N)
+    nitro_model_output['Sim_Chla_S'] = pd.to_numeric(Sim_Chla_S)
+    nitro_model_output['Water Temp'] = pd.to_numeric(temperature)  # C
 
-    Nitro_Model_Output = Nitro_Model_Output.set_index('date')
-    Nitro_Model_Output.index = pd.to_datetime(Nitro_Model_Output.index, unit='ns')
+    nitro_model_output = nitro_model_output.set_index('date')
+    nitro_model_output.index = pd.to_datetime(nitro_model_output.index, unit='ns')
 
-    Nitro_Mod_Out_M = Nitro_Model_Output.resample('ME').mean()
-    Nitro_Model_Output = Nitro_Model_Output.reset_index()
-    Nitro_Mod_Out_M = Nitro_Mod_Out_M.reset_index()
+    nitro_mod_out_m = nitro_model_output.resample('ME').mean()
+    nitro_model_output = nitro_model_output.reset_index()
+    nitro_mod_out_m = nitro_mod_out_m.reset_index()
 
-    Constit_Loads_df = pd.DataFrame(Q_in['date'], columns=['date'])
-    Constit_Loads_df['date'] = pd.to_datetime(Constit_Loads_df['date'])
+    constit_loads_df = pd.DataFrame(inflows['date'], columns=['date'])
+    constit_loads_df['date'] = pd.to_datetime(constit_loads_df['date'])
 
-    Constit_Loads_df['NO_Load_Cal'] = pd.to_numeric(NO_Load_Cal) / 1E9  # tons
-    Constit_Loads_df['NO_Load_StL'] = pd.to_numeric(NO_Load_StL) / 1E9  # tons
-    Constit_Loads_df['NO_Load_South'] = pd.to_numeric(NO_Load_South) / 1E9  # tons
-    Constit_Loads_df['Chla_Load_Cal'] = pd.to_numeric(Chla_Load_Cal) / 1E6  # Kgs
-    Constit_Loads_df['Chla_Load_StL'] = pd.to_numeric(Chla_Load_StL) / 1E6  # Kgs
-    Constit_Loads_df['Chla_Load_South'] = pd.to_numeric(Chla_Load_South) / 1E6  # Kgs
+    constit_loads_df['NO_Load_Cal'] = pd.to_numeric(NO_Load_Cal) / 1E9  # tons
+    constit_loads_df['NO_Load_StL'] = pd.to_numeric(NO_Load_StL) / 1E9  # tons
+    constit_loads_df['NO_Load_South'] = pd.to_numeric(NO_Load_South) / 1E9  # tons
+    constit_loads_df['Chla_Load_Cal'] = pd.to_numeric(Chla_Load_Cal) / 1E6  # Kgs
+    constit_loads_df['Chla_Load_StL'] = pd.to_numeric(Chla_Load_StL) / 1E6  # Kgs
+    constit_loads_df['Chla_Load_South'] = pd.to_numeric(Chla_Load_South) / 1E6  # Kgs
 
-    Constit_Loads_df = Constit_Loads_df.set_index('date')
-    Constit_Loads_df.index = pd.to_datetime(Constit_Loads_df.index, unit='ns')
+    constit_loads_df = constit_loads_df.set_index('date')
+    constit_loads_df.index = pd.to_datetime(constit_loads_df.index, unit='ns')
 
-    Constit_Loads_M = Constit_Loads_df.resample('ME').sum()
-    Constit_Loads_df = Constit_Loads_df.reset_index()
-    Constit_Loads_M = Constit_Loads_M.reset_index()
+    constit_loads_m = constit_loads_df.resample('ME').sum()
+    constit_loads_df = constit_loads_df.reset_index()
+    constit_loads_m = constit_loads_m.reset_index()
 
     Smr_Mnth_NOx_StL = []
     Smr_Mnth_NOx_Cal = []
     Smr_Mnth_Chla_StL = []
     Smr_Mnth_Chla_Cal = []
-    for i in range(len(Constit_Loads_M.index)):
-        if Constit_Loads_M['date'].iloc[i].month in [5, 6, 7, 8, 9, 10]:
-            Smr_Mnth_NOx_StL.append(Constit_Loads_M['NO_Load_StL'].iloc[i])
-            Smr_Mnth_Chla_StL.append(Constit_Loads_M['Chla_Load_StL'].iloc[i])
+    for i in range(len(constit_loads_m.index)):
+        if constit_loads_m['date'].iloc[i].month in [5, 6, 7, 8, 9, 10]:
+            Smr_Mnth_NOx_StL.append(constit_loads_m['NO_Load_StL'].iloc[i])
+            Smr_Mnth_Chla_StL.append(constit_loads_m['Chla_Load_StL'].iloc[i])
 
-            Smr_Mnth_NOx_Cal.append(Constit_Loads_M['NO_Load_Cal'].iloc[i])
-            Smr_Mnth_Chla_Cal.append(Constit_Loads_M['Chla_Load_Cal'].iloc[i])
+            Smr_Mnth_NOx_Cal.append(constit_loads_m['NO_Load_Cal'].iloc[i])
+            Smr_Mnth_Chla_Cal.append(constit_loads_m['Chla_Load_Cal'].iloc[i])
 
     Smr_Mnth_NOx_StL_arr = np.asarray(Smr_Mnth_NOx_StL)
     Smr_Mnth_Chla_StL_arr = np.asarray(Smr_Mnth_Chla_StL)
@@ -425,10 +446,10 @@ def LOONE_WQ(workspace: str, photo_period_filename: str = 'PhotoPeriod', forecas
 
     if config['sim_type'] in [0, 1]:
         variables_dict = {
-            'Constit_Loads': Constit_Loads_df,
-            'Nitro_Model_Output': Nitro_Model_Output,
-            'Constit_Loads_M': Constit_Loads_M,
-            'Nitro_Mod_Out_M': Nitro_Mod_Out_M,
+            'Constit_Loads': constit_loads_df,
+            'Nitro_Model_Output': nitro_model_output,
+            'Constit_Loads_M': constit_loads_m,
+            'Nitro_Mod_Out_M': nitro_mod_out_m,
         }
         return_list = list(variables_dict.values())
 
@@ -438,7 +459,7 @@ def LOONE_WQ(workspace: str, photo_period_filename: str = 'PhotoPeriod', forecas
         return return_list
     else:
         return_list = [Smr_Mnth_NOx_StL_arr, Smr_Mnth_Chla_StL_arr, Smr_Mnth_NOx_Cal_arr, Smr_Mnth_Chla_Cal_arr,
-                       Nitro_Model_Output]
+                       nitro_model_output]
 
     # Algae_Opt_Mnth_NOx_StL = []
     # Algae_Opt_Mnth_NOx_Cal = []
