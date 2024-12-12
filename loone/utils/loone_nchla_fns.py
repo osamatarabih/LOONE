@@ -11,7 +11,7 @@ def f_T_alt1(T, T_opt, T_min, T_max):
 
 
 # For Chla
-def f_T_Chla_alt1(T, T_opt, T_min, T_max, month):
+def f_T__Chla_alt1(T, T_opt, T_min, T_max, month):
     import math
     if T < T_opt and month in (6, 7, 8, 9, 10):
         f_T = math.exp(-2.3 * ((T - T_opt) / (T_opt - T_min)) ** 2) * 1.2
