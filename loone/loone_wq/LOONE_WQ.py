@@ -44,7 +44,7 @@ def LOONE_WQ(workspace: str, photo_period_filename: str = 'PhotoPeriod', forecas
     s65e_chlorophyll_a_basename = 'S65E_Chla_Merged_forecast.csv' if forecast_mode else 'S65E_Chla_Merged.csv'
     s65e_chlorophyll_a_data = pd.read_csv(os.path.join(workspace, s65e_chlorophyll_a_basename))  # mg/m3
 
-    photoperiod = pd.read_csv(os.path.join(workspace, f'{photo_period_filename}.csv'))
+    photo_period = pd.read_csv(os.path.join(workspace, f'{photo_period_filename}.csv'))
     lo_orthophosphate_north_data = pd.read_csv(os.path.join(workspace, 'N_OP.csv'))  # mg/m3
     lo_orthophosphate_south_data = pd.read_csv(os.path.join(workspace, 'S_OP.csv'))  # mg/m3
     lo_dissolved_inorganic_nitrogen_north_data = pd.read_csv(os.path.join(workspace, 'N_DIN.csv'))  # mg/m3
@@ -353,7 +353,7 @@ def LOONE_WQ(workspace: str, photo_period_filename: str = 'PhotoPeriod', forecas
         Denit_R_S_T_NO[i] = Denit_R_S_NO[i] * theta_deni ** (temperature[i] - 20)
 
         fT_NO[i] = loone_nchla_fns.f_T_alt1(temperature[i], T_opt_NO, T_min_NO, T_max_NO)
-        fL_NO[i] = loone_nchla_fns.f_L_alt1(photoperiod['Data'].iloc[i], rad[i], Kw_NO, Kc_NO, Sim_Chla[i], z[i],
+        fL_NO[i] = loone_nchla_fns.f_L_alt1(photo_period['Data'].iloc[i], rad[i], Kw_NO, Kc_NO, Sim_Chla[i], z[i],
                                             K1_NO, K2_NO)
 
         DfEq_Res_N = odeint(loone_nchla_fns.NOx_N_DiffEq, NO_N[i], t,
@@ -378,7 +378,7 @@ def LOONE_WQ(workspace: str, photo_period_filename: str = 'PhotoPeriod', forecas
         fT_Chla[i] = loone_nchla_fns.f_T__Chla_alt1(temperature[i], T_opt_Chla, T_min_Chla, T_max_Chla,
                                                     nitro_model_output['date'].iloc[i].month)
 
-        fL_Chla[i] = loone_nchla_fns.f_L_alt1(photoperiod['Data'].iloc[i], rad[i], Kw_Chla, Kc_Chla, Sim_Chla[i], z[i], K1_Chla, K2_Chla) * 1.2 if nitro_model_output['date'].iloc[i].month in (6, 7, 8, 9, 10) else loone_nchla_fns.f_L_alt1(photoperiod['Data'].iloc[i], rad[i], Kw_Chla, Kc_Chla, Sim_Chla[i], z[i], K1_Chla, K2_Chla) * 1
+        fL_Chla[i] = loone_nchla_fns.f_L_alt1(photo_period['Data'].iloc[i], rad[i], Kw_Chla, Kc_Chla, Sim_Chla[i], z[i], K1_Chla, K2_Chla) * 1.2 if nitro_model_output['date'].iloc[i].month in (6, 7, 8, 9, 10) else loone_nchla_fns.f_L_alt1(photo_period['Data'].iloc[i], rad[i], Kw_Chla, Kc_Chla, Sim_Chla[i], z[i], K1_Chla, K2_Chla) * 1
 
         Sim_Chla_N[i + 1] = loone_nchla_fns.Chla_N_alt1(External_Chla_M[i], Q_N2S[i], Sim_Chla_N[i], vc, z[i],
                                                         K_m_T[i], K_r_T[i], 0, G_max_Chla, fT_Chla[i], fL_Chla[i],
