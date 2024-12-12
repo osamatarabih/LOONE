@@ -105,12 +105,12 @@ def LOONE_WQ(workspace: str, photo_period_filename: str = 'PhotoPeriod', forecas
     chlorophyll_a = (chlorophyll_a_north + chlorophyll_a_south) / 2
     dissolved_inorganic_nitrogen_north_observed = lo_dissolved_inorganic_nitrogen_north_data['DIN'].astype(float)
     dissolved_inorganic_nitrogen_south_observed = lo_dissolved_inorganic_nitrogen_south_data['DIN'].astype(float)
-    dissolved_inorganic_nitrogen_observed = (dissolved_inorganic_nitrogen_north_observed +
-                                             dissolved_inorganic_nitrogen_south_observed) / 2
+    dissolved_inorganic_nitrogen_observed = (dissolved_inorganic_nitrogen_north_observed
+                                             + dissolved_inorganic_nitrogen_south_observed) / 2
     dissolved_inorganic_phosphorus_north_observed = lo_orthophosphate_north_data['OP'].astype(float)
     dissolved_inorganic_phosphorus_south_observed = lo_orthophosphate_south_data['OP'].astype(float)
-    dissolved_inorganic_phosphorus_observed = (dissolved_inorganic_phosphorus_north_observed +
-                                               dissolved_inorganic_phosphorus_south_observed) / 2
+    dissolved_inorganic_phosphorus_observed = (dissolved_inorganic_phosphorus_north_observed
+                                               + dissolved_inorganic_phosphorus_south_observed) / 2
 
     nit_denit_opt = 'Opt1'
 
