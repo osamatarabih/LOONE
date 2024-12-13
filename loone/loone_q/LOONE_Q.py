@@ -194,12 +194,8 @@ def LOONE_Q(workspace, p1, p2, s77_dv, s308_dv, tp_lake_s):
     adaptive_protocol_df = pd.DataFrame(date_range_5, columns=["date"])
     # Calculate Late Dry Season (Apr-May) logic.
     late_dry_season = []
-    for i in adaptive_protocol_df["date"]:
-        if i.month > 3 and i.month < 6:
-            L = True
-        else:
-            L = False
-        late_dry_season.append(L)
+    for date in adaptive_protocol_df["date"]:
+        late_dry_season.append(3 < date.month < 6)
     adaptive_protocol_df["Late_Dry_Season"] = late_dry_season
     adaptive_protocol_df["Tributary Hydrologic Condition"] = tc_lonino_df[
         "Tributary_Condition"
