@@ -1653,6 +1653,49 @@ def _create_dectree_df(date_range_5: pd.DatetimeIndex, tc_lonino_df: pd.DataFram
     return dec_tree_df
 
 
+def _calculate_pulse_averages(data: object) -> dict:
+    """
+    Calculate the pulse averages for S-80 and S-77.
+
+    Args:
+        data (object): The data object containing pulse information.
+
+    Returns:
+        dict: A dictionary containing the pulse averages for S-80 and S-77.
+    """
+    pulse_averages = {
+        "s80avg_l1": data.Pulses["S-80_L1_LORS20082023"].mean(),
+        "s80avg_l2": data.Pulses["S-80_L2_LORS20082023"].mean(),
+        "s80avg_l3": data.Pulses["S-80_L3_LORS20082023"].mean(),
+        "s77avg_l1": data.Pulses["S-77_L1_LORS20082023"].mean(),
+        "s77avg_l2": data.Pulses["S-77_L2_LORS20082023"].mean(),
+        "s77avg_l3": data.Pulses["S-77_L3_LORS20082023"].mean(),
+    }
+    return pulse_averages
+
+
+def _initialize_model_variables_stage_levels_flags(model_variables: object, config: dict, startdate: pd.Timestamp,
+                                                   lo_model: pd.DataFrame, begdateCS: pd.Timestamp) -> None:
+    """
+    Initialize the model variables with the given configuration and start date.
+
+    Args:
+        model_variables (object): The model variables object.
+        config (dict): The configuration dictionary.
+        startdate (pd.Timestamp): The start date.
+        lo_model (pd.DataFrame): The LOONE model DataFrame.
+        begdateCS (pd.Timestamp): The beginning date for CS.
+
+    Returns:
+        None
+    """
+    model_variables.Lake_Stage[0] = config["beg_stage_cs"]
+    model_variables.Lake_Stage[1] = config["beg_stage_cs"]
+    model_variables.DecTree_Relslevel[0] = np.nan
+    model_variables.DecTree_Relslevel[1] = np.nan
+    model_variables.DayFlags[2] = _determine_day_flags(startdate, lo_model, begdateCS)
+
+
 def LOONE_Q(workspace: str, p1: float, p2: float, s77_dv: float, s308_dv: float, tp_lake_s: float) -> None:
     """This function runs the LOONE Q module.
 
@@ -1725,12 +1768,13 @@ def LOONE_Q(workspace: str, p1: float, p2: float, s77_dv: float, s308_dv: float,
     outlet2_baseflow = data.S80_RegRelRates["Zone_D0"].iloc[0]
     _calculate_basin_runoff(basin_ro, data, outlet1_baseflow, outlet2_baseflow)
     lo_model["C43RO"] = data.C43RO_Daily["C43RO"]
-    s80avg_l1 = data.Pulses["S-80_L1_LORS20082023"].mean()
-    s80avg_l2 = data.Pulses["S-80_L2_LORS20082023"].mean()
-    s80avg_l3 = data.Pulses["S-80_L3_LORS20082023"].mean()
-    s77avg_l1 = data.Pulses["S-77_L1_LORS20082023"].mean()
-    s77avg_l2 = data.Pulses["S-77_L2_LORS20082023"].mean()
-    s77avg_l3 = data.Pulses["S-77_L3_LORS20082023"].mean()
+    pulse_averages = _calculate_pulse_averages(data)
+    s80avg_l1 = pulse_averages["s80avg_l1"]
+    s80avg_l2 = pulse_averages["s80avg_l2"]
+    s80avg_l3 = pulse_averages["s80avg_l3"]
+    s77avg_l1 = pulse_averages["s77avg_l1"]
+    s77avg_l2 = pulse_averages["s77avg_l2"]
+    s77avg_l3 = pulse_averages["s77avg_l3"]
     basin_ro = basin_ro.set_index(["date"])
     basin_ro.index = pd.to_datetime(basin_ro.index)
     basin_ro_daily = basin_ro.reindex(date_range_11d, method="ffill")
@@ -1751,13 +1795,7 @@ def LOONE_Q(workspace: str, p1: float, p2: float, s77_dv: float, s308_dv: float,
     vlookup2 = basin_ro_daily["BS-C43RO"]
     vlookup2_c = [x for x in vlookup2 if ~np.isnan(x)]
     ###################################################################
-    model_variables.Lake_Stage[0] = config["beg_stage_cs"]
-    model_variables.Lake_Stage[1] = config["beg_stage_cs"]
-    model_variables.DecTree_Relslevel[0] = np.nan
-    model_variables.DecTree_Relslevel[1] = np.nan
-    model_variables.DayFlags[2] = _determine_day_flags(startdate, lo_model, begdateCS)
-    start_storage = stg_sto_ar.stg2sto(config["start_stage"], 0)
-    _set_starting_storage(model_variables, start_storage)
+    _initialize_model_variables_stage_levels_flags(model_variables, config, startdate, lo_model, begdateCS)
     # Flood = np.zeros(n_rows, dtype = object)
     ##Here, I will insert the Storage Deviaiton Values as Input!
     storage_deviation = data.Storage_dev_df["DS_dev"]
