@@ -1796,6 +1796,8 @@ def LOONE_Q(workspace: str, p1: float, p2: float, s77_dv: float, s308_dv: float,
     vlookup2_c = [x for x in vlookup2 if ~np.isnan(x)]
     ###################################################################
     _initialize_model_variables_stage_levels_flags(model_variables, config, startdate, lo_model, begdateCS)
+    start_storage = stg_sto_ar.stg2sto(config["start_stage"], 0)
+    _set_starting_storage(model_variables, start_storage)
     # Flood = np.zeros(n_rows, dtype = object)
     ##Here, I will insert the Storage Deviaiton Values as Input!
     storage_deviation = data.Storage_dev_df["DS_dev"]
