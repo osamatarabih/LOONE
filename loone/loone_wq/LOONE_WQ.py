@@ -305,7 +305,7 @@ def _get_temperatures(calibration_parameter_no: list, calibration_parameter_chla
     return temperatures
 
 
-def calculate_dissolved_oxygen(calibration_parameter_no: list, calibration_parameter_chla: list) -> dict:
+def _calculate_dissolved_oxygen(calibration_parameter_no: list, calibration_parameter_chla: list) -> dict:
     """
     Calculate dissolved oxygen parameters.
 
@@ -323,7 +323,7 @@ def calculate_dissolved_oxygen(calibration_parameter_no: list, calibration_param
     return dissolved_oxygen
 
 
-def calculate_sediment_release(calibration_parameter_no: list, calibration_parameter_chla: list) -> dict:
+def _calculate_sediment_release(calibration_parameter_no: list, calibration_parameter_chla: list) -> dict:
     """
     Calculate sediment release parameters.
 
@@ -912,12 +912,12 @@ def LOONE_WQ(workspace: str, photo_period_filename: str = 'PhotoPeriod', forecas
     T_max_Chla = temperatures["T_max_Chla"]
 
     # Dissolved Oxygen
-    dissolved_oxygen_params = calculate_dissolved_oxygen(calibration_parameter_no, calibration_parameter_chla)
+    dissolved_oxygen_params = _calculate_dissolved_oxygen(calibration_parameter_no, calibration_parameter_chla)
     KDO_NO = dissolved_oxygen_params["KDO_NO"]
     KDO_Chla = dissolved_oxygen_params["KDO_Chla"]
 
     # Sediment Release
-    sediment_release = calculate_sediment_release(calibration_parameter_no, calibration_parameter_chla)
+    sediment_release = _calculate_sediment_release(calibration_parameter_no, calibration_parameter_chla)
     S_NO_NO = sediment_release["S_NO_NO"]
     S_NO_Chla = sediment_release["S_NO_Chla"]
 
