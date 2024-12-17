@@ -461,7 +461,25 @@ def Outlet2DSRS(
     elif (Release_Level + 2) == 8:
         S = S80_RegRelRates_Zone_A
     return S
-
+def Outlet_Rel_Sim(Release_Level,Release_Rate_L,Release_Rate_M,Release_Rate_H):
+        S = 0
+        if (Release_Level + 2) ==1:
+            S = 0
+        elif (Release_Level + 2) ==2:
+            S = 0
+        elif (Release_Level + 2) ==3:
+            S = Release_Rate_L
+        elif (Release_Level + 2) ==4:
+            S = Release_Rate_L
+        elif (Release_Level + 2) ==5:
+            S = Release_Rate_L
+        elif (Release_Level + 2) ==6:
+            S = Release_Rate_M
+        elif (Release_Level + 2) ==7:
+            S = Release_Rate_M
+        elif (Release_Level + 2) ==8:
+            S = Release_Rate_H
+        return(S)
 
 def Sum_Outlet2USRG1(day, S308RG1):
     Sigma = 0
