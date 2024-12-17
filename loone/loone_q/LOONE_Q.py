@@ -658,7 +658,7 @@ def LOONE_Q(workspace, p1, p2, s77_dv, s308_dv, tp_lake_s):
                 config["opt_s308"],
                 config["s308_rg_const"],
             )
-        else:
+        elif config["sim_type"] == 1:
             if M_var.Lake_Stage[i + 1] >= 18:
                 M_var.Outlet2USRG[i + 2] = 7200
             elif M_var.Lake_Stage[i + 1] <= 8:
@@ -677,6 +677,11 @@ def LOONE_Q(workspace, p1, p2, s77_dv, s308_dv, tp_lake_s):
                 ]
             else:
                 M_var.Outlet2USRG[i + 2] = 0
+        else:
+            if M_var.Lake_Stage[i+1] >= 18:
+                M_var.Outlet2USRG[i+2] = 7200 
+            else:
+                M_var.Outlet2USRG[i+2] = 0
         M_var.Outlet2DS[i + 2] = lo_functions.S80(
             M_var.ROeast[i + 2],
             M_var.Outlet2USRG[i + 2],
@@ -893,7 +898,7 @@ def LOONE_Q(workspace, p1, p2, s77_dv, s308_dv, tp_lake_s):
                 config["outlet1_usreg_switch"],
                 config["option_reg_s77_s308"],
             )
-        else:
+        elif config["sim_type"] == 1:
             if M_var.Lake_Stage[i + 1] >= 18:
                 M_var.Outlet1USREG[i + 2] = 7800
             elif M_var.Lake_Stage[i + 1] <= 8:
@@ -912,6 +917,35 @@ def LOONE_Q(workspace, p1, p2, s77_dv, s308_dv, tp_lake_s):
                 ]
             else:
                 M_var.Outlet1USREG[i + 2] = 0
+        else:
+            if M_var.Lake_Stage[i+1] >= 18:
+                M_var.Outlet1USREG[i+2] = 7200
+            elif M_var.Lake_Stage[i+1] <= 8:
+                M_var.Outlet1USREG[i+2] = 0
+            elif LO_Model.at[i+2, 'date'].month == 1:
+                M_var.Outlet1USREG[i+2] = lo_functions.Outlet_Rel_Sim(M_var.Release_Level[i+2],SA_Par[0],SA_Par[1],SA_Par[2])
+            elif LO_Model.at[i+2, 'date'].month == 2:
+                M_var.Outlet1USREG[i+2] = lo_functions.Outlet_Rel_Sim(M_var.Release_Level[i+2],SA_Par[3],SA_Par[4],SA_Par[5])
+            elif LO_Model.at[i+2, 'date'].month == 3:
+                M_var.Outlet1USREG[i+2] = lo_functions.Outlet_Rel_Sim(M_var.Release_Level[i+2],SA_Par[6],SA_Par[7],SA_Par[8])
+            elif LO_Model.at[i+2, 'date'].month == 4:
+                M_var.Outlet1USREG[i+2] = lo_functions.Outlet_Rel_Sim(M_var.Release_Level[i+2],SA_Par[9],SA_Par[10],SA_Par[11])
+            elif LO_Model.at[i+2, 'date'].month == 5:
+                M_var.Outlet1USREG[i+2] =lo_functions.Outlet_Rel_Sim(M_var.Release_Level[i+2],SA_Par[12],SA_Par[13],SA_Par[14])
+            elif LO_Model.at[i+2, 'date'].month == 6:
+                M_var.Outlet1USREG[i+2] = lo_functions.Outlet_Rel_Sim(M_var.Release_Level[i+2],SA_Par[15],SA_Par[16],SA_Par[17])
+            elif LO_Model.at[i+2, 'date'].month == 7:
+                M_var.Outlet1USREG[i+2] = lo_functions.Outlet_Rel_Sim(M_var.Release_Level[i+2],SA_Par[18],SA_Par[19],SA_Par[20])
+            elif LO_Model.at[i+2, 'date'].month == 8:
+                M_var.Outlet1USREG[i+2] = lo_functions.Outlet_Rel_Sim(M_var.Release_Level[i+2],SA_Par[21],SA_Par[22],SA_Par[23])
+            elif LO_Model.at[i+2, 'date'].month == 9:
+                M_var.Outlet1USREG[i+2] = lo_functions.Outlet_Rel_Sim(M_var.Release_Level[i+2],SA_Par[24],SA_Par[25],SA_Par[26])
+            elif LO_Model.at[i+2, 'date'].month == 10:
+                M_var.Outlet1USREG[i+2] = lo_functions.Outlet_Rel_Sim(M_var.Release_Level[i+2],SA_Par[27],SA_Par[28],SA_Par[29])
+            elif LO_Model.at[i+2, 'date'].month == 11:
+                M_var.Outlet1USREG[i+2] = lo_functions.Outlet_Rel_Sim(M_var.Release_Level[i+2],SA_Par[30],SA_Par[31],SA_Par[32])
+            elif LO_Model.at[i+2, 'date'].month == 12:
+                M_var.Outlet1USREG[i+2] = lo_functions.Outlet_Rel_Sim(M_var.Release_Level[i+2],SA_Par[33],SA_Par[34],SA_Par[35])
         M_var.Outlet1DS[i + 2] = lo_functions.Outlet1DS(
             M_var.Outlet1USREG[i + 2],
             M_var.Outlet1USEWS[i + 2],
