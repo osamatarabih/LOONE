@@ -665,7 +665,7 @@ def _calculate_outlet2usrg_code(i: int, model_variables: object, lo_functions: o
             config["opt_s308"],
             config["s308_rg_const"],
         )
-    else:
+    elif config["sim_type"] == 1:
         if model_variables.Lake_Stage[i + 1] >= 18:
             model_variables.Outlet2USRG[i + 2] = 7200
         elif model_variables.Lake_Stage[i + 1] <= 8:
@@ -682,6 +682,11 @@ def _calculate_outlet2usrg_code(i: int, model_variables: object, lo_functions: o
             model_variables.Outlet2USRG[i + 2] = s308_dv[
                 (date_range_6[i + 2].month) - 1
             ]
+        else:
+            model_variables.Outlet2USRG[i + 2] = 0
+    else:
+        if model_variables.Lake_Stage[i + 1] >= 18:
+            model_variables.Outlet2USRG[i + 2] = 7200
         else:
             model_variables.Outlet2USRG[i + 2] = 0
 
@@ -1046,7 +1051,8 @@ def _define_thc_class_normal_or_above(i: int, n_rows: int, model_variables: obje
 
 
 def _calculate_outlet1usreg(i: int, model_variables: object, lo_functions: object, data: object, config: dict,
-                            tp_lake_s: float, s77_dv: float, date_range_6: pd.DatetimeIndex) -> None:
+                            tp_lake_s: float, s77_dv: float, date_range_6: pd.DatetimeIndex,
+                            lo_model: pd.DataFrame) -> None:
     """
     Calculate the Outlet1USREG for the given index.
 
@@ -1059,6 +1065,7 @@ def _calculate_outlet1usreg(i: int, model_variables: object, lo_functions: objec
         tp_lake_s (float): The tp_lake_s value.
         s77_dv (float): The s77_dv value.
         date_range_6 (pd.DatetimeIndex): The date range.
+        lo_model (pd.DataFrame): The model DataFrame.
 
     Returns:
         None
@@ -1071,7 +1078,7 @@ def _calculate_outlet1usreg(i: int, model_variables: object, lo_functions: objec
             config["outlet1_usreg_switch"],
             config["option_reg_s77_s308"],
         )
-    else:
+    elif config["sim_type"] == 1:
         if model_variables.Lake_Stage[i + 1] >= 18:
             model_variables.Outlet1USREG[i + 2] = 7800
         elif model_variables.Lake_Stage[i + 1] <= 8:
@@ -1090,6 +1097,36 @@ def _calculate_outlet1usreg(i: int, model_variables: object, lo_functions: objec
             ]
         else:
             model_variables.Outlet1USREG[i + 2] = 0
+    else:
+        if model_variables.Lake_Stage[i + 1] >= 18:
+            model_variables.Outlet1USREG[i + 2] = 7200
+        elif model_variables.Lake_Stage[i + 1] <= 8:
+            model_variables.Outlet1USREG[i + 2] = 0
+        # TODO:  get the SA_Par variable used in the code below:
+        # elif lo_model.at[i + 2, 'date'].month == 1:
+        #     model_variables.Outlet1USREG[i + 2] = lo_functions.Outlet_Rel_Sim(model_variables.Release_Level[i + 2], SA_Par[0], SA_Par[1], SA_Par[2])
+        # elif lo_model.at[i + 2, 'date'].month == 2:
+        #     model_variables.Outlet1USREG[i + 2] = lo_functions.Outlet_Rel_Sim(model_variables.Release_Level[i + 2], SA_Par[3], SA_Par[4], SA_Par[5])
+        # elif lo_model.at[i + 2, 'date'].month == 3:
+        #     model_variables.Outlet1USREG[i + 2] = lo_functions.Outlet_Rel_Sim(model_variables.Release_Level[i + 2], SA_Par[6], SA_Par[7], SA_Par[8])
+        # elif lo_model.at[i + 2, 'date'].month == 4:
+        #     model_variables.Outlet1USREG[i + 2] = lo_functions.Outlet_Rel_Sim(model_variables.Release_Level[i + 2], SA_Par[9], SA_Par[10], SA_Par[11])
+        # elif lo_model.at[i + 2, 'date'].month == 5:
+        #     model_variables.Outlet1USREG[i + 2] = lo_functions.Outlet_Rel_Sim(model_variables.Release_Level[i + 2], SA_Par[12], SA_Par[13], SA_Par[14])
+        # elif lo_model.at[i + 2, 'date'].month == 6:
+        #     model_variables.Outlet1USREG[i + 2] = lo_functions.Outlet_Rel_Sim(model_variables.Release_Level[i + 2], SA_Par[15], SA_Par[16], SA_Par[17])
+        # elif lo_model.at[i + 2, 'date'].month == 7:
+        #     model_variables.Outlet1USREG[i + 2] = lo_functions.Outlet_Rel_Sim(model_variables.Release_Level[i + 2], SA_Par[18], SA_Par[19], SA_Par[20])
+        # elif lo_model.at[i + 2, 'date'].month == 8:
+        #     model_variables.Outlet1USREG[i + 2] = lo_functions.Outlet_Rel_Sim(model_variables.Release_Level[i + 2], SA_Par[21], SA_Par[22], SA_Par[23])
+        # elif lo_model.at[i + 2, 'date'].month == 9:
+        #     model_variables.Outlet1USREG[i + 2] = lo_functions.Outlet_Rel_Sim(model_variables.Release_Level[i + 2], SA_Par[24], SA_Par[25], SA_Par[26])
+        # elif lo_model.at[i + 2, 'date'].month == 10:
+        #     model_variables.Outlet1USREG[i + 2] = lo_functions.Outlet_Rel_Sim(model_variables.Release_Level[i + 2], SA_Par[27], SA_Par[28], SA_Par[29])
+        # elif lo_model.at[i + 2, 'date'].month == 11:
+        #     model_variables.Outlet1USREG[i + 2] = lo_functions.Outlet_Rel_Sim(model_variables.Release_Level[i + 2], SA_Par[30], SA_Par[31], SA_Par[32])
+        # elif lo_model.at[i + 2, 'date'].month == 12:
+        #     model_variables.Outlet1USREG[i + 2] = lo_functions.Outlet_Rel_Sim(model_variables.Release_Level[i + 2], SA_Par[33], SA_Par[34], SA_Par[35])
 
 
 def _calculate_outlet1ds(i: int, model_variables: object, lo_functions: object, data: object, config: dict) -> None:
@@ -1843,7 +1880,7 @@ def LOONE_Q(workspace: str, p1: float, p2: float, s77_dv: float, s308_dv: float,
                                           targ_stg_df, data, choose_1)
         _calculate_outlet1usbsap(i, model_variables, lo_functions, config)
         _calculate_outlet1usews(i, model_variables, lo_functions, data, config)
-        _calculate_outlet1usreg(i, model_variables, lo_functions, data, config, tp_lake_s, s77_dv, date_range_6)
+        _calculate_outlet1usreg(i, model_variables, lo_functions, data, config, tp_lake_s, s77_dv, date_range_6, lo_model)
         _calculate_outlet1ds(i, model_variables, lo_functions, data, config)
         _calculate_tot_reg_ew(i, model_variables)
         _calculate_choose_wca(i, model_variables, lo_functions, data, config)
