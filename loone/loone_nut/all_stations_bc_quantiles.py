@@ -63,8 +63,6 @@ def bias_correct_file(file_path_observed: str,
                                                                                    'TP_Lake_S',
                                                                                    forecast_mode)
 
-        if simulated_bias_corrected_quantile_entry_percentile_north.empty or simulated_bias_corrected_quantile_entry_percentile_south.empty:
-            return pd.DataFrame()
         df_results = pd.merge(simulated_bias_corrected_quantile_entry_percentile_north,
                               simulated_bias_corrected_quantile_entry_percentile_south,
                               how='outer',
@@ -124,8 +122,8 @@ def bias_correct_df(df_simulated_total_phosphorus: pd.DataFrame,
 
     # Determine R2 for simulations related to observations at the station
     if simulated_values.size == 0 or observed_values.size == 0:
-        print(f'No data available for bias correction calculation for station {station}.')
-        return pd.DataFrame()
+        print(f'No data available for bias correction calculation for station {station}_{station_region[-1]}.')
+        return df_bias_correct_no_nan
     slope, intercept, r_value, p_value, std_err = stats.linregress(simulated_values, observed_values)
 
     # Calculate R-squared (coefficient of determination)
@@ -170,8 +168,8 @@ def bias_correct_df(df_simulated_total_phosphorus: pd.DataFrame,
 
     # Calculate R-squared (coefficient of determination)
     if sim_BC_Qnt_EntPer.size == 0 or observed_values.size == 0:
-        print(f'No data available for bias correction calculation for station {station}.')
-        return pd.DataFrame
+        print(f'No data available for bias correction calculation for station {station}_{station_region[-1]}.')
+        return df_bias_correct_no_nan
     slope, intercept, r_value, p_value, std_err = stats.linregress(sim_BC_Qnt_EntPer, observed_values)
     r_squared = r_value**2
     print(f'R2_{station}_{station_region[-1]}_BC_Qnt:', r_squared)
