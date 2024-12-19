@@ -673,6 +673,39 @@ def Outlet2DSRS(
     return S
 
 
+def Outlet_Rel_Sim(release_level, relase_rate_l, release_rate_m, release_rate_h):
+    """
+    Simulate the outlet release based on the release level and rates.
+
+    Args:
+        relese_level (int): The release level.
+        release_rate_l (float): The low release rate.
+        release_rate_m (float): The medium release rate.
+        release_rate_h (float): The high release rate.
+
+    Returns:
+        float: The simulated outlet release.
+    """
+    s = 0
+    if (release_level + 2) == 1:
+        s = 0
+    elif (release_level + 2) == 2:
+        s = 0
+    elif (release_level + 2) == 3:
+        s = relase_rate_l
+    elif (release_level + 2) == 4:
+        s = relase_rate_l
+    elif (release_level + 2) == 5:
+        s = relase_rate_l
+    elif (release_level + 2) == 6:
+        s = release_rate_m
+    elif (release_level + 2) == 7:
+        s = release_rate_m
+    elif (release_level + 2) == 8:
+        s = release_rate_h
+    return s
+
+
 def Sum_Outlet2USRG1(day: int, S308RG1: float):
     """
     Calculate the cumulative sum of the S308 RG1 releases.
