@@ -7,6 +7,20 @@ from loone.utils import load_config, leap_year
 
 # This following section calculates the parameter states (trib conds, stage tests, seasonal & multi-seasonal LONINO) and sets a 4-digit code for the branch.  The branch code is used with the Routing sheet to determine release rates.
 def WCA_Stages_Cls(workspace: str, TC_LONINO_df: pd.DataFrame | None):
+    """
+    Reads in the WCA Stage data and WCA3A_REG inputs, sets up a daily date range for the simulation period,
+    and generates a WCA Stage dataframe. It also generates a daily date range for one year (2020), assigns
+    the 366 values of the predefined WCA3a_REG_Zone (One random year) in the WCA3A_REG dataframe to the entire
+    study period, and assigns the values of the predefined WCA-2A Schedule to the entire study period.
+
+    Args:
+        workspace(str): Path to the workspace directory.
+        TC_LONINO_df(pd.DataFrame): Tributary Conditions and Lake Okeechobee Water Level data.
+
+    Returns:
+        pd.DataFrame: A dataframe containing the WCA stage data, and the corresponding flags for the WCA-3A and WCA-2A
+        stages being above or below the regulation schedule.
+    """
     os.chdir(workspace)
     config = load_config(workspace)
 
@@ -19,6 +33,7 @@ def WCA_Stages_Cls(workspace: str, TC_LONINO_df: pd.DataFrame | None):
 
     # Read the WCA Stage data
     WCA_Stages = pd.read_csv(os.path.join(workspace, "WCA_Stages_Inputs.csv"))
+    WCA_Stages.columns = WCA_Stages.columns.str.strip()
     # Read WCA3A_REG inputs
     # Note that I added a date column in the first column and I copied values of Feb28 to the Feb29!
     WCA3A_REG = pd.read_csv(os.path.join(workspace, "WCA3A_REG_Inputs.csv"))
@@ -42,17 +57,28 @@ def WCA_Stages_Cls(workspace: str, TC_LONINO_df: pd.DataFrame | None):
     # This Following Loop assigns the 366 values of the predifined WCA3a_REG_Zone (One random year) in the WCA3A_REG dataframe
     # to the entire study period.
     def Replicate_WCA3(
-        year, day_num
-    ):  # Where x is the percentage value (i.e., 10,20,30,40,50,60)
+        year: int, day_num: int
+    ) -> float:  # Where x is the percentage value (i.e., 10,20,30,40,50,60)
+        """
+        Retrieves the value from the WCA3A_REG DataFrame corresponding to the given day and percentage.
+        Takes leap years into account.
+
+        Args:
+            year (int): The year that day_num is in.
+            day_num (int): The day number to get the value for (ranging from 0 to 365).
+
+        Returns:
+            float: The value from the WCA3A_REG DataFrame corresponding to the day number and the given percentage.
+        """
         leap_day_val = WCA3A_REG[config["wca3a_reg_zone"]].iloc[59]
-        if leap_year(year) == True:
+        if leap_year(year) is True:
             day_num_adj = day_num
         else:
             day_num_adj = day_num + (1 if day_num >= 60 else 0)
         day_value = (
             leap_day_val
             if day_num_adj == 60
-            and leap_year(year) == True
+            and leap_year(year) is True
             else WCA3A_REG[config["wca3a_reg_zone"]].iloc[day_num_adj - 1]
         )
         return day_value
@@ -68,17 +94,27 @@ def WCA_Stages_Cls(workspace: str, TC_LONINO_df: pd.DataFrame | None):
 
     # Define WCA-2A Schedule
     def Replicate_WCA2A(
-        year, day_num
-    ):  # Where x is the percentage value (i.e., 10,20,30,40,50,60)
+        year: int, day_num: int
+    ) -> float:
+        """
+        Retrieves the value from the WCA3A_REG DataFrame corresponding to the given day and percentage.
+        Takes leap years into account.
+
+        Args:
+            year (int): The year that day_num is in.
+            day_num (int): The day number to get the value for (ranging from 0 to 365).
+
+        Returns:
+            float: The value from the WCA3A_REG DataFrame corresponding to the day number.
+        """
         leap_day_val = WCA3A_REG["WCA2Areg"].iloc[59]
-        if leap_year(year) == True:
+        if leap_year(year):
             day_num_adj = day_num
         else:
             day_num_adj = day_num + (1 if day_num >= 60 else 0)
         day_value = (
             leap_day_val
-            if day_num_adj == 60
-            and leap_year(year) == True
+            if day_num_adj == 60 and leap_year(year)
             else WCA3A_REG["WCA2Areg"].iloc[day_num_adj - 1]
         )
         return day_value
@@ -153,17 +189,17 @@ def WCA_Stages_Cls(workspace: str, TC_LONINO_df: pd.DataFrame | None):
         WCA_2A_Stg_gr_Sched[i] = TF
         # Either 3A or 2A are above
         if (
-            WCA_3A_Stg_gr_Iden_WCA3Areg[i] == True
-            or WCA_2A_Stg_gr_Sched[i] == True
+            WCA_3A_Stg_gr_Iden_WCA3Areg[i] is True
+            or WCA_2A_Stg_gr_Sched[i] is True
         ):
             TF = True
         else:
             TF = False
         E3Aor2A[i] = TF
         # (both WCAs<reg)?
-        if E3Aor2A[i] == True:
+        if E3Aor2A[i] is True:
             TF = False
-        elif E3Aor2A[i] == False:
+        elif E3Aor2A[i] is False:
             TF = True
         BWCAs_le_reg[i] = TF
     # Are WCA stages too low? (not OK to do WSA)
@@ -192,18 +228,18 @@ def WCA_Stages_Cls(workspace: str, TC_LONINO_df: pd.DataFrame | None):
         TF = WCA_Stages_df["3gage < Sched+offset?"].iloc[0]
     else:
         if (
-            WCA_Stages_df["3A-28 < min?"].iloc[0] == True
-            or WCA_Stages_df["3A-NW < min?"].iloc[0] == True
-            or WCA_Stages_df["2A-17 < min?"].iloc[0] == True
+            WCA_Stages_df["3A-28 < min?"].iloc[0]
+            or WCA_Stages_df["3A-NW < min?"].iloc[0]
+            or WCA_Stages_df["2A-17 < min?"].iloc[0]
         ):
             TF = True
         else:
             TF = False
         All_Cells[0] = TF
-    if WCA_Stages_df["(both WCAs<reg)?"].iloc[1] == True or (
-        WCA_Stages_df["3A-28 < min?"].iloc[1] == True
-        or WCA_Stages_df["3A-NW < min?"].iloc[1] == True
-        or WCA_Stages_df["2A-17 < min?"].iloc[1] == True
+    if WCA_Stages_df["(both WCAs<reg)?"].iloc[1] or (
+        WCA_Stages_df["3A-28 < min?"].iloc[1]
+        or WCA_Stages_df["3A-NW < min?"].iloc[1]
+        or WCA_Stages_df["2A-17 < min?"].iloc[1]
     ):
         TF = True
     else:
@@ -211,7 +247,7 @@ def WCA_Stages_Cls(workspace: str, TC_LONINO_df: pd.DataFrame | None):
         All_Cells[1] = TF
     for i in range(2, Simperioddays):
         if (
-            WCA_Stages_df["Either 3A or 2A are above"].iloc[i] == True
+            WCA_Stages_df["Either 3A or 2A are above"].iloc[i]
             and WCA_Stages_df["3A-28"].iloc[i] >= config["wca328_min"]
             and WCA_Stages_df["3A-NW"].iloc[i] >= config["wca3_nw_min"]
             and WCA_Stages_df["2A-17"].iloc[i] >= config["wca217_min"]

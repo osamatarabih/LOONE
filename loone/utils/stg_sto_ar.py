@@ -3,7 +3,17 @@ import pandas as pd
 from scipy import interpolate
 
 
-def stg2sto(v, i):
+def stg2sto(v: float, i: int) -> float:
+    """
+    Calculate the Stage_Storage relationship for interpolation.
+
+    Args:
+        v (float): The stage value.
+        i (int): The type of interpolation.
+
+    Returns:
+        float: The storage given the stage value, or the stage given the storage.
+    """
     stgsto_data = pd.read_csv("StgSto_data.csv")
     # NOTE: We Can use cubic interpolation instead of linear
     x = stgsto_data["Stage"]
@@ -21,7 +31,17 @@ def stg2sto(v, i):
 
 
 # Calculate the Stage_Area relationship for interpolation!
-def stg2ar(v, i):
+def stg2ar(v: float, i: int) -> float:
+    """
+    Calculate the Stage_Surface Area relationship for interpolation.
+
+    Args:
+        v(float): The stage value.
+        i(int): The type of interpolation.
+
+    Returns:
+        float: The surface area given the stage value, or the stage given the surface area.
+    """
     stgar_data = pd.read_csv("Stgar_data.csv")
     # NOTE: We Can use cubic interpolation instead of linear
     x = stgar_data["Stage"]
@@ -39,7 +59,17 @@ def stg2ar(v, i):
 
 
 # Calculate the Stage_MarshArea relationship for interpolation!
-def stg2mar(v, i):
+def stg2mar(v: float, i: int) -> float:
+    """
+    Calculate the Stage_MarshArea relationship for interpolation.
+
+    Args:
+        v(float): The stage value.
+        i(int): The type of interpolation.
+
+    Returns:
+        float: The interpolated value.
+    """
     stgmar_data = pd.read_csv("Stgmar_data.csv")
     # NOTE: We Can use cubic interpolation instead of linear
     x = stgmar_data["Stage"]

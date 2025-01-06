@@ -22,7 +22,7 @@ Data prep
 """
 from loone.loone_q import LOONE_Q
 from loone.loone_nut import LOONE_NUT
-from loone.loone_wq import LOONE_Constituent_SimQ
+from loone.loone_wq import LOONE_WQ
 
 
 LOONE_Q(
@@ -42,7 +42,7 @@ LOONE_NUT(
     forecast_mode=True,
 )
 
-LOONE_Constituent_SimQ(workspace="/path/to/workspace")
+LOONE_WQ(workspace="/path/to/workspace")
 ```
 
 

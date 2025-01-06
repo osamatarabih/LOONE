@@ -6,6 +6,20 @@ from datetime import datetime, timedelta
 class M_var:
     """Class to represents model variables."""
     def __init__(self, config: dict):
+        """
+        Initializes the M_var class with model variables.
+
+        This constructor sets up various model variables and arrays based on the provided configuration dictionary.
+        It calculates date ranges and initializes arrays for different time scales (daily, weekly, monthly)
+        and model parameters, including tributary conditions, seasonal classes, lake stages, supply, and outflows.
+
+        Args:
+            config (dict): A dictionary containing configuration parameters, including:
+                - "start_date_entry": A list of integers [year, month, day] for the start date.
+                - "end_date_entry": A list of integers [year, month, day] for the end date.
+                - "end_date_tc": A list of integers [year, month, day] for the end date of tributary conditions.
+                - "month_n": An integer representing the number of months for the LONINO seasonal classes.
+        """
         year, month, day = map(int, config["start_date_entry"])
         startdate = datetime(year, month, day).date()
         year, month, day = map(int, config["end_date_entry"])

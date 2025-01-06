@@ -23,60 +23,60 @@ def WSMs(workspace: str):
 
     os.chdir(workspace)
     config = load_config(workspace)
-    Data = DClass(workspace)
+    data = DClass(workspace)
     year, month, day = map(int, config["start_date_entry"])
-    startdate = datetime(year, month, day).date()
+    start_date = datetime(year, month, day).date()
     year, month, day = map(int, config["start_date_entry"])
     year, month, day = map(int, config["end_date_entry"])
     # Config end date + 1 day
-    enddate = datetime(year, month, day).date() + timedelta(days=1)
+    end_date = datetime(year, month, day).date() + timedelta(days=1)
 
-    date_rng_1 = pd.date_range(start=startdate, end=enddate, freq="D")
+    date_rng_1 = pd.date_range(start=start_date, end=end_date, freq="D")
     # Create a data frame with a date column
-    df_WSMs = pd.DataFrame(date_rng_1, columns=["date"])
+    df_wsms = pd.DataFrame(date_rng_1, columns=["date"])
     # Generate an annual cumulative day count
-    WSM_length = len(df_WSMs.index)
-    Oper_Zones = list(Data.WSMs_RSBKs)
-    Oper_Zones.remove("Date")
-    Oper_Zones.remove("Day")
-    for i in Oper_Zones:
-        globals()[i] = np.zeros(WSM_length)
+    wsm_length = len(df_wsms.index)
+    operational_zones = list(data.WSMs_RSBKs)
+    operational_zones.remove("Date")
+    operational_zones.remove("Day")
+    for i in operational_zones:
+        globals()[i] = np.zeros(wsm_length)
     WSM_Count = date_rng_1.strftime("%j")
-    for i in range(WSM_length):
-        for j in Oper_Zones:
+    for i in range(wsm_length):
+        for j in operational_zones:
             globals()[j][i] = interpolate.interp1d(
-                Data.WSMs_RSBKs["Day"],
-                Data.WSMs_RSBKs[j],
+                data.WSMs_RSBKs["Day"],
+                data.WSMs_RSBKs[j],
                 kind="linear",
             )(WSM_Count[i])
 
-    df_WSMs["count"] = WSM_Count
-    for j in Oper_Zones:
-        df_WSMs[j] = globals()[j]
+    df_wsms["count"] = WSM_Count
+    for j in operational_zones:
+        df_wsms[j] = globals()[j]
     if config["opt_new_tree"] == 1:
-        df_WSMs["C-b"] = Data.WSMs_RSBKs["C-b_NewTree"]
+        df_wsms["C-b"] = data.WSMs_RSBKs["C-b_NewTree"]
     else:
-        df_WSMs["C-b"] = Data.WSMs_RSBKs["C-b_NoNewTree"]
-    df_WSMs.drop(["C-b_NewTree", "C-b_NoNewTree"], axis=1, inplace=True)
+        df_wsms["C-b"] = data.WSMs_RSBKs["C-b_NoNewTree"]
+    df_wsms.drop(["C-b_NewTree", "C-b_NoNewTree"], axis=1, inplace=True)
 
     # Add one row in top of the dataframe (i.e. Dec/31/previous year) where the values = values of the original first row in the dataframe!
-    First_row = pd.DataFrame(
+    first_row = pd.DataFrame(
         {
-            "WSM4": df_WSMs["WSM4"].iloc[0],
-            "WSM3": df_WSMs["WSM3"].iloc[0],
-            "WSM2": df_WSMs["WSM2"].iloc[0],
-            "WSM1": df_WSMs["WSM1"].iloc[0],
-            "D0": df_WSMs["D0"].iloc[0],
-            "D1": df_WSMs["D1"].iloc[0],
-            "D2": df_WSMs["D2"].iloc[0],
-            "D3": df_WSMs["D3"].iloc[0],
-            "C": df_WSMs["C"].iloc[0],
-            "B": df_WSMs["B"].iloc[0],
-            "A": df_WSMs["A"].iloc[0],
-            "C-b": df_WSMs["C-b"].iloc[0],
+            "WSM4": df_wsms["WSM4"].iloc[0],
+            "WSM3": df_wsms["WSM3"].iloc[0],
+            "WSM2": df_wsms["WSM2"].iloc[0],
+            "WSM1": df_wsms["WSM1"].iloc[0],
+            "D0": df_wsms["D0"].iloc[0],
+            "D1": df_wsms["D1"].iloc[0],
+            "D2": df_wsms["D2"].iloc[0],
+            "D3": df_wsms["D3"].iloc[0],
+            "C": df_wsms["C"].iloc[0],
+            "B": df_wsms["B"].iloc[0],
+            "A": df_wsms["A"].iloc[0],
+            "C-b": df_wsms["C-b"].iloc[0],
         },
         index=[0],
     )
-    df_WSMs = pd.concat([First_row, df_WSMs]).reset_index(drop=True)
+    df_wsms = pd.concat([first_row, df_wsms]).reset_index(drop=True)
 
-    df_WSMs.to_csv("df_WSMs.csv")
+    df_wsms.to_csv("df_WSMs.csv")
