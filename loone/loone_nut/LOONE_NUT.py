@@ -28,6 +28,7 @@ def LOONE_NUT(
     loone_q_path: str | None = None,
     input_data: str | None = None,
     forecast_mode: bool = False,
+    simulation_data: dict = {},
 ) -> pd.DataFrame:
     """Simulates nutrient (phosphorus) dynamics in the water column.
 
@@ -39,6 +40,7 @@ def LOONE_NUT(
         loone_q_path (str | None, optional): Path to LOONE Q CSV file. Defaults to "<workspace>/LOONE_Q_Outputs.csv".
         input_data (str | None, optional): Path to the data directory. Defaults to <workspace>.
         forecast_mode (bool, optional): Whether to run the model in forecast mode. Defaults to False.
+        simulation_data (dict, optional): Dictionary containing simulation data when sim_type is 3. Defaults to {}. Required keys are 's77_q', 's308_q', 'tot_reg_so', 'stage_lo'.
 
     Returns:
         pd.DataFrame: A Dataframe containing an estimate of the total phosphorus concentration in the lake for a certain time series.
@@ -75,18 +77,22 @@ def LOONE_NUT(
     if forecast_mode:
         q_in = pd.read_csv(os.path.join(data_dir, "LO_Inflows_BK_forecast.csv"))
     else:
-        q_in = pd.read_csv(os.path.join(data_dir, "LO_Inflows_BK.csv"))
+        q_in = pd.read_csv(os.path.join(data_dir, config["lo_inflows_bk"]))
     flow_df = pd.read_csv(os.path.join(data_dir, flow_df_filename))
     q_o = flow_df["Outflows"].values
-    s77_q = loone_q["S77_Q"].values
-    s308_q = loone_q["S308_Q"].values
-    tot_reg_so = flow_df[["S351_Out", "S352_Out", "S354_Out"]].sum(axis=1) * (
-        70.0456 / SECONDS_IN_DAY
-    )
+    s77_q = loone_q["S77_Q"].values if 's77_q' not in simulation_data else simulation_data['s77_q']
+    s308_q = loone_q["S308_Q"].values if 's308_q' not in simulation_data else simulation_data['s308_q']
+    
+    if 'tot_reg_so' in simulation_data:
+        tot_reg_so = simulation_data['tot_reg_so']
+    else:
+        tot_reg_so = flow_df[["S351_Out", "S352_Out", "S354_Out"]].sum(axis=1) * (
+            70.0456 / SECONDS_IN_DAY
+        )
     sto_stage = pd.read_csv(
-        os.path.join(data_dir, "Average_LO_Storage_3MLag.csv")
+        os.path.join(data_dir, config["sto_stage"])
     )
-    stage_lo = sto_stage["Stage_ft"].values
+    stage_lo = sto_stage["Stage_ft"].values if 'stage_lo' not in simulation_data else simulation_data['stage_lo']
     storage = sto_stage["Storage_acft"].values
     n_rows = len(q_in.index)
     storage_dev = Data.Storage_dev_df["DS_dev"]
@@ -96,10 +102,10 @@ def LOONE_NUT(
 
     # Read Shear Stress driven by Wind Speed
     wind_shear_str = pd.read_csv(
-        os.path.join(data_dir, "WindShearStress.csv")
+        os.path.join(data_dir, config["wind_shear_stress"])
     )
     w_ss = wind_shear_str["ShearStress"]  # Dyne/cm2
-    nu_ts = pd.read_csv(os.path.join(data_dir, "nu.csv"))
+    nu_ts = pd.read_csv(os.path.join(data_dir, config["nu"]))
     LO_BL = 0.5  # m (Bed Elevation of LO)
     g = 9.8  # m/s2 gravitational acceleration
     cal_res = pd.read_csv(os.path.join(data_dir, "nondominated_Sol_var.csv"))
@@ -1216,6 +1222,9 @@ def LOONE_NUT(
     p_lake_df = p_lake_df.set_index("Date")
     p_lake_df.to_csv(out_file_name)
 
+    if len(simulation_data) > 0:
+        return [p_lake_df, p_loads_df]
+    
     return p_lake_df
 
 

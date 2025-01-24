@@ -52,7 +52,7 @@ LOONE_WQ(workspace="/path/to/workspace")
 
 # predefined variables
 schedule: "LORS20082023"
-sim_type: 0  # 0:Scenario_Simulation 1:Optimization_Validation 2:Optimization
+sim_type: 0  # 0:Scenario_Simulation 1:Optimization_Validation 2:Optimization 3:Loone_Scenarios_App_Simulation
 start_year: 2008
 end_year: 2023
 start_date_entry: [2008, 1, 1]
@@ -223,6 +223,12 @@ v_burial_r: 0.0000003  # 1.0e-05 #(m/day)#0.00017333#(m/month)# 0.00208 (m/yr)
 v_burial_p: 0.0000003  # 1.0e-05 #(m/day)#0.00017333#(m/month)# 0.00208 (m/yr)
 
 nondominated_sol_var: "nondominated_Sol_var.csv"
+
+wca_stages_inputs: "WCA_Stages_Inputs.csv"
+lo_inflows_bk: "LO_Inflows_BK.csv"
+sto_stage: "Average_LO_Storage_3MLag.csv"
+wind_shear_stress: "WindShearStress.csv"
+nu: "nu.csv"
 ```
 
 ## Case Study:
