@@ -1690,23 +1690,24 @@ def _create_dectree_df(date_range_5: pd.DatetimeIndex, tc_lonino_df: pd.DataFram
     return dec_tree_df
 
 
-def _calculate_pulse_averages(data: object) -> dict:
+def _calculate_pulse_averages(data: object, config: dict) -> dict:
     """
     Calculate the pulse averages for S-80 and S-77.
 
     Args:
         data (object): The data object containing pulse information.
+        config (dict): The configuration dictionary.
 
     Returns:
         dict: A dictionary containing the pulse averages for S-80 and S-77.
     """
     pulse_averages = {
-        "s80avg_l1": data.Pulses["S-80_L1_LORS20082023"].mean(),
-        "s80avg_l2": data.Pulses["S-80_L2_LORS20082023"].mean(),
-        "s80avg_l3": data.Pulses["S-80_L3_LORS20082023"].mean(),
-        "s77avg_l1": data.Pulses["S-77_L1_LORS20082023"].mean(),
-        "s77avg_l2": data.Pulses["S-77_L2_LORS20082023"].mean(),
-        "s77avg_l3": data.Pulses["S-77_L3_LORS20082023"].mean(),
+        "s80avg_l1": data.Pulses[f"S-80_L1_{config['schedule']}"].mean(),
+        "s80avg_l2": data.Pulses[f"S-80_L2_{config['schedule']}"].mean(),
+        "s80avg_l3": data.Pulses[f"S-80_L3_{config['schedule']}"].mean(),
+        "s77avg_l1": data.Pulses[f"S-77_L1_{config['schedule']}"].mean(),
+        "s77avg_l2": data.Pulses[f"S-77_L2_{config['schedule']}"].mean(),
+        "s77avg_l3": data.Pulses[f"S-77_L3_{config['schedule']}"].mean(),
     }
     return pulse_averages
 
@@ -1805,7 +1806,7 @@ def LOONE_Q(workspace: str, p1: float, p2: float, s77_dv: float, s308_dv: float,
     outlet2_baseflow = data.S80_RegRelRates["Zone_D0"].iloc[0]
     _calculate_basin_runoff(basin_ro, data, outlet1_baseflow, outlet2_baseflow)
     lo_model["C43RO"] = data.C43RO_Daily["C43RO"]
-    pulse_averages = _calculate_pulse_averages(data)
+    pulse_averages = _calculate_pulse_averages(data, config)
     s80avg_l1 = pulse_averages["s80avg_l1"]
     s80avg_l2 = pulse_averages["s80avg_l2"]
     s80avg_l3 = pulse_averages["s80avg_l3"]
