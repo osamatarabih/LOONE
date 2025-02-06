@@ -4,6 +4,7 @@ import pandas as pd
 import numpy as np
 from datetime import datetime, timedelta
 from calendar import monthrange
+from typing import List
 from loone.utils import (
     load_config,
     replicate,
@@ -684,7 +685,7 @@ def _calculate_outlet2usrg_code(i: int, model_variables: object, lo_functions: o
             ]
         else:
             model_variables.Outlet2USRG[i + 2] = 0
-    else:
+    elif config["sim_type"] == 3:
         if model_variables.Lake_Stage[i + 1] >= 18:
             model_variables.Outlet2USRG[i + 2] = 7200
         else:
@@ -1052,7 +1053,7 @@ def _define_thc_class_normal_or_above(i: int, n_rows: int, model_variables: obje
 
 def _calculate_outlet1usreg(i: int, model_variables: object, lo_functions: object, data: object, config: dict,
                             tp_lake_s: float, s77_dv: float, date_range_6: pd.DatetimeIndex,
-                            lo_model: pd.DataFrame) -> None:
+                            lo_model: pd.DataFrame, sensitivity_analysis_params) -> None:
     """
     Calculate the Outlet1USREG for the given index.
 
@@ -1066,6 +1067,7 @@ def _calculate_outlet1usreg(i: int, model_variables: object, lo_functions: objec
         s77_dv (float): The s77_dv value.
         date_range_6 (pd.DatetimeIndex): The date range.
         lo_model (pd.DataFrame): The model DataFrame.
+        sensitivity_analysis_params (list): Holds a release rate for each month of the year.
 
     Returns:
         None
@@ -1097,36 +1099,35 @@ def _calculate_outlet1usreg(i: int, model_variables: object, lo_functions: objec
             ]
         else:
             model_variables.Outlet1USREG[i + 2] = 0
-    else:
+    elif config["sim_type"] == 3:
         if model_variables.Lake_Stage[i + 1] >= 18:
             model_variables.Outlet1USREG[i + 2] = 7200
         elif model_variables.Lake_Stage[i + 1] <= 8:
             model_variables.Outlet1USREG[i + 2] = 0
-        # TODO:  get the SA_Par variable used in the code below:
-        # elif lo_model.at[i + 2, 'date'].month == 1:
-        #     model_variables.Outlet1USREG[i + 2] = lo_functions.Outlet_Rel_Sim(model_variables.Release_Level[i + 2], SA_Par[0], SA_Par[1], SA_Par[2])
-        # elif lo_model.at[i + 2, 'date'].month == 2:
-        #     model_variables.Outlet1USREG[i + 2] = lo_functions.Outlet_Rel_Sim(model_variables.Release_Level[i + 2], SA_Par[3], SA_Par[4], SA_Par[5])
-        # elif lo_model.at[i + 2, 'date'].month == 3:
-        #     model_variables.Outlet1USREG[i + 2] = lo_functions.Outlet_Rel_Sim(model_variables.Release_Level[i + 2], SA_Par[6], SA_Par[7], SA_Par[8])
-        # elif lo_model.at[i + 2, 'date'].month == 4:
-        #     model_variables.Outlet1USREG[i + 2] = lo_functions.Outlet_Rel_Sim(model_variables.Release_Level[i + 2], SA_Par[9], SA_Par[10], SA_Par[11])
-        # elif lo_model.at[i + 2, 'date'].month == 5:
-        #     model_variables.Outlet1USREG[i + 2] = lo_functions.Outlet_Rel_Sim(model_variables.Release_Level[i + 2], SA_Par[12], SA_Par[13], SA_Par[14])
-        # elif lo_model.at[i + 2, 'date'].month == 6:
-        #     model_variables.Outlet1USREG[i + 2] = lo_functions.Outlet_Rel_Sim(model_variables.Release_Level[i + 2], SA_Par[15], SA_Par[16], SA_Par[17])
-        # elif lo_model.at[i + 2, 'date'].month == 7:
-        #     model_variables.Outlet1USREG[i + 2] = lo_functions.Outlet_Rel_Sim(model_variables.Release_Level[i + 2], SA_Par[18], SA_Par[19], SA_Par[20])
-        # elif lo_model.at[i + 2, 'date'].month == 8:
-        #     model_variables.Outlet1USREG[i + 2] = lo_functions.Outlet_Rel_Sim(model_variables.Release_Level[i + 2], SA_Par[21], SA_Par[22], SA_Par[23])
-        # elif lo_model.at[i + 2, 'date'].month == 9:
-        #     model_variables.Outlet1USREG[i + 2] = lo_functions.Outlet_Rel_Sim(model_variables.Release_Level[i + 2], SA_Par[24], SA_Par[25], SA_Par[26])
-        # elif lo_model.at[i + 2, 'date'].month == 10:
-        #     model_variables.Outlet1USREG[i + 2] = lo_functions.Outlet_Rel_Sim(model_variables.Release_Level[i + 2], SA_Par[27], SA_Par[28], SA_Par[29])
-        # elif lo_model.at[i + 2, 'date'].month == 11:
-        #     model_variables.Outlet1USREG[i + 2] = lo_functions.Outlet_Rel_Sim(model_variables.Release_Level[i + 2], SA_Par[30], SA_Par[31], SA_Par[32])
-        # elif lo_model.at[i + 2, 'date'].month == 12:
-        #     model_variables.Outlet1USREG[i + 2] = lo_functions.Outlet_Rel_Sim(model_variables.Release_Level[i + 2], SA_Par[33], SA_Par[34], SA_Par[35])
+        elif lo_model.at[i + 2, 'date'].month == 1:
+            model_variables.Outlet1USREG[i + 2] = lo_functions.Outlet_Rel_Sim(model_variables.Release_Level[i + 2], sensitivity_analysis_params[0])
+        elif lo_model.at[i + 2, 'date'].month == 2:
+            model_variables.Outlet1USREG[i + 2] = lo_functions.Outlet_Rel_Sim(model_variables.Release_Level[i + 2], sensitivity_analysis_params[1])
+        elif lo_model.at[i + 2, 'date'].month == 3:
+            model_variables.Outlet1USREG[i + 2] = lo_functions.Outlet_Rel_Sim(model_variables.Release_Level[i + 2], sensitivity_analysis_params[2])
+        elif lo_model.at[i + 2, 'date'].month == 4:
+            model_variables.Outlet1USREG[i + 2] = lo_functions.Outlet_Rel_Sim(model_variables.Release_Level[i + 2], sensitivity_analysis_params[3])
+        elif lo_model.at[i + 2, 'date'].month == 5:
+            model_variables.Outlet1USREG[i + 2] = lo_functions.Outlet_Rel_Sim(model_variables.Release_Level[i + 2], sensitivity_analysis_params[4])
+        elif lo_model.at[i + 2, 'date'].month == 6:
+            model_variables.Outlet1USREG[i + 2] = lo_functions.Outlet_Rel_Sim(model_variables.Release_Level[i + 2], sensitivity_analysis_params[5])
+        elif lo_model.at[i + 2, 'date'].month == 7:
+            model_variables.Outlet1USREG[i + 2] = lo_functions.Outlet_Rel_Sim(model_variables.Release_Level[i + 2], sensitivity_analysis_params[6])
+        elif lo_model.at[i + 2, 'date'].month == 8:
+            model_variables.Outlet1USREG[i + 2] = lo_functions.Outlet_Rel_Sim(model_variables.Release_Level[i + 2], sensitivity_analysis_params[7])
+        elif lo_model.at[i + 2, 'date'].month == 9:
+            model_variables.Outlet1USREG[i + 2] = lo_functions.Outlet_Rel_Sim(model_variables.Release_Level[i + 2], sensitivity_analysis_params[8])
+        elif lo_model.at[i + 2, 'date'].month == 10:
+            model_variables.Outlet1USREG[i + 2] = lo_functions.Outlet_Rel_Sim(model_variables.Release_Level[i + 2], sensitivity_analysis_params[9])
+        elif lo_model.at[i + 2, 'date'].month == 11:
+            model_variables.Outlet1USREG[i + 2] = lo_functions.Outlet_Rel_Sim(model_variables.Release_Level[i + 2], sensitivity_analysis_params[10])
+        elif lo_model.at[i + 2, 'date'].month == 12:
+            model_variables.Outlet1USREG[i + 2] = lo_functions.Outlet_Rel_Sim(model_variables.Release_Level[i + 2], sensitivity_analysis_params[11])
 
 
 def _calculate_outlet1ds(i: int, model_variables: object, lo_functions: object, data: object, config: dict) -> None:
@@ -1690,23 +1691,24 @@ def _create_dectree_df(date_range_5: pd.DatetimeIndex, tc_lonino_df: pd.DataFram
     return dec_tree_df
 
 
-def _calculate_pulse_averages(data: object) -> dict:
+def _calculate_pulse_averages(data: object, config: dict) -> dict:
     """
     Calculate the pulse averages for S-80 and S-77.
 
     Args:
         data (object): The data object containing pulse information.
+        config (dict): The configuration dictionary.
 
     Returns:
         dict: A dictionary containing the pulse averages for S-80 and S-77.
     """
     pulse_averages = {
-        "s80avg_l1": data.Pulses["S-80_L1_LORS20082023"].mean(),
-        "s80avg_l2": data.Pulses["S-80_L2_LORS20082023"].mean(),
-        "s80avg_l3": data.Pulses["S-80_L3_LORS20082023"].mean(),
-        "s77avg_l1": data.Pulses["S-77_L1_LORS20082023"].mean(),
-        "s77avg_l2": data.Pulses["S-77_L2_LORS20082023"].mean(),
-        "s77avg_l3": data.Pulses["S-77_L3_LORS20082023"].mean(),
+        "s80avg_l1": data.Pulses[f"S-80_L1_{config['schedule']}"].mean(),
+        "s80avg_l2": data.Pulses[f"S-80_L2_{config['schedule']}"].mean(),
+        "s80avg_l3": data.Pulses[f"S-80_L3_{config['schedule']}"].mean(),
+        "s77avg_l1": data.Pulses[f"S-77_L1_{config['schedule']}"].mean(),
+        "s77avg_l2": data.Pulses[f"S-77_L2_{config['schedule']}"].mean(),
+        "s77avg_l3": data.Pulses[f"S-77_L3_{config['schedule']}"].mean(),
     }
     return pulse_averages
 
@@ -1733,7 +1735,7 @@ def _initialize_model_variables_stage_levels_flags(model_variables: object, conf
     model_variables.DayFlags[2] = _determine_day_flags(startdate, lo_model, begdateCS)
 
 
-def LOONE_Q(workspace: str, p1: float, p2: float, s77_dv: float, s308_dv: float, tp_lake_s: float) -> None:
+def LOONE_Q(workspace: str, p1: float, p2: float, s77_dv: float, s308_dv: float, tp_lake_s: float, sensitivity_analysis_params: List[float] = []) -> None:
     """This function runs the LOONE Q module.
 
     Args:
@@ -1743,6 +1745,7 @@ def LOONE_Q(workspace: str, p1: float, p2: float, s77_dv: float, s308_dv: float,
         s77_dv (float): s77_dv value.
         s308_dv (float): s308_dv value.
         tp_lake_s (float): tp_lake_s value.
+        sensitivity_analysis_params (List[float], optional): Holds a release rate for each month of the year. Required when sim_type is 3. Defaults to [].
 
     Returns:
         None
@@ -1758,7 +1761,7 @@ def LOONE_Q(workspace: str, p1: float, p2: float, s77_dv: float, s308_dv: float,
     startdate, begdateCS, enddate = _define_start_and_end_dates(config)
 
     ###################################################################
-    if config["sim_type"] in [0, 1]:
+    if config["sim_type"] in [0, 1, 3]:
         df_wsms.WSMs(workspace)
 
     df_WSMs = pd.read_csv("df_WSMs.csv")
@@ -1805,7 +1808,7 @@ def LOONE_Q(workspace: str, p1: float, p2: float, s77_dv: float, s308_dv: float,
     outlet2_baseflow = data.S80_RegRelRates["Zone_D0"].iloc[0]
     _calculate_basin_runoff(basin_ro, data, outlet1_baseflow, outlet2_baseflow)
     lo_model["C43RO"] = data.C43RO_Daily["C43RO"]
-    pulse_averages = _calculate_pulse_averages(data)
+    pulse_averages = _calculate_pulse_averages(data, config)
     s80avg_l1 = pulse_averages["s80avg_l1"]
     s80avg_l2 = pulse_averages["s80avg_l2"]
     s80avg_l3 = pulse_averages["s80avg_l3"]
@@ -1880,7 +1883,7 @@ def LOONE_Q(workspace: str, p1: float, p2: float, s77_dv: float, s308_dv: float,
                                           targ_stg_df, data, choose_1)
         _calculate_outlet1usbsap(i, model_variables, lo_functions, config)
         _calculate_outlet1usews(i, model_variables, lo_functions, data, config)
-        _calculate_outlet1usreg(i, model_variables, lo_functions, data, config, tp_lake_s, s77_dv, date_range_6, lo_model)
+        _calculate_outlet1usreg(i, model_variables, lo_functions, data, config, tp_lake_s, s77_dv, date_range_6, lo_model, sensitivity_analysis_params)
         _calculate_outlet1ds(i, model_variables, lo_functions, data, config)
         _calculate_tot_reg_ew(i, model_variables)
         _calculate_choose_wca(i, model_variables, lo_functions, data, config)
@@ -1898,7 +1901,14 @@ def LOONE_Q(workspace: str, p1: float, p2: float, s77_dv: float, s308_dv: float,
     # this data.
     lo_model.to_csv("LOONE_Q_Outputs.csv")
 
-    return [lo_model]
+    # Add scenario data to output df
+    df_stage = pd.DataFrame(data = model_variables.Lake_Stage, columns = ['Outputs'])
+    df_caloosahatchee = pd.DataFrame(data = model_variables.Outlet1USREG, columns = ['Outputs'])
+    df_saint_lucie = pd.DataFrame(data = model_variables.Outlet2USRG, columns = ['Outputs'])
+    df_south = pd.DataFrame(data = model_variables.TotRegSo/1.9835, columns = ['Outputs'])
+    df_out = pd.concat([df_stage, df_caloosahatchee, df_saint_lucie, df_south])
+    
+    return [lo_model, df_out.T.loc['Outputs']]
 
 
 if __name__ == "__main__":
