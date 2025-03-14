@@ -1668,7 +1668,7 @@ def _determine_day_flags(
 
 
 def _calculate_targ_stg_df(
-    config: dict, data: object, date_range_5: pd.DatetimeIndex, model_variables: object
+    config: dict, data: object, daily_date_range: pd.DatetimeIndex, model_variables: object
 ) -> pd.DataFrame:
     """
     Calculate the target stage DataFrame.
@@ -1688,29 +1688,17 @@ def _calculate_targ_stg_df(
         else data.Targ_Stg_May_1st
     )
 
-    targ_stg_df = pd.DataFrame(date_range_5, columns=["dates"])
-    for i in range(len(targ_stg_df)):
-        date = targ_stg_df["dates"].iloc[i]
-        year = date.year
-        day_of_year = date.timetuple().tm_yday
+    targ_stg_df = pd.DataFrame(daily_date_range, columns=["dates"])
 
-        model_variables.V10per[i] = replicate(year, day_of_year, 10, targ_stg)
-        model_variables.V20per[i] = replicate(year, day_of_year, 20, targ_stg)
-        model_variables.V25per[i] = replicate(year, day_of_year, 25, targ_stg)
-        model_variables.V30per[i] = replicate(year, day_of_year, 30, targ_stg)
-        model_variables.V40per[i] = replicate(year, day_of_year, 40, targ_stg)
-        model_variables.V45per[i] = replicate(year, day_of_year, 45, targ_stg)
-        model_variables.V50per[i] = replicate(year, day_of_year, 50, targ_stg)
-        model_variables.V60per[i] = replicate(year, day_of_year, 60, targ_stg)
+    # Extract year and day of year (vectorized)
+    targ_stg_df["year"] = targ_stg_df["dates"].dt.year
+    targ_stg_df["day_of_year"] = targ_stg_df["dates"].dt.dayofyear
 
-    targ_stg_df["10%"] = [x for x in model_variables.V10per if ~np.isnan(x)]
-    targ_stg_df["20%"] = [x for x in model_variables.V20per if ~np.isnan(x)]
-    targ_stg_df["25%"] = [x for x in model_variables.V25per if ~np.isnan(x)]
-    targ_stg_df["30%"] = [x for x in model_variables.V30per if ~np.isnan(x)]
-    targ_stg_df["40%"] = [x for x in model_variables.V40per if ~np.isnan(x)]
-    targ_stg_df["45%"] = [x for x in model_variables.V45per if ~np.isnan(x)]
-    targ_stg_df["50%"] = [x for x in model_variables.V50per if ~np.isnan(x)]
-    targ_stg_df["60%"] = [x for x in model_variables.V60per if ~np.isnan(x)]
+    # Compute percentiles in a single vectorized operation
+    for perc in [10, 20, 25, 30, 40, 45, 50, 60]:
+        targ_stg_df[f"{perc}%"] = targ_stg_df.apply(
+            lambda row: replicate(row["year"], row["day_of_year"], perc, targ_stg), axis=1
+        )
 
     return targ_stg_df
 
@@ -1753,34 +1741,26 @@ def _calculate_basin_runoff(
     Returns:
         None
     """
-    num_B_R = len(basin_ro.index)
-    bs_c43ro = np.zeros(num_B_R)
-    bs_c44ro = np.zeros(num_B_R)
-    c44ro_sltrib = np.zeros(num_B_R)
-    c44ro_bs = np.zeros(num_B_R)
-    num_days = np.zeros(num_B_R)
+    # Number of rows
+    num_B_R = len(basin_ro)
 
-    for i in range(num_B_R):
-        num_days[i] = monthrange(
-            basin_ro["date"].iloc[i].year, basin_ro["date"].iloc[i].month
-        )[
-            1
-        ]  # no. of days in each time step month.
-        bs_c43ro[i] = max(0, (outlet1_baseflow - data.C43RO["C43RO"].iloc[i]))
-        bs_c44ro[i] = max(0, (outlet2_baseflow - data.C44RO["C44RO"].iloc[i]))
-        c44ro_sltrib[i] = bs_c44ro[i] + data.SLTRIB["SLTRIB_cfs"].iloc[i]
-        c44ro_bs[i] = (
-            max(0, data.C44RO["C44RO"].iloc[i] - outlet2_baseflow) * num_days[i]
-        )
+    # Compute number of days in each month (vectorized)
+    basin_ro["Ndays"] = basin_ro["date"].apply(lambda d: monthrange(d.year, d.month)[1])
 
-    basin_ro["Ndays"] = num_days
+    # Compute baseflow shortfalls (vectorized)
+    basin_ro["BS-C43RO"] = np.maximum(0, outlet1_baseflow - data.C43RO["C43RO"])
+    basin_ro["BS-C44RO"] = np.maximum(0, outlet2_baseflow - data.C44RO["C44RO"])
+
+    # Compute C44RO_SLTrib (vectorized)
+    basin_ro["C44RO_SLTRIB"] = basin_ro["BS-C44RO"] + data.SLTRIB["SLTRIB_cfs"]
+
+    # Compute baseflow contribution for C44 (vectorized)
+    basin_ro["C44RO-BS"] = np.maximum(0, data.C44RO["C44RO"] - outlet2_baseflow) * basin_ro["Ndays"]
+
+    # Assign direct column values from data
     basin_ro["C43RO"] = data.C43RO["C43RO"]
-    basin_ro["BS-C43RO"] = bs_c43ro
     basin_ro["C44RO"] = data.C44RO["C44RO"]
-    basin_ro["BS-C44RO"] = bs_c44ro
     basin_ro["SLTRIB"] = data.SLTRIB["SLTRIB_cfs"]
-    basin_ro["C44RO_SLTRIB"] = c44ro_sltrib
-    basin_ro["C44RO-BS"] = c44ro_bs
 
 
 def _initialize_lo_model(
@@ -1856,31 +1836,20 @@ def _calculate_daily_water_demand(
     """
     water_demand = pd.DataFrame(date_range, columns=["date"])
 
-    N = []
-    week_number = []
-    for i in water_demand["date"]:
-        if i.month == date_range[0].month and i.day == date_range[0].day:
-            n = 0
-        else:
-            n = n + 1
-        N.append(n)
-    water_demand["count"] = N
+    # Compute 'count' using a cumulative sum
+    water_demand["count"] = (water_demand["date"].dt.month != date_range[0].month) | \
+                            (water_demand["date"].dt.day != date_range[0].day)
+    water_demand["count"] = water_demand["count"].cumsum()
 
-    for i in water_demand["count"]:
-        if i > 363:
-            J = 52
-        else:
-            J = int(i / 7) + 1
-        week_number.append(J)
-    water_demand["Week_num"] = week_number
+    # Compute 'Week_num' directly
+    water_demand["Week_num"] = water_demand["count"].floordiv(7).add(1)
+    water_demand.loc[water_demand["count"] > 363, "Week_num"] = 52  # Cap at 52
 
-    daily_demand = []
-    for i in water_demand["Week_num"]:
-        demand = ((data.Weekly_dmd[f'C{config["code"]}'].iloc[i - 1]) / 7) * (
-            config["multiplier"] / 100
-        )
-        daily_demand.append(demand)
-    water_demand["Daily_demand"] = daily_demand
+    # Compute 'Daily_demand' using vectorized operations
+    weekly_demand = data.Weekly_dmd[f'C{config["code"]}']
+    water_demand["Daily_demand"] = (
+        weekly_demand.iloc[water_demand["Week_num"] - 1].values / 7
+    ) * (config["multiplier"] / 100)
 
     return water_demand
 

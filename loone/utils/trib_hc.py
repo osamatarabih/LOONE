@@ -42,10 +42,26 @@ def Trib_HC(workspace: str, forecast: bool = False):
          enddate = datetime(year, month, day).date()
     year, month, day = map(int, config["end_date_tc"])
     enddate_TC = datetime(year, month, day).date()
-    date_rng_3 = pd.date_range(start=startdate, end=enddate_TC, freq="W-Fri")
     # Generate the Tributary Condition Dataframe.
-    Trib_Cond_df = pd.DataFrame(date_rng_3, columns=["date"])
+    Trib_Cond_df = pd.DataFrame(pd.date_range(start=startdate, end=enddate_TC, freq="W-Fri"), columns=["date"])
     TC_Count = len(Trib_Cond_df.index)
+    #This will just grab the first rows without actually checking if the dates. My alternatice is below - but needs adjustments
+    #Will need a new working Weekly trip conditions with the forecast data before this will avoid breaking things in forecast mode.
+    # # Merge with Weekly Tributary Data (ensuring alignment)
+    # Trib_Cond_df = Trib_Cond_df.merge(Data.Wkly_Trib_Cond, left_on="date", right_index=True, how="left")
+
+    # # Apply classification functions directly
+    # Trib_Cond_df["RF_Cls"] = Trib_Cond_df["NetRF"].apply(lonino_functions.RF_Cls)
+    # Trib_Cond_df["MainTrib_Cls"] = Trib_Cond_df["S65E"].apply(lonino_functions.MainTrib_Cls)
+    # Trib_Cond_df["Palmer_Cls"] = Trib_Cond_df["Palmer"].apply(lonino_functions.Palmer_Cls)
+    # Trib_Cond_df["NetInflow_Cls"] = Trib_Cond_df["NetInf"].apply(lonino_functions.NetInflow_Cls)
+
+    # # Compute max classifications
+    # Trib_Cond_df["Max_RF_MainTrib"] = Trib_Cond_df[["RF_Cls", "MainTrib_Cls"]].max(axis=1)
+    # Trib_Cond_df["Max_Palmer_NetInf"] = Trib_Cond_df[["Palmer_Cls", "NetInflow_Cls"]].max(axis=1)
+
+    # # Store results in M_var if needed
+    # M_var = Trib_Cond_df.set_index("date").to_dict(orient="list")
     for i in range(TC_Count):
         M_var.RF_Cls[i] = lonino_functions.RF_Cls(
             Data.Wkly_Trib_Cond["NetRF"].iloc[i]

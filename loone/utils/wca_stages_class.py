@@ -33,7 +33,7 @@ def WCA_Stages_Cls(workspace: str, TC_LONINO_df: pd.DataFrame | None, forecast: 
          year, month, day = map(int, config["end_date_entry"])
          enddate = datetime(year, month, day).date()
 
-    date_rng_5 = pd.date_range(start=startdate, end=enddate, freq="D")
+    daily_date_range = pd.date_range(start=startdate, end=enddate, freq="D")
 
     # Read the WCA Stage data
     WCA_Stages = pd.read_csv(os.path.join(workspace, config["wca_stages_inputs"]))
@@ -43,7 +43,7 @@ def WCA_Stages_Cls(workspace: str, TC_LONINO_df: pd.DataFrame | None, forecast: 
     WCA3A_REG = pd.read_csv(os.path.join(workspace, "WCA3A_REG_Inputs.csv"))
 
     # generate WCA Stage dataframe
-    WCA_Stages_df = pd.DataFrame(date_rng_5, columns=["Date"])
+    WCA_Stages_df = pd.DataFrame(daily_date_range, columns=["Date"])
     WCA_Stages_df["3A-NW"] = WCA_Stages["3A-NW"]
     WCA_Stages_df["2A-17"] = WCA_Stages["2A-17"]
     WCA_Stages_df["3A-3"] = WCA_Stages["3A-3"]
@@ -53,8 +53,7 @@ def WCA_Stages_Cls(workspace: str, TC_LONINO_df: pd.DataFrame | None, forecast: 
         WCA_Stages_df["3A-3"] + WCA_Stages_df["3A-4"] + WCA_Stages_df["3A-28"]
     ) / 3
     # Generate a daily date range for one year (2020)
-    date_rng_10 = pd.date_range(start="1/1/2020", end="12/31/2020", freq="D")
-    WCA3A_REG["Date"] = date_rng_10
+    WCA3A_REG["Date"] = pd.date_range(start="1/1/2020", end="12/31/2020", freq="D")
     Simperioddays = len(WCA_Stages_df.index)
     Oneyeardays = len(WCA3A_REG.index)
 
