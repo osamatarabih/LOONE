@@ -715,7 +715,7 @@ def _calculate_outlet2usrg_code(
     p2: float,
     s308_dv: float,
     tp_lake_s: float,
-    date_range_6: pd.date_range,
+    date_range_one_day: pd.date_range,
 ) -> None:
     """
     Calculate the Outlet2USRG code for the given index.
@@ -730,7 +730,7 @@ def _calculate_outlet2usrg_code(
         p2 (float): The P2 value.
         s308_dv (float): The S308 DV value.
         tp_lake_s (float): The TP lake S value.
-        date_range_6 (pd.date_range): The date range.
+        date_range_one_day (pd.date_range): The date range.
 
     Returns:
         None
@@ -756,16 +756,16 @@ def _calculate_outlet2usrg_code(
         elif model_variables.Lake_Stage[i + 1] <= 8:
             model_variables.Outlet2USRG[i + 2] = 0
         elif (tp_lake_s[i] <= p1) and (
-            date_range_6[i + 2].month in [1, 2, 3, 4, 11, 12]
+            date_range_one_day[i + 2].month in [1, 2, 3, 4, 11, 12]
         ):
             model_variables.Outlet2USRG[i + 2] = s308_dv[
-                (date_range_6[i + 2].month) - 1
+                (date_range_one_day[i + 2].month) - 1
             ]
         elif (tp_lake_s[i] <= p2) and (
-            date_range_6[i + 2].month in [5, 6, 7, 8, 9, 10]
+            date_range_one_day[i + 2].month in [5, 6, 7, 8, 9, 10]
         ):
             model_variables.Outlet2USRG[i + 2] = s308_dv[
-                (date_range_6[i + 2].month) - 1
+                (date_range_one_day[i + 2].month) - 1
             ]
         else:
             model_variables.Outlet2USRG[i + 2] = 0
@@ -1195,7 +1195,7 @@ def _calculate_outlet1usreg(
     p2: float,
     s77_dv: float,
     tp_lake_s: float,
-    date_range_6: pd.DatetimeIndex,
+    date_range_one_day: pd.DatetimeIndex,
     lo_model: pd.DataFrame,
     sensitivity_analysis_params,
 ) -> None:
@@ -1212,7 +1212,7 @@ def _calculate_outlet1usreg(
         p2 (float): The p2 value.
         s77_dv (float): The s77_dv value.
         tp_lake_s (float): The tp_lake_s value.
-        date_range_6 (pd.DatetimeIndex): The date range.
+        date_range_one_day (pd.DatetimeIndex): The date range.
         lo_model (pd.DataFrame): The model DataFrame.
         sensitivity_analysis_params (list): Holds a release rate for each month of the year.
 
@@ -1233,16 +1233,16 @@ def _calculate_outlet1usreg(
         elif model_variables.Lake_Stage[i + 1] <= 8:
             model_variables.Outlet1USREG[i + 2] = 0
         elif (tp_lake_s[i] <= p1) and (
-            date_range_6[i + 2].month in [1, 2, 3, 4, 11, 12]
+            date_range_one_day[i + 2].month in [1, 2, 3, 4, 11, 12]
         ):
             model_variables.Outlet1USREG[i + 2] = s77_dv[
-                (date_range_6[i + 2].month) - 1
+                (date_range_one_day[i + 2].month) - 1
             ]
         elif (tp_lake_s[i] <= p2) and (
-            date_range_6[i + 2].month in [5, 6, 7, 8, 9, 10]
+            date_range_one_day[i + 2].month in [5, 6, 7, 8, 9, 10]
         ):
             model_variables.Outlet1USREG[i + 2] = s77_dv[
-                (date_range_6[i + 2].month) - 1
+                (date_range_one_day[i + 2].month) - 1
             ]
         else:
             model_variables.Outlet1USREG[i + 2] = 0
@@ -1784,20 +1784,21 @@ def _calculate_basin_runoff(
 
 
 def _initialize_lo_model(
-    date_range_6: pd.DatetimeIndex, data: object, config: dict
+    date_range: pd.DatetimeIndex, data: object, config: dict
 ) -> pd.DataFrame:
     """
     Initialize the model DataFrame with the given date range, data, and configuration.
 
     Args:
-        date_range_6 (pd.DatetimeIndex): The date range.
+        date_range (pd.DatetimeIndex): The date range.
         data (object): The data object.
         config (dict): The configuration dictionary.
 
     Returns:
         pd.DataFrame: The initialized LOONE model DataFrame.
     """
-    lo_model = pd.DataFrame(date_range_6, columns=["date"])
+    lo_model = pd.DataFrame(date_range, columns=["date"])
+
     lo_model["Net_Inflow"] = data.NetInf_Input["Netflows_acft"]
     lo_model["LOSA_dmd_SFWMM"] = data.SFWMM_W_dmd["LOSA_dmd"] * (
         config["mult_losa"] / 100
@@ -1839,13 +1840,13 @@ def _determine_seasons(
 
 
 def _calculate_daily_water_demand(
-    date_range_2: pd.DatetimeIndex, startdate: pd.Timestamp, data: object, config: dict
+    date_range: pd.DatetimeIndex, startdate: pd.Timestamp, data: object, config: dict
 ) -> pd.DataFrame:
     """
     Calculate the daily water demand based on the given date range, start date, data, and configuration.
 
     Args:
-        date_range_2 (pd.DatetimeIndex): The date range.
+        date_range (pd.DatetimeIndex): The date range.
         startdate (pd.Timestamp): The start date.
         data (object): The data object.
         config (dict): The configuration dictionary.
@@ -1853,12 +1854,12 @@ def _calculate_daily_water_demand(
     Returns:
         pd.DataFrame: The water demand DataFrame with daily demand.
     """
-    water_demand = pd.DataFrame(date_range_2, columns=["date"])
+    water_demand = pd.DataFrame(date_range, columns=["date"])
 
     N = []
     week_number = []
     for i in water_demand["date"]:
-        if i.month == startdate.month and i.day == startdate.day:
+        if i.month == date_range[0].month and i.day == date_range[0].day:
             n = 0
         else:
             n = n + 1
@@ -1975,6 +1976,7 @@ def LOONE_Q(
     workspace: str,
     sensitivity_analysis_params: List[float] = [],
     optimization_params: dict[float] = None,
+    forecast: bool = False,
 ) -> None:
     """This function runs the LOONE Q module.
 
@@ -1984,6 +1986,7 @@ def LOONE_Q(
             Required when sim_type is 3. Defaults to [].
         optimization_params (dict[float], optional): Holds the optimization parameters,
             including p1, p2, s77_dv, s308_dv, and tp_lake_s. Required when sim_type is 2. Defaults to None.
+        forecast (bool, optional): Whether to run in forecast mode. Defaults to False.
 
     Returns:
         None
@@ -2001,7 +2004,7 @@ def LOONE_Q(
         p1 = p2 = s77_dv = s308_dv = tp_lake_s = 0
 
     data = DClass(workspace)
-    model_variables = MVarClass(config)
+    model_variables = MVarClass(config, forecast)
     print("LOONE Q Module is Running!")
     # Based on the defined Start and End year, month, and day on the
     # Pre_defined_Variables File, Startdate and enddate are defined.
@@ -2011,45 +2014,68 @@ def LOONE_Q(
     if config["sim_type"] in [0, 1, 3]:
         df_wsms.WSMs(workspace)
 
-    df_WSMs = pd.read_csv("df_WSMs.csv")
+    df_WSMs = pd.read_csv("df_WSMs2.csv")
 
     # The Following Code interpolates daily LOSA demand from weekly
     # data for 6 differnet datasets where the user defines the LOSA
     # demand that will be used based on a Code (1:6).
     # Set time frame for model run
-    date_range_2 = pd.date_range(start=startdate, end=enddate, freq="D")
-    water_demand = _calculate_daily_water_demand(date_range_2, startdate, data, config)
+    if forecast == False:
+        daily_date_range = pd.date_range(start=startdate, end=enddate, freq="D")
+    elif forecast == True:
+        today_date = datetime.today()
+        future_date = today_date + timedelta(days=15)
+        daily_date_range = pd.date_range(start=today_date, end=future_date, freq="D")
+        
+    #date_range_2 = pd.date_range(start=startdate, end=enddate, freq="D")
+    #water_demand = _calculate_daily_water_demand(date_range_2, startdate, data, config)
+    water_demand = _calculate_daily_water_demand(daily_date_range, startdate, data, config)
 
     ###################################################################
     # Determine Tributary Hydrologic Conditions
-    tc_lonino_df = trib_hc.Trib_HC(workspace)
+    tc_lonino_df = trib_hc.Trib_HC(workspace, forecast)
     # Determine WCA Stages
-    wca_stages_df = WCA_Stages_Cls(workspace, tc_lonino_df)
+    wca_stages_df = WCA_Stages_Cls(workspace, tc_lonino_df, forecast)
     # A dataframe to determine eachday's season (Months 11,12,1,2 are
     # Season 1, Months 3,4,5 are season 2, Months 6,7 are season 3,
     # Months 8,9,10 are season 4 )
-    date_range_5 = pd.date_range(start=startdate, end=enddate, freq="D")
-    seasons = _determine_seasons(date_range_5, model_variables)
+    # date_range_5 = pd.date_range(start=startdate, end=enddate, freq="D")
+    # seasons = _determine_seasons(date_range_5, model_variables)
+    seasons = _determine_seasons(daily_date_range, model_variables)
 
     ###################################################################
     # This following Script runs the main model daily simulations.
-    date_range_6 = pd.date_range(
-        start=startdate - timedelta(days=1),
-        end=enddate,
-        freq="D",
-    )
-    lo_model = _initialize_lo_model(date_range_6, data, config)
+    if forecast == False:
+        date_range_one_day = pd.date_range(
+            start=startdate - timedelta(days=1),
+            end=enddate,
+            freq="D",
+        )
+    elif forecast == True:
+        date_range_one_day = pd.date_range(
+            start=today_date - timedelta(days=1),
+            end=future_date,
+            freq="D",
+        )
+    lo_model = _initialize_lo_model(date_range_one_day, data, config)
     n_rows = len(lo_model.index)
 
     ##################################
-    dec_tree_df = _create_dectree_df(date_range_5, tc_lonino_df)
+    # dec_tree_df = _create_dectree_df(date_range_5, tc_lonino_df)
+    dec_tree_df = _create_dectree_df(daily_date_range, tc_lonino_df)
 
     # Create a dataframe that includes Monthly Mean Basin Runoff &
-    # BaseFlow-Runoff & Runoff-Baseflow (cfs)
-    date_range_11 = pd.date_range(start=startdate, end=enddate, freq="MS")
-    date_range_11d = pd.date_range(start=startdate, end=enddate, freq="D")
-    date_range_11d.name = "Date"
-    basin_ro = pd.DataFrame(date_range_11, columns=["date"])
+    ##  BaseFlow-Runoff & Runoff-Baseflow (cfs)
+    if forecast == False:
+        monthly_date_range = pd.date_range(start=startdate, end=enddate, freq="MS")
+    elif forecast == True:
+        monthly_date_range = pd.date_range(start=today_date, end=future_date, freq="MS")
+    if monthly_date_range.empty:
+        monthly_date_range = pd.DatetimeIndex([pd.to_datetime(startdate).replace(day=1)])
+    # date_range_11 = pd.date_range(start=startdate, end=enddate, freq="MS")
+    # date_range_11d = pd.date_range(start=startdate, end=enddate, freq="D")
+    # date_range_11d.name = "Date"
+    basin_ro = pd.DataFrame(monthly_date_range, columns=["date"])
     # Baseflows
     outlet1_baseflow = data.S77_RegRelRates["Zone_D0"].iloc[0]
     outlet2_baseflow = data.S80_RegRelRates["Zone_D0"].iloc[0]
@@ -2064,18 +2090,20 @@ def LOONE_Q(
     s77avg_l3 = pulse_averages["s77avg_l3"]
     basin_ro = basin_ro.set_index(["date"])
     basin_ro.index = pd.to_datetime(basin_ro.index)
-    basin_ro_daily = basin_ro.reindex(date_range_11d, method="ffill")
+    #basin_ro_daily = basin_ro.reindex(date_range_11d, method="ffill")
+    basin_ro_daily = basin_ro.reindex(daily_date_range, method="ffill")
     basin_ro = basin_ro.reset_index()
     vlookup1 = basin_ro_daily["BS-C44RO"]
     vlookup1_c = [x for x in vlookup1 if ~np.isnan(x)]
     ###################################################################
     # This following script contains the logic and calculations for
     # the proposed Lake Okeechobee Adaptive Protocol.
-    adaptive_protocol_df = pd.DataFrame(date_range_5, columns=["date"])
+    # adaptive_protocol_df = pd.DataFrame(date_range_5, columns=["date"])
+    adaptive_protocol_df = pd.DataFrame(daily_date_range, columns=["date"])
     _calculate_late_dry_season(adaptive_protocol_df, tc_lonino_df)
 
-    # Define "Low Chance" 6/1 stg<11'
-    targ_stg_df = _calculate_targ_stg_df(config, data, date_range_5, model_variables)
+  # targ_stg_df = _calculate_targ_stg_df(config, data, date_range_5, model_variables)
+    targ_stg_df = _calculate_targ_stg_df(config, data, daily_date_range, model_variables)
 
     # Outlet1_baseflow = Data.S77_RegRelRates['Zone_D0'].iloc[0]
     outlet1_baseflow = 450  # cfs
@@ -2153,7 +2181,7 @@ def LOONE_Q(
             p2,
             s308_dv,
             tp_lake_s,
-            date_range_6,
+            date_range_one_day
         )
         _calculate_outlet2ds(i, model_variables, lo_functions, data, config)
         _calculate_relevel_code_3_s77(i, model_variables, lo_functions, config)
@@ -2200,7 +2228,7 @@ def LOONE_Q(
             p2,
             s77_dv,
             tp_lake_s,
-            date_range_6,
+            date_range_one_day,
             lo_model,
             sensitivity_analysis_params,
         )

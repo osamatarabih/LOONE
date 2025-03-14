@@ -5,7 +5,7 @@ from datetime import datetime, timedelta
 
 class M_var:
     """Class to represents model variables."""
-    def __init__(self, config: dict):
+    def __init__(self, config: dict, forecast: bool = False):
         """
         Initializes the M_var class with model variables.
 
@@ -20,10 +20,15 @@ class M_var:
                 - "end_date_tc": A list of integers [year, month, day] for the end date of tributary conditions.
                 - "month_n": An integer representing the number of months for the LONINO seasonal classes.
         """
-        year, month, day = map(int, config["start_date_entry"])
-        startdate = datetime(year, month, day).date()
-        year, month, day = map(int, config["end_date_entry"])
-        enddate = datetime(year, month, day).date()
+        if forecast==True:
+            today = datetime.today().date()
+            startdate = today
+            enddate = today + timedelta(days=15)
+        else:
+            year, month, day = map(int, config["start_date_entry"])
+            startdate = datetime(year, month, day).date()
+            year, month, day = map(int, config["end_date_entry"])
+            enddate = datetime(year, month, day).date()
         year, month, day = map(int, config["end_date_tc"])
         enddate_TC = datetime(year, month, day).date()
 
@@ -39,6 +44,8 @@ class M_var:
         self.Max_Palmer_NetInf = np.zeros(TC_Count)
 
         date_rng_4 = pd.date_range(start=startdate, end=enddate, freq="MS")
+        if date_rng_4.empty:
+            date_rng_4  = pd.DatetimeIndex([pd.to_datetime(startdate).replace(day=1)])
         LONINO_Count = len(date_rng_4)
         self.Seas = np.zeros(LONINO_Count)
         self.M_Seas = np.zeros(LONINO_Count)

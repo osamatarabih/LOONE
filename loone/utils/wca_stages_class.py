@@ -1,12 +1,12 @@
 import os
 import numpy as np
 import pandas as pd
-from datetime import datetime
+from datetime import datetime, timedelta
 from loone.utils import load_config, leap_year
 
 
 # This following section calculates the parameter states (trib conds, stage tests, seasonal & multi-seasonal LONINO) and sets a 4-digit code for the branch.  The branch code is used with the Routing sheet to determine release rates.
-def WCA_Stages_Cls(workspace: str, TC_LONINO_df: pd.DataFrame | None):
+def WCA_Stages_Cls(workspace: str, TC_LONINO_df: pd.DataFrame | None, forecast: bool = False):
     """
     Reads in the WCA Stage data and WCA3A_REG inputs, sets up a daily date range for the simulation period,
     and generates a WCA Stage dataframe. It also generates a daily date range for one year (2020), assigns
@@ -23,11 +23,15 @@ def WCA_Stages_Cls(workspace: str, TC_LONINO_df: pd.DataFrame | None):
     """
     os.chdir(workspace)
     config = load_config(workspace)
-
-    year, month, day = map(int, config["start_date_entry"])
-    startdate = datetime(year, month, day).date()
-    year, month, day = map(int, config["end_date_entry"])
-    enddate = datetime(year, month, day).date()
+    if forecast == True:
+        today = datetime.today().date()
+        startdate = today
+        enddate = today + timedelta(days=15)
+    else:
+         year, month, day = map(int, config["start_date_entry"])
+         startdate = datetime(year, month, day).date()
+         year, month, day = map(int, config["end_date_entry"])
+         enddate = datetime(year, month, day).date()
 
     date_rng_5 = pd.date_range(start=startdate, end=enddate, freq="D")
 

@@ -1,7 +1,7 @@
 import os
 import pandas as pd
 import numpy as np
-from datetime import datetime
+from datetime import datetime, timedelta
 from loone.data.model_variables import M_var as MVarClass
 from loone.utils import load_config, lonino_functions
 from loone.data import Data as DClass
@@ -9,7 +9,7 @@ from loone.data import Data as DClass
 
 # I determine daily values for the Tributary conditions and Seasonal/Multi-Seasonal LONINO classes
 # using a weekly Trib. Condition data and Monthly LONINO data.
-def Trib_HC(workspace: str):
+def Trib_HC(workspace: str, forecast: bool = False):
     """
     This function generates daily values for the Tributary conditions and Seasonal/Multi-Seasonal LONINO classes
     using a weekly Trib. Condition data and Monthly LONINO data.
@@ -28,13 +28,18 @@ def Trib_HC(workspace: str):
     os.chdir(workspace)
     config = load_config(workspace)
     Data = DClass(workspace)
-    M_var = MVarClass(config)
+    M_var = MVarClass(config, forecast)
     # Generate weekly time step date column where frequency is 'W-Fri' to start on 01/01/2008.
     # FIXME: Always check here for start date, end date, and frequency to match with the Trib. Condition weekly data obtained.
-    year, month, day = map(int, config["start_date_entry"])
-    startdate = datetime(year, month, day).date()
-    year, month, day = map(int, config["end_date_entry"])
-    enddate = datetime(year, month, day).date()
+    if forecast == True:
+        today = datetime.today().date()
+        startdate = today
+        enddate = today + timedelta(days=15)
+    else:
+         year, month, day = map(int, config["start_date_entry"])
+         startdate = datetime(year, month, day).date()
+         year, month, day = map(int, config["end_date_entry"])
+         enddate = datetime(year, month, day).date()
     year, month, day = map(int, config["end_date_tc"])
     enddate_TC = datetime(year, month, day).date()
     date_rng_3 = pd.date_range(start=startdate, end=enddate_TC, freq="W-Fri")
@@ -64,6 +69,8 @@ def Trib_HC(workspace: str):
         Trib_Cond_df["TCI"] = M_var.Max_RF_MainTrib
     # Generate a monthly time step date column
     date_rng_4 = pd.date_range(start=startdate, end=enddate, freq="MS")
+    if date_rng_4.empty:
+        date_rng_4 = pd.DatetimeIndex([pd.to_datetime(startdate).replace(day=1)])
     # Create a LONINO Dataframe
     LONINO_df = pd.DataFrame(date_rng_4, columns=["date"])
     LONINO_Count = len(LONINO_df.index)
