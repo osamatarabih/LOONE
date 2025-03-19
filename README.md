@@ -229,6 +229,8 @@ lo_inflows_bk: "LO_Inflows_BK.csv"
 sto_stage: "Average_LO_Storage_3MLag.csv"
 wind_shear_stress: "WindShearStress.csv"
 nu: "nu.csv"
+
+outflows_observed: "Flow_df_3MLag.csv"
 ```
 
 ## Case Study:
