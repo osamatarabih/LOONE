@@ -24,13 +24,14 @@ class M_var:
             today = datetime.today().date()
             startdate = today
             enddate = today + timedelta(days=15)
+            enddate_TC = enddate
         else:
             year, month, day = map(int, config["start_date_entry"])
             startdate = datetime(year, month, day).date()
             year, month, day = map(int, config["end_date_entry"])
             enddate = datetime(year, month, day).date()
-        year, month, day = map(int, config["end_date_tc"])
-        enddate_TC = datetime(year, month, day).date()
+            year, month, day = map(int, config["end_date_tc"])
+            enddate_TC = datetime(year, month, day).date()
         
         TC_Count = len(pd.date_range(
             start=startdate, end=enddate_TC, freq="W-Fri"

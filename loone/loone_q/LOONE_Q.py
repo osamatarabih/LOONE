@@ -1981,7 +1981,7 @@ def LOONE_Q(
 
     ###################################################################
     if config["sim_type"] in [0, 1, 3]:
-        df_wsms.WSMs(workspace)
+        df_wsms.WSMs(workspace, forecast)
 
     df_WSMs = pd.read_csv("df_WSMs.csv")
 
@@ -2038,7 +2038,10 @@ def LOONE_Q(
     if forecast == False:
         monthly_date_range = pd.date_range(start=startdate, end=enddate, freq="MS")
     elif forecast == True:
-        monthly_date_range = pd.date_range(start=today_date, end=future_date, freq="MS")
+        new_startdate=today_date
+        if new_startdate.day > 1:
+            new_startdate = startdate.replace(day=1) 
+        monthly_date_range = pd.date_range(start=new_startdate, end=future_date, freq="MS")
     if monthly_date_range.empty:
         monthly_date_range = pd.DatetimeIndex([pd.to_datetime(startdate).replace(day=1)])
     # date_range_11 = pd.date_range(start=startdate, end=enddate, freq="MS")
