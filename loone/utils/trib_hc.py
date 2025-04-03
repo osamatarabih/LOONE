@@ -31,26 +31,26 @@ def Trib_HC(workspace: str, forecast: bool = False):
     M_var = MVarClass(config, forecast)
     # Generate weekly time step date column where frequency is 'W-Fri' to start on 01/01/2008.
     # FIXME: Always check here for start date, end date, and frequency to match with the Trib. Condition weekly data obtained.
-    if forecast == True:
+    if forecast:
         today = datetime.today().date()
         startdate = today
         enddate = today + timedelta(days=16)
         enddate_TC = enddate
     else:
-         year, month, day = map(int, config["start_date_entry"])
-         startdate = datetime(year, month, day).date()
-         year, month, day = map(int, config["end_date_entry"])
-         enddate = datetime(year, month, day).date()
-         year, month, day = map(int, config["end_date_tc"])
-         enddate_TC = datetime(year, month, day).date()
+        year, month, day = map(int, config["start_date_entry"])
+        startdate = datetime(year, month, day).date()
+        year, month, day = map(int, config["end_date_entry"])
+        enddate = datetime(year, month, day).date()
+        year, month, day = map(int, config["end_date_tc"])
+        enddate_TC = datetime(year, month, day).date()
     # Generate the Tributary Condition Dataframe.
-    Trib_Cond_df = pd.DataFrame(pd.date_range(start=startdate, end=enddate_TC, freq="W-Fri"), columns=["date"])
+    Trib_Cond_df = pd.DataFrame(
+        pd.date_range(start=startdate, end=enddate_TC, freq="W-Fri"), columns=["date"]
+    )
     TC_Count = len(Trib_Cond_df.index)
 
     for i in range(TC_Count):
-        M_var.RF_Cls[i] = lonino_functions.RF_Cls(
-            Data.Wkly_Trib_Cond["NetRF"].iloc[i]
-        )
+        M_var.RF_Cls[i] = lonino_functions.RF_Cls(Data.Wkly_Trib_Cond["NetRF"].iloc[i])
         if forecast:
             M_var.MainTrib_Cls[i] = lonino_functions.MainTrib_Cls(
                 Data.Wkly_Trib_Cond["flow_avg_m^3/d_S65E"].iloc[i]
@@ -66,9 +66,7 @@ def Trib_HC(workspace: str, forecast: bool = False):
             Data.Wkly_Trib_Cond["NetInf"].iloc[i]
         )
         M_var.Max_RF_MainTrib[i] = max(M_var.RF_Cls[i], M_var.MainTrib_Cls[i])
-        M_var.Max_Palmer_NetInf[i] = max(
-            M_var.Palmer_Cls[i], M_var.NetInflow_Cls[i]
-        )
+        M_var.Max_Palmer_NetInf[i] = max(M_var.Palmer_Cls[i], M_var.NetInflow_Cls[i])
     if config["tci"] == 1:  # Tributary Condition Index
         Trib_Cond_df["TCI"] = M_var.Max_Palmer_NetInf
     else:
@@ -104,11 +102,11 @@ def Trib_HC(workspace: str, forecast: bool = False):
     row_nm = len(TC_LONINO_df.index)
     Trib_Cond = np.zeros(row_nm)
     for i in range(row_nm):
-         tci_index = int(i / 7)
-         if tci_index < len(Trib_Cond_df):
-             Trib_Cond[i] = Trib_Cond_df["TCI"].iloc[tci_index]
-         else:
-             continue
+        tci_index = int(i / 7)
+        if tci_index < len(Trib_Cond_df):
+            Trib_Cond[i] = Trib_Cond_df["TCI"].iloc[tci_index]
+        else:
+            continue
     TC_LONINO_df["Tributary_Condition"] = Trib_Cond
     data_S_MS = [
         LONINO_df["date"],
@@ -118,9 +116,7 @@ def Trib_HC(workspace: str, forecast: bool = False):
     headers_S_MS = ["date", "LONINO_Seasonal_Class", "LONINO_MSeasonal_Class"]
     LONINO_Seas_MSeas_df = pd.concat(data_S_MS, axis=1, keys=headers_S_MS)
     LONINO_Seas_MSeas_df = LONINO_Seas_MSeas_df.set_index("date")
-    LONINO_Seas_MSeas_df = LONINO_Seas_MSeas_df.reindex(
-        date_rng_5, method="ffill"
-    )
+    LONINO_Seas_MSeas_df = LONINO_Seas_MSeas_df.reindex(date_rng_5, method="ffill")
     LONINO_Seas_MSeas_df = LONINO_Seas_MSeas_df.reset_index()
     TC_LONINO_df["LONINO_Seasonal_Classes"] = LONINO_Seas_MSeas_df[
         "LONINO_Seasonal_Class"

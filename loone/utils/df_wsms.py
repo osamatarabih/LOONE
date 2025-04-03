@@ -11,20 +11,20 @@ from loone.utils import load_config
 def WSMs(workspace: str, forecast: bool = False):
     """Generate WSMs (Weather State Modifiers) based on the given workspace.
 
-    Args:
-        workspace (str): The path to the workspace.
-df_
-    Returns:
-        None
+        Args:
+            workspace (str): The path to the workspace.
+    
+        Returns:
+            None
 
-    Raises:
-        None
+        Raises:
+            None
     """
 
     os.chdir(workspace)
     config = load_config(workspace)
     data = DClass(workspace)
-    if forecast == True:
+    if forecast:
         today = datetime.today().date()
         start_date = today
         end_date = today + timedelta(days=16)
