@@ -20,7 +20,9 @@ from loone.utils.wca_stages_class import WCA_Stages_Cls
 from loone.data import Data as DClass
 
 
-def _calculate_wsm_zone(i: int, model_variables: object, lo_functions: object, df_WSMs: pd.DataFrame) -> None:
+def _calculate_wsm_zone(
+    i: int, model_variables: object, lo_functions: object, df_WSMs: pd.DataFrame
+) -> None:
     """
     Calculate the WSM zone for the given index.
 
@@ -42,8 +44,13 @@ def _calculate_wsm_zone(i: int, model_variables: object, lo_functions: object, d
     )
 
 
-def _calculate_max_supply(i: int, model_variables: object, lo_functions: object, water_demand: pd.DataFrame,
-                          config: dict) -> None:
+def _calculate_max_supply(
+    i: int,
+    model_variables: object,
+    lo_functions: object,
+    water_demand: pd.DataFrame,
+    config: dict,
+) -> None:
     """
     Calculate the maximum supply for the given index.
 
@@ -67,8 +74,13 @@ def _calculate_max_supply(i: int, model_variables: object, lo_functions: object,
     )
 
 
-def _calculate_losa_supply(i: int, model_variables: object, lo_functions: object, lo_model: pd.DataFrame,
-                           config: dict) -> None:
+def _calculate_losa_supply(
+    i: int,
+    model_variables: object,
+    lo_functions: object,
+    lo_model: pd.DataFrame,
+    config: dict,
+) -> None:
     """
     Calculate the LOSA supply for the given index.
 
@@ -90,7 +102,9 @@ def _calculate_losa_supply(i: int, model_variables: object, lo_functions: object
     )
 
 
-def _calculate_ni_supply(i: int, model_variables: object, lo_model: pd.DataFrame) -> None:
+def _calculate_ni_supply(
+    i: int, model_variables: object, lo_model: pd.DataFrame
+) -> None:
     """
     Calculate the NI supply for the given index.
 
@@ -123,7 +137,9 @@ def _calculate_cutback(i: int, model_variables: object, lo_model: pd.DataFrame) 
     model_variables.Cut_back[i + 2] = cutback
 
 
-def _calculate_demand_not_supplied(i: int, model_variables: object, lo_model: pd.DataFrame) -> None:
+def _calculate_demand_not_supplied(
+    i: int, model_variables: object, lo_model: pd.DataFrame
+) -> None:
     """
     Calculate the demand not supplied for the given index.
 
@@ -144,8 +160,9 @@ def _calculate_demand_not_supplied(i: int, model_variables: object, lo_model: pd
     model_variables.Dem_N_Sup[i + 2] = demand_not_supplied
 
 
-def _calculate_initial_zone_code_and_lo_zone(model_variables: object, lo_functions: object,
-                                             df_WSMs: pd.DataFrame) -> None:
+def _calculate_initial_zone_code_and_lo_zone(
+    model_variables: object, lo_functions: object, df_WSMs: pd.DataFrame
+) -> None:
     """
     Calculate the Zone_Code and LO_Zone for the given index.
 
@@ -172,7 +189,9 @@ def _calculate_initial_zone_code_and_lo_zone(model_variables: object, lo_functio
     model_variables.LO_Zone[0] = lo_functions.LO_Zone(model_variables.Zone_Code[0])
 
 
-def _calculate_zone_code(i: int, model_variables: object, lo_functions: object, df_WSMs: pd.DataFrame) -> None:
+def _calculate_zone_code(
+    i: int, model_variables: object, lo_functions: object, df_WSMs: pd.DataFrame
+) -> None:
     """
     Calculate the Zone_Code for the given index.
 
@@ -198,7 +217,9 @@ def _calculate_zone_code(i: int, model_variables: object, lo_functions: object, 
     )
 
 
-def _generate_zone_column(i: int, model_variables: object, lo_functions: object) -> None:
+def _generate_zone_column(
+    i: int, model_variables: object, lo_functions: object
+) -> None:
     """
     Generate the Zone columns for the given index.
 
@@ -210,12 +231,21 @@ def _generate_zone_column(i: int, model_variables: object, lo_functions: object)
     Returns:
         None
     """
-    model_variables.LO_Zone[i + 1] = lo_functions.LO_Zone(model_variables.Zone_Code[i + 1])
+    model_variables.LO_Zone[i + 1] = lo_functions.LO_Zone(
+        model_variables.Zone_Code[i + 1]
+    )
 
 
-def _calculate_decision_tree_variables(i: int, model_variables: object, dec_tree_functions: object,
-                                       tc_lonino_df: pd.DataFrame, config: dict, seasons: pd.DataFrame,
-                                       dec_tree_df: pd.DataFrame, df_WSMs: pd.DataFrame) -> None:
+def _calculate_decision_tree_variables(
+    i: int,
+    model_variables: object,
+    dec_tree_functions: object,
+    tc_lonino_df: pd.DataFrame,
+    config: dict,
+    seasons: pd.DataFrame,
+    dec_tree_df: pd.DataFrame,
+    df_WSMs: pd.DataFrame,
+) -> None:
     """
     Calculate the decision tree variables for the given index.
 
@@ -302,8 +332,15 @@ def _calculate_decision_tree_variables(i: int, model_variables: object, dec_tree
     )
 
 
-def _calculate_release_levels(i: int, startdate: datetime, lo_model: pd.DataFrame, model_variables: object,
-                              lo_functions: object, config: dict, tc_lonino_df: pd.DataFrame) -> None:
+def _calculate_release_levels(
+    i: int,
+    startdate: datetime,
+    lo_model: pd.DataFrame,
+    model_variables: object,
+    lo_functions: object,
+    config: dict,
+    tc_lonino_df: pd.DataFrame,
+) -> None:
     """
     Calculate the release levels for the given index.
 
@@ -330,8 +367,7 @@ def _calculate_release_levels(i: int, startdate: datetime, lo_model: pd.DataFram
             startdate.month == lo_model.at[i, "date"].month
             and startdate.day == lo_model.at[i, "date"].day
             and (
-                config["cs_flag"] == 0
-                or startdate.year == lo_model.at[i, "date"].year
+                config["cs_flag"] == 0 or startdate.year == lo_model.at[i, "date"].year
             )
         ):
             X2 = "SimDay1"
@@ -357,7 +393,9 @@ def _calculate_release_levels(i: int, startdate: datetime, lo_model: pd.DataFram
         model_variables.dh_7days[i + 1] = dh
 
 
-def _calculate_zone_codes(i: int, model_variables: object, lo_functions: object, df_WSMs: pd.DataFrame) -> None:
+def _calculate_zone_codes(
+    i: int, model_variables: object, lo_functions: object, df_WSMs: pd.DataFrame
+) -> None:
     """
     Calculate the zone codes for the given index.
 
@@ -402,7 +440,9 @@ def _calculate_zone_codes(i: int, model_variables: object, lo_functions: object,
     )
 
 
-def _calculate_release_level_codes(i: int, model_variables: object, lo_functions: object, config: dict) -> None:
+def _calculate_release_level_codes(
+    i: int, model_variables: object, lo_functions: object, config: dict
+) -> None:
     """
     Calculate the release level codes for the given index.
 
@@ -441,7 +481,9 @@ def _calculate_release_level_codes(i: int, model_variables: object, lo_functions
     )
 
 
-def _calculate_relevel_code_3_s77(i: int, model_variables: object, lo_functions: object, config: dict) -> None:
+def _calculate_relevel_code_3_s77(
+    i: int, model_variables: object, lo_functions: object, config: dict
+) -> None:
     """
     Calculate the ReLevelCode_3_S77 for the given index.
 
@@ -464,8 +506,14 @@ def _calculate_relevel_code_3_s77(i: int, model_variables: object, lo_functions:
     )
 
 
-def _calculate_outlet2ds_mult(i: int, lo_model: pd.DataFrame, model_variables: object, lo_functions: object,
-                              seasons: pd.DataFrame, config: dict) -> None:
+def _calculate_outlet2ds_mult(
+    i: int,
+    lo_model: pd.DataFrame,
+    model_variables: object,
+    lo_functions: object,
+    seasons: pd.DataFrame,
+    config: dict,
+) -> None:
     """
     Calculate the Outlet2DS multiplier for the given index.
 
@@ -500,8 +548,17 @@ def _calculate_outlet2ds_mult(i: int, lo_model: pd.DataFrame, model_variables: o
     )
 
 
-def _calculate_outlet2dsrs(i: int, lo_model: pd.DataFrame, model_variables: object, lo_functions: object,
-                           data: object, s80avg_l1: float, s80avg_l2: float, s80avg_l3: float, config: dict) -> None:
+def _calculate_outlet2dsrs(
+    i: int,
+    lo_model: pd.DataFrame,
+    model_variables: object,
+    lo_functions: object,
+    data: object,
+    s80avg_l1: float,
+    s80avg_l2: float,
+    s80avg_l3: float,
+    config: dict,
+) -> None:
     """
     Calculate the Outlet2DSRS for the given index.
 
@@ -569,8 +626,14 @@ def _calculate_outlet2dsrs(i: int, lo_model: pd.DataFrame, model_variables: obje
     )
 
 
-def _calculate_outlet2dsbs(i: int, model_variables: object, lo_functions: object, vlookup1_c: list,
-                           outlet2_baseflow: float, config: dict) -> None:
+def _calculate_outlet2dsbs(
+    i: int,
+    model_variables: object,
+    lo_functions: object,
+    vlookup1_c: list,
+    outlet2_baseflow: float,
+    config: dict,
+) -> None:
     """
     Calculate the Outlet2DSBS for the given index.
 
@@ -594,8 +657,15 @@ def _calculate_outlet2dsbs(i: int, model_variables: object, lo_functions: object
     )
 
 
-def _calculate_outlet2usbk(i: int, model_variables: object, lo_functions: object, df_WSMs: pd.DataFrame,
-                           lo_model: pd.DataFrame, data: object, config: dict) -> None:
+def _calculate_outlet2usbk(
+    i: int,
+    model_variables: object,
+    lo_functions: object,
+    df_WSMs: pd.DataFrame,
+    lo_model: pd.DataFrame,
+    data: object,
+    config: dict,
+) -> None:
     """
     Calculate the Outlet2USBK for the given index.
 
@@ -635,8 +705,18 @@ def _calculate_outlet2usbk(i: int, model_variables: object, lo_functions: object
     )
 
 
-def _calculate_outlet2usrg_code(i: int, model_variables: object, lo_functions: object, data: object, config: dict,
-                                date_range_6: pd.date_range) -> None:
+def _calculate_outlet2usrg_code(
+    i: int,
+    model_variables: object,
+    lo_functions: object,
+    data: object,
+    config: dict,
+    p1: float,
+    p2: float,
+    s308_dv: float,
+    tp_lake_s: float,
+    date_range_one_day: pd.date_range,
+) -> None:
     """
     Calculate the Outlet2USRG code for the given index.
 
@@ -646,7 +726,11 @@ def _calculate_outlet2usrg_code(i: int, model_variables: object, lo_functions: o
         lo_functions (object): The functions object.
         data (object): The data object.
         config (dict): The configuration dictionary.
-        date_range_6 (pd.date_range): The date range.
+        p1 (float): The P1 value.
+        p2 (float): The P2 value.
+        s308_dv (float): The S308 DV value.
+        tp_lake_s (float): The TP lake S value.
+        date_range_one_day (pd.date_range): The date range.
 
     Returns:
         None
@@ -672,16 +756,16 @@ def _calculate_outlet2usrg_code(i: int, model_variables: object, lo_functions: o
         elif model_variables.Lake_Stage[i + 1] <= 8:
             model_variables.Outlet2USRG[i + 2] = 0
         elif (tp_lake_s[i] <= p1) and (
-            date_range_6[i + 2].month in [1, 2, 3, 4, 11, 12]
+            date_range_one_day[i + 2].month in [1, 2, 3, 4, 11, 12]
         ):
             model_variables.Outlet2USRG[i + 2] = s308_dv[
-                (date_range_6[i + 2].month) - 1
+                (date_range_one_day[i + 2].month) - 1
             ]
         elif (tp_lake_s[i] <= p2) and (
-            date_range_6[i + 2].month in [5, 6, 7, 8, 9, 10]
+            date_range_one_day[i + 2].month in [5, 6, 7, 8, 9, 10]
         ):
             model_variables.Outlet2USRG[i + 2] = s308_dv[
-                (date_range_6[i + 2].month) - 1
+                (date_range_one_day[i + 2].month) - 1
             ]
         else:
             model_variables.Outlet2USRG[i + 2] = 0
@@ -692,7 +776,9 @@ def _calculate_outlet2usrg_code(i: int, model_variables: object, lo_functions: o
             model_variables.Outlet2USRG[i + 2] = 0
 
 
-def _calculate_outlet2ds(i: int, model_variables: object, lo_functions: object, data: object, config: dict) -> None:
+def _calculate_outlet2ds(
+    i: int, model_variables: object, lo_functions: object, data: object, config: dict
+) -> None:
     """
     Calculate the Outlet2DS for the given index.
 
@@ -714,8 +800,13 @@ def _calculate_outlet2ds(i: int, model_variables: object, lo_functions: object, 
     )
 
 
-def _calculate_outlet1us_mult(i: int, model_variables: object, lo_functions: object, seasons: pd.DataFrame,
-                              config: dict) -> None:
+def _calculate_outlet1us_mult(
+    i: int,
+    model_variables: object,
+    lo_functions: object,
+    seasons: pd.DataFrame,
+    config: dict,
+) -> None:
     """
     Calculate the Outlet1US_Mult for the given index.
 
@@ -741,7 +832,13 @@ def _calculate_outlet1us_mult(i: int, model_variables: object, lo_functions: obj
     )
 
 
-def _calculate_outlet1us_mult_2(i: int, model_variables: object, lo_functions: object, lo_model: pd.DataFrame, config: dict) -> None:
+def _calculate_outlet1us_mult_2(
+    i: int,
+    model_variables: object,
+    lo_functions: object,
+    lo_model: pd.DataFrame,
+    config: dict,
+) -> None:
     """
     Calculate the Outlet1US_Mult_2 for the given index.
 
@@ -765,8 +862,17 @@ def _calculate_outlet1us_mult_2(i: int, model_variables: object, lo_functions: o
     )
 
 
-def _calculate_outlet1usrs(i: int, model_variables: object, lo_functions: object, lo_model: pd.DataFrame, data: object,
-                           config: dict, s77avg_l1: float, s77avg_l2: float, s77avg_l3: float) -> None:
+def _calculate_outlet1usrs(
+    i: int,
+    model_variables: object,
+    lo_functions: object,
+    lo_model: pd.DataFrame,
+    data: object,
+    config: dict,
+    s77avg_l1: float,
+    s77avg_l2: float,
+    s77avg_l3: float,
+) -> None:
     """
     Calculate the Outlet1USRS for the given index.
 
@@ -830,7 +936,9 @@ def _calculate_outlet1usrs(i: int, model_variables: object, lo_functions: object
     )
 
 
-def _calculate_sum_outlet1usrs(i: int, model_variables: object, lo_functions: object, lo_model: pd.DataFrame) -> None:
+def _calculate_sum_outlet1usrs(
+    i: int, model_variables: object, lo_functions: object, lo_model: pd.DataFrame
+) -> None:
     """
     Calculate the Sum_Outlet1USRS for the given index.
 
@@ -848,8 +956,14 @@ def _calculate_sum_outlet1usrs(i: int, model_variables: object, lo_functions: ob
     )
 
 
-def _calculate_outlet1usbk(i: int, model_variables: object, lo_functions: object, lo_model: pd.DataFrame, data: object,
-                           config: dict) -> None:
+def _calculate_outlet1usbk(
+    i: int,
+    model_variables: object,
+    lo_functions: object,
+    lo_model: pd.DataFrame,
+    data: object,
+    config: dict,
+) -> None:
     """
     Calculate the Outlet1USBK for the given index.
 
@@ -893,8 +1007,14 @@ def _calculate_rowest(i: int, model_variables: object, lo_model: pd.DataFrame) -
     )
 
 
-def _calculate_outlet1dsbs(i: int, model_variables: object, lo_functions: object, vlookup2_c: list,
-                           outlet1_baseflow: float, config: dict) -> None:
+def _calculate_outlet1dsbs(
+    i: int,
+    model_variables: object,
+    lo_functions: object,
+    vlookup2_c: list,
+    outlet1_baseflow: float,
+    config: dict,
+) -> None:
     """
     Calculate the Outlet1DSBS for the given index.
 
@@ -918,7 +1038,9 @@ def _calculate_outlet1dsbs(i: int, model_variables: object, lo_functions: object
     )
 
 
-def _calculate_outlet1usbs(i: int, model_variables: object, lo_functions: object, config: dict) -> None:
+def _calculate_outlet1usbs(
+    i: int, model_variables: object, lo_functions: object, config: dict
+) -> None:
     """
     Calculate the Outlet1USBS for the given index.
 
@@ -939,7 +1061,9 @@ def _calculate_outlet1usbs(i: int, model_variables: object, lo_functions: object
     )
 
 
-def _calculate_outlet1usbsap(i: int, model_variables: object, lo_functions: object, config: dict) -> None:
+def _calculate_outlet1usbsap(
+    i: int, model_variables: object, lo_functions: object, config: dict
+) -> None:
     """
     Calculate the Outlet1USBSAP for the given index.
 
@@ -959,7 +1083,9 @@ def _calculate_outlet1usbsap(i: int, model_variables: object, lo_functions: obje
     )
 
 
-def _calculate_outlet1usews(i: int, model_variables: object, lo_functions: object, data: object, config: dict) -> None:
+def _calculate_outlet1usews(
+    i: int, model_variables: object, lo_functions: object, data: object, config: dict
+) -> None:
     """
     Calculate the Outlet1USEWS for the given index.
 
@@ -981,9 +1107,17 @@ def _calculate_outlet1usews(i: int, model_variables: object, lo_functions: objec
     )
 
 
-def _define_thc_class_normal_or_above(i: int, n_rows: int, model_variables: object, config: dict,
-                                      adaptive_protocol_df: pd.DataFrame, df_WSMs: pd.DataFrame,
-                                      targ_stg_df: pd.DataFrame, data: object, choose_1: float) -> None:
+def _define_thc_class_normal_or_above(
+    i: int,
+    n_rows: int,
+    model_variables: object,
+    config: dict,
+    adaptive_protocol_df: pd.DataFrame,
+    df_WSMs: pd.DataFrame,
+    targ_stg_df: pd.DataFrame,
+    data: object,
+    choose_1: float,
+) -> None:
     """
     Define THC Class Normal or above for the given index.
 
@@ -1051,9 +1185,20 @@ def _define_thc_class_normal_or_above(i: int, n_rows: int, model_variables: obje
         model_variables.Post_AP_EWS[i] = thc_class_result["Post_AP_EWS"]
 
 
-def _calculate_outlet1usreg(i: int, model_variables: object, lo_functions: object, data: object, config: dict,
-                            tp_lake_s: float, s77_dv: float, date_range_6: pd.DatetimeIndex,
-                            lo_model: pd.DataFrame, sensitivity_analysis_params) -> None:
+def _calculate_outlet1usreg(
+    i: int,
+    model_variables: object,
+    lo_functions: object,
+    data: object,
+    config: dict,
+    p1: float,
+    p2: float,
+    s77_dv: float,
+    tp_lake_s: float,
+    date_range_one_day: pd.DatetimeIndex,
+    lo_model: pd.DataFrame,
+    sensitivity_analysis_params,
+) -> None:
     """
     Calculate the Outlet1USREG for the given index.
 
@@ -1063,9 +1208,11 @@ def _calculate_outlet1usreg(i: int, model_variables: object, lo_functions: objec
         lo_functions (object): The functions object.
         data (object): The data object.
         config (dict): The configuration dictionary.
-        tp_lake_s (float): The tp_lake_s value.
+        p1 (float): The p1 value.
+        p2 (float): The p2 value.
         s77_dv (float): The s77_dv value.
-        date_range_6 (pd.DatetimeIndex): The date range.
+        tp_lake_s (float): The tp_lake_s value.
+        date_range_one_day (pd.DatetimeIndex): The date range.
         lo_model (pd.DataFrame): The model DataFrame.
         sensitivity_analysis_params (list): Holds a release rate for each month of the year.
 
@@ -1086,16 +1233,16 @@ def _calculate_outlet1usreg(i: int, model_variables: object, lo_functions: objec
         elif model_variables.Lake_Stage[i + 1] <= 8:
             model_variables.Outlet1USREG[i + 2] = 0
         elif (tp_lake_s[i] <= p1) and (
-            date_range_6[i + 2].month in [1, 2, 3, 4, 11, 12]
+            date_range_one_day[i + 2].month in [1, 2, 3, 4, 11, 12]
         ):
             model_variables.Outlet1USREG[i + 2] = s77_dv[
-                (date_range_6[i + 2].month) - 1
+                (date_range_one_day[i + 2].month) - 1
             ]
         elif (tp_lake_s[i] <= p2) and (
-            date_range_6[i + 2].month in [5, 6, 7, 8, 9, 10]
+            date_range_one_day[i + 2].month in [5, 6, 7, 8, 9, 10]
         ):
             model_variables.Outlet1USREG[i + 2] = s77_dv[
-                (date_range_6[i + 2].month) - 1
+                (date_range_one_day[i + 2].month) - 1
             ]
         else:
             model_variables.Outlet1USREG[i + 2] = 0
@@ -1104,33 +1251,59 @@ def _calculate_outlet1usreg(i: int, model_variables: object, lo_functions: objec
             model_variables.Outlet1USREG[i + 2] = 7200
         elif model_variables.Lake_Stage[i + 1] <= 8:
             model_variables.Outlet1USREG[i + 2] = 0
-        elif lo_model.at[i + 2, 'date'].month == 1:
-            model_variables.Outlet1USREG[i + 2] = lo_functions.Outlet_Rel_Sim(model_variables.Release_Level[i + 2], sensitivity_analysis_params[0])
-        elif lo_model.at[i + 2, 'date'].month == 2:
-            model_variables.Outlet1USREG[i + 2] = lo_functions.Outlet_Rel_Sim(model_variables.Release_Level[i + 2], sensitivity_analysis_params[1])
-        elif lo_model.at[i + 2, 'date'].month == 3:
-            model_variables.Outlet1USREG[i + 2] = lo_functions.Outlet_Rel_Sim(model_variables.Release_Level[i + 2], sensitivity_analysis_params[2])
-        elif lo_model.at[i + 2, 'date'].month == 4:
-            model_variables.Outlet1USREG[i + 2] = lo_functions.Outlet_Rel_Sim(model_variables.Release_Level[i + 2], sensitivity_analysis_params[3])
-        elif lo_model.at[i + 2, 'date'].month == 5:
-            model_variables.Outlet1USREG[i + 2] = lo_functions.Outlet_Rel_Sim(model_variables.Release_Level[i + 2], sensitivity_analysis_params[4])
-        elif lo_model.at[i + 2, 'date'].month == 6:
-            model_variables.Outlet1USREG[i + 2] = lo_functions.Outlet_Rel_Sim(model_variables.Release_Level[i + 2], sensitivity_analysis_params[5])
-        elif lo_model.at[i + 2, 'date'].month == 7:
-            model_variables.Outlet1USREG[i + 2] = lo_functions.Outlet_Rel_Sim(model_variables.Release_Level[i + 2], sensitivity_analysis_params[6])
-        elif lo_model.at[i + 2, 'date'].month == 8:
-            model_variables.Outlet1USREG[i + 2] = lo_functions.Outlet_Rel_Sim(model_variables.Release_Level[i + 2], sensitivity_analysis_params[7])
-        elif lo_model.at[i + 2, 'date'].month == 9:
-            model_variables.Outlet1USREG[i + 2] = lo_functions.Outlet_Rel_Sim(model_variables.Release_Level[i + 2], sensitivity_analysis_params[8])
-        elif lo_model.at[i + 2, 'date'].month == 10:
-            model_variables.Outlet1USREG[i + 2] = lo_functions.Outlet_Rel_Sim(model_variables.Release_Level[i + 2], sensitivity_analysis_params[9])
-        elif lo_model.at[i + 2, 'date'].month == 11:
-            model_variables.Outlet1USREG[i + 2] = lo_functions.Outlet_Rel_Sim(model_variables.Release_Level[i + 2], sensitivity_analysis_params[10])
-        elif lo_model.at[i + 2, 'date'].month == 12:
-            model_variables.Outlet1USREG[i + 2] = lo_functions.Outlet_Rel_Sim(model_variables.Release_Level[i + 2], sensitivity_analysis_params[11])
+        elif lo_model.at[i + 2, "date"].month == 1:
+            model_variables.Outlet1USREG[i + 2] = lo_functions.Outlet_Rel_Sim(
+                model_variables.Release_Level[i + 2], sensitivity_analysis_params[0]
+            )
+        elif lo_model.at[i + 2, "date"].month == 2:
+            model_variables.Outlet1USREG[i + 2] = lo_functions.Outlet_Rel_Sim(
+                model_variables.Release_Level[i + 2], sensitivity_analysis_params[1]
+            )
+        elif lo_model.at[i + 2, "date"].month == 3:
+            model_variables.Outlet1USREG[i + 2] = lo_functions.Outlet_Rel_Sim(
+                model_variables.Release_Level[i + 2], sensitivity_analysis_params[2]
+            )
+        elif lo_model.at[i + 2, "date"].month == 4:
+            model_variables.Outlet1USREG[i + 2] = lo_functions.Outlet_Rel_Sim(
+                model_variables.Release_Level[i + 2], sensitivity_analysis_params[3]
+            )
+        elif lo_model.at[i + 2, "date"].month == 5:
+            model_variables.Outlet1USREG[i + 2] = lo_functions.Outlet_Rel_Sim(
+                model_variables.Release_Level[i + 2], sensitivity_analysis_params[4]
+            )
+        elif lo_model.at[i + 2, "date"].month == 6:
+            model_variables.Outlet1USREG[i + 2] = lo_functions.Outlet_Rel_Sim(
+                model_variables.Release_Level[i + 2], sensitivity_analysis_params[5]
+            )
+        elif lo_model.at[i + 2, "date"].month == 7:
+            model_variables.Outlet1USREG[i + 2] = lo_functions.Outlet_Rel_Sim(
+                model_variables.Release_Level[i + 2], sensitivity_analysis_params[6]
+            )
+        elif lo_model.at[i + 2, "date"].month == 8:
+            model_variables.Outlet1USREG[i + 2] = lo_functions.Outlet_Rel_Sim(
+                model_variables.Release_Level[i + 2], sensitivity_analysis_params[7]
+            )
+        elif lo_model.at[i + 2, "date"].month == 9:
+            model_variables.Outlet1USREG[i + 2] = lo_functions.Outlet_Rel_Sim(
+                model_variables.Release_Level[i + 2], sensitivity_analysis_params[8]
+            )
+        elif lo_model.at[i + 2, "date"].month == 10:
+            model_variables.Outlet1USREG[i + 2] = lo_functions.Outlet_Rel_Sim(
+                model_variables.Release_Level[i + 2], sensitivity_analysis_params[9]
+            )
+        elif lo_model.at[i + 2, "date"].month == 11:
+            model_variables.Outlet1USREG[i + 2] = lo_functions.Outlet_Rel_Sim(
+                model_variables.Release_Level[i + 2], sensitivity_analysis_params[10]
+            )
+        elif lo_model.at[i + 2, "date"].month == 12:
+            model_variables.Outlet1USREG[i + 2] = lo_functions.Outlet_Rel_Sim(
+                model_variables.Release_Level[i + 2], sensitivity_analysis_params[11]
+            )
 
 
-def _calculate_outlet1ds(i: int, model_variables: object, lo_functions: object, data: object, config: dict) -> None:
+def _calculate_outlet1ds(
+    i: int, model_variables: object, lo_functions: object, data: object, config: dict
+) -> None:
     """
     Calculate the Outlet1DS for the given index.
 
@@ -1169,7 +1342,9 @@ def _calculate_tot_reg_ew(i: int, model_variables: object) -> None:
     ) * 1.9835
 
 
-def _calculate_choose_wca(i: int, model_variables: object, lo_functions: object, data: object, config: dict) -> None:
+def _calculate_choose_wca(
+    i: int, model_variables: object, lo_functions: object, data: object, config: dict
+) -> None:
     """
     Calculate the Choose_WCA and RegWCA for the given index.
 
@@ -1194,7 +1369,9 @@ def _calculate_choose_wca(i: int, model_variables: object, lo_functions: object,
     )
 
 
-def _calculate_choose_l8c51(i: int, model_variables: object, lo_functions: object, data: object, config: dict) -> None:
+def _calculate_choose_l8c51(
+    i: int, model_variables: object, lo_functions: object, data: object, config: dict
+) -> None:
     """
     Calculate the Choose_L8C51 and RegL8C51 for the given index.
 
@@ -1235,7 +1412,9 @@ def _calculate_tot_reg_so(i: int, model_variables: object) -> None:
     ) * 1.9835
 
 
-def _calculate_stage2ar_and_stage2marsh(i: int, model_variables: object, stg_sto_ar: object) -> None:
+def _calculate_stage2ar_and_stage2marsh(
+    i: int, model_variables: object, stg_sto_ar: object
+) -> None:
     """
     Calculate the Stage2ar and Stage2marsh for the given index.
 
@@ -1247,11 +1426,17 @@ def _calculate_stage2ar_and_stage2marsh(i: int, model_variables: object, stg_sto
     Returns:
         None
     """
-    model_variables.Stage2ar[i + 2] = stg_sto_ar.stg2ar(model_variables.Lake_Stage[i + 1], 0)
-    model_variables.Stage2marsh[i + 2] = stg_sto_ar.stg2mar(model_variables.Lake_Stage[i + 1], 0)
+    model_variables.Stage2ar[i + 2] = stg_sto_ar.stg2ar(
+        model_variables.Lake_Stage[i + 1], 0
+    )
+    model_variables.Stage2marsh[i + 2] = stg_sto_ar.stg2mar(
+        model_variables.Lake_Stage[i + 1], 0
+    )
 
 
-def _calculate_rf_and_et(i: int, model_variables: object, lo_functions: object, data: object, config: dict) -> None:
+def _calculate_rf_and_et(
+    i: int, model_variables: object, lo_functions: object, data: object, config: dict
+) -> None:
     """
     Calculate the RF and ET for the given index.
 
@@ -1277,8 +1462,16 @@ def _calculate_rf_and_et(i: int, model_variables: object, lo_functions: object, 
     )
 
 
-def _calculate_wsa(i: int, model_variables: object, lo_functions: object, df_WSMs: pd.DataFrame,
-                   wca_stages_df: pd.DataFrame, tc_lonino_df: pd.DataFrame, data: object, config: dict) -> None:
+def _calculate_wsa(
+    i: int,
+    model_variables: object,
+    lo_functions: object,
+    df_WSMs: pd.DataFrame,
+    wca_stages_df: pd.DataFrame,
+    tc_lonino_df: pd.DataFrame,
+    data: object,
+    config: dict,
+) -> None:
     """
     Calculate the WSA for the given index.
 
@@ -1335,8 +1528,13 @@ def _calculate_wsa(i: int, model_variables: object, lo_functions: object, df_WSM
     )
 
 
-def _calculate_dsto_and_storage(i: int, model_variables: object, lo_functions: object, storage_deviation: list,
-                                start_storage: float) -> None:
+def _calculate_dsto_and_storage(
+    i: int,
+    model_variables: object,
+    lo_functions: object,
+    storage_deviation: list,
+    start_storage: float,
+) -> None:
     """
     Calculate the DSto and Storage for the given index.
 
@@ -1375,8 +1573,14 @@ def _calculate_dsto_and_storage(i: int, model_variables: object, lo_functions: o
     )
 
 
-def _calculate_lake_stage(i: int, model_variables: object, lo_functions: object, stg_sto_ar: object, data: object,
-                          config: dict) -> None:
+def _calculate_lake_stage(
+    i: int,
+    model_variables: object,
+    lo_functions: object,
+    stg_sto_ar: object,
+    data: object,
+    config: dict,
+) -> None:
     """
     Calculate the Lake_Stage for the given index.
 
@@ -1434,7 +1638,9 @@ def _set_starting_storage(model_variables, start_storage):
     model_variables.Storage[1] = start_storage
 
 
-def _determine_day_flags(startdate: pd.Timestamp, lo_model: pd.DataFrame, begdateCS: pd.Timestamp) -> str:
+def _determine_day_flags(
+    startdate: pd.Timestamp, lo_model: pd.DataFrame, begdateCS: pd.Timestamp
+) -> str:
     """
     Determine the day flag based on the start date and model.
 
@@ -1461,49 +1667,49 @@ def _determine_day_flags(startdate: pd.Timestamp, lo_model: pd.DataFrame, begdat
         return lo_model["date"].iloc[2]
 
 
-def _calculate_targ_stg_df(config: dict, data: object, date_range_5: pd.DatetimeIndex, model_variables: object) -> pd.DataFrame:
+def _calculate_targ_stg_df(
+    config: dict,
+    data: object,
+    daily_date_range: pd.DatetimeIndex,
+    model_variables: object,
+) -> pd.DataFrame:
     """
     Calculate the target stage DataFrame.
 
     Args:
         config (dict): The configuration dictionary.
         data (object): The data object.
-        date_range_5 (pd.DatetimeIndex): The date range.
+        daily_date_range (pd.DatetimeIndex): The date range.
         model_variables (object): The model variables object.
 
     Returns:
         pd.DataFrame: The target stage DataFrame.
     """
-    targ_stg = data.Targ_Stg_June_1st if config["opt_date_targ_stg"] == 1 else data.Targ_Stg_May_1st
+    targ_stg = (
+        data.Targ_Stg_June_1st
+        if config["opt_date_targ_stg"] == 1
+        else data.Targ_Stg_May_1st
+    )
 
-    targ_stg_df = pd.DataFrame(date_range_5, columns=["dates"])
-    for i in range(len(targ_stg_df)):
-        date = targ_stg_df["dates"].iloc[i]
-        year = date.year
-        day_of_year = date.timetuple().tm_yday
+    targ_stg_df = pd.DataFrame(daily_date_range, columns=["dates"])
 
-        model_variables.V10per[i] = replicate(year, day_of_year, 10, targ_stg)
-        model_variables.V20per[i] = replicate(year, day_of_year, 20, targ_stg)
-        model_variables.V25per[i] = replicate(year, day_of_year, 25, targ_stg)
-        model_variables.V30per[i] = replicate(year, day_of_year, 30, targ_stg)
-        model_variables.V40per[i] = replicate(year, day_of_year, 40, targ_stg)
-        model_variables.V45per[i] = replicate(year, day_of_year, 45, targ_stg)
-        model_variables.V50per[i] = replicate(year, day_of_year, 50, targ_stg)
-        model_variables.V60per[i] = replicate(year, day_of_year, 60, targ_stg)
+    # Extract year and day of year (vectorized)
+    targ_stg_df["year"] = targ_stg_df["dates"].dt.year
+    targ_stg_df["day_of_year"] = targ_stg_df["dates"].dt.dayofyear
 
-    targ_stg_df["10%"] = [x for x in model_variables.V10per if ~np.isnan(x)]
-    targ_stg_df["20%"] = [x for x in model_variables.V20per if ~np.isnan(x)]
-    targ_stg_df["25%"] = [x for x in model_variables.V25per if ~np.isnan(x)]
-    targ_stg_df["30%"] = [x for x in model_variables.V30per if ~np.isnan(x)]
-    targ_stg_df["40%"] = [x for x in model_variables.V40per if ~np.isnan(x)]
-    targ_stg_df["45%"] = [x for x in model_variables.V45per if ~np.isnan(x)]
-    targ_stg_df["50%"] = [x for x in model_variables.V50per if ~np.isnan(x)]
-    targ_stg_df["60%"] = [x for x in model_variables.V60per if ~np.isnan(x)]
+    # Compute percentiles in a single vectorized operation
+    for perc in [10, 20, 25, 30, 40, 45, 50, 60]:
+        targ_stg_df[f"{perc}%"] = targ_stg_df.apply(
+            lambda row: replicate(row["year"], row["day_of_year"], perc, targ_stg),
+            axis=1,
+        )
 
     return targ_stg_df
 
 
-def _calculate_late_dry_season(adaptive_protocol_df: pd.DataFrame, tc_lonino_df: pd.DataFrame) -> None:
+def _calculate_late_dry_season(
+    adaptive_protocol_df: pd.DataFrame, tc_lonino_df: pd.DataFrame
+) -> None:
     """
     Calculate the Late Dry Season (Apr-May) logic and update the adaptive protocol DataFrame.
 
@@ -1516,10 +1722,17 @@ def _calculate_late_dry_season(adaptive_protocol_df: pd.DataFrame, tc_lonino_df:
     """
     late_dry_season = [3 < date.month < 6 for date in adaptive_protocol_df["date"]]
     adaptive_protocol_df["Late_Dry_Season"] = late_dry_season
-    adaptive_protocol_df["Tributary Hydrologic Condition"] = tc_lonino_df["Tributary_Condition"]
+    adaptive_protocol_df["Tributary Hydrologic Condition"] = tc_lonino_df[
+        "Tributary_Condition"
+    ]
 
 
-def _calculate_basin_runoff(basin_ro: pd.DataFrame, data: object, outlet1_baseflow: float, outlet2_baseflow: float) -> None:
+def _calculate_basin_runoff(
+    basin_ro: pd.DataFrame,
+    data: object,
+    outlet1_baseflow: float,
+    outlet2_baseflow: float,
+) -> None:
     """
     Calculate the basin runoff and update the basin runoff DataFrame.
 
@@ -1532,66 +1745,68 @@ def _calculate_basin_runoff(basin_ro: pd.DataFrame, data: object, outlet1_basefl
     Returns:
         None
     """
-    num_B_R = len(basin_ro.index)
-    bs_c43ro = np.zeros(num_B_R)
-    bs_c44ro = np.zeros(num_B_R)
-    c44ro_sltrib = np.zeros(num_B_R)
-    c44ro_bs = np.zeros(num_B_R)
-    num_days = np.zeros(num_B_R)
+    # Number of rows
+    num_B_R = len(basin_ro)
 
-    for i in range(num_B_R):
-        num_days[i] = monthrange(
-            basin_ro["date"].iloc[i].year, basin_ro["date"].iloc[i].month
-        )[1]  # no. of days in each time step month.
-        bs_c43ro[i] = max(0, (outlet1_baseflow - data.C43RO["C43RO"].iloc[i]))
-        bs_c44ro[i] = max(0, (outlet2_baseflow - data.C44RO["C44RO"].iloc[i]))
-        c44ro_sltrib[i] = bs_c44ro[i] + data.SLTRIB["SLTRIB_cfs"].iloc[i]
-        c44ro_bs[i] = (
-            max(0, data.C44RO["C44RO"].iloc[i] - outlet2_baseflow)
-            * num_days[i]
-        )
+    # Compute number of days in each month (vectorized)
+    basin_ro["Ndays"] = basin_ro["date"].apply(lambda d: monthrange(d.year, d.month)[1])
 
-    basin_ro["Ndays"] = num_days
+    # Compute baseflow shortfalls (vectorized)
+    basin_ro["BS-C43RO"] = np.maximum(0, outlet1_baseflow - data.C43RO["C43RO"])
+    basin_ro["BS-C44RO"] = np.maximum(0, outlet2_baseflow - data.C44RO["C44RO"])
+
+    # Compute C44RO_SLTrib (vectorized)
+    basin_ro["C44RO_SLTRIB"] = basin_ro["BS-C44RO"] + data.SLTRIB["SLTRIB_cfs"]
+
+    # Compute baseflow contribution for C44 (vectorized)
+    basin_ro["C44RO-BS"] = (
+        np.maximum(0, data.C44RO["C44RO"] - outlet2_baseflow) * basin_ro["Ndays"]
+    )
+
+    # Assign direct column values from data
     basin_ro["C43RO"] = data.C43RO["C43RO"]
-    basin_ro["BS-C43RO"] = bs_c43ro
     basin_ro["C44RO"] = data.C44RO["C44RO"]
-    basin_ro["BS-C44RO"] = bs_c44ro
     basin_ro["SLTRIB"] = data.SLTRIB["SLTRIB_cfs"]
-    basin_ro["C44RO_SLTRIB"] = c44ro_sltrib
-    basin_ro["C44RO-BS"] = c44ro_bs
 
 
-def _initialize_lo_model(date_range_6: pd.DatetimeIndex, data: object, config: dict) -> pd.DataFrame:
+def _initialize_lo_model(
+    date_range: pd.DatetimeIndex, data: object, config: dict
+) -> pd.DataFrame:
     """
     Initialize the model DataFrame with the given date range, data, and configuration.
 
     Args:
-        date_range_6 (pd.DatetimeIndex): The date range.
+        date_range (pd.DatetimeIndex): The date range.
         data (object): The data object.
         config (dict): The configuration dictionary.
 
     Returns:
         pd.DataFrame: The initialized LOONE model DataFrame.
     """
-    lo_model = pd.DataFrame(date_range_6, columns=["date"])
+    lo_model = pd.DataFrame(date_range, columns=["date"])
+
     lo_model["Net_Inflow"] = data.NetInf_Input["Netflows_acft"]
-    lo_model["LOSA_dmd_SFWMM"] = data.SFWMM_W_dmd["LOSA_dmd"] * (config["mult_losa"] / 100)
+    lo_model["LOSA_dmd_SFWMM"] = data.SFWMM_W_dmd["LOSA_dmd"] * (
+        config["mult_losa"] / 100
+    )
     lo_model["C44RO"] = data.C44_Runoff["C44RO"]
     return lo_model
 
 
-def _determine_seasons(date_range_5: pd.DatetimeIndex, model_variables: object) -> pd.DataFrame:
+def _determine_seasons(
+    daily_date_range: pd.DatetimeIndex, model_variables: object
+) -> pd.DataFrame:
     """
     Determine the seasons for each date in the given date range and update the model variables.
 
     Args:
-        date_range_5 (pd.DatetimeIndex): The date range.
+        daily_date_range (pd.DatetimeIndex): The date range.
         model_variables (object): The model variables object.
 
     Returns:
         pd.DataFrame: The seasons DataFrame.
     """
-    seasons = pd.DataFrame(date_range_5, columns=["date"])
+    seasons = pd.DataFrame(daily_date_range, columns=["date"])
     seasons_count = len(seasons.index)
     for i in range(seasons_count):
         month = seasons["date"].iloc[i].month
@@ -1610,13 +1825,14 @@ def _determine_seasons(date_range_5: pd.DatetimeIndex, model_variables: object) 
     return seasons
 
 
-def _calculate_daily_water_demand(date_range_2: pd.DatetimeIndex, startdate: pd.Timestamp, data: object,
-                                  config: dict) -> pd.DataFrame:
+def _calculate_daily_water_demand(
+    date_range: pd.DatetimeIndex, startdate: pd.Timestamp, data: object, config: dict
+) -> pd.DataFrame:
     """
     Calculate the daily water demand based on the given date range, start date, data, and configuration.
 
     Args:
-        date_range_2 (pd.DatetimeIndex): The date range.
+        date_range (pd.DatetimeIndex): The date range.
         startdate (pd.Timestamp): The start date.
         data (object): The data object.
         config (dict): The configuration dictionary.
@@ -1624,33 +1840,23 @@ def _calculate_daily_water_demand(date_range_2: pd.DatetimeIndex, startdate: pd.
     Returns:
         pd.DataFrame: The water demand DataFrame with daily demand.
     """
-    water_demand = pd.DataFrame(date_range_2, columns=["date"])
+    water_demand = pd.DataFrame(date_range, columns=["date"])
 
-    N = []
-    week_number = []
-    for i in water_demand["date"]:
-        if i.month == startdate.month and i.day == startdate.day:
-            n = 0
-        else:
-            n = n + 1
-        N.append(n)
-    water_demand["count"] = N
+    # Compute 'count' using a cumulative sum
+    water_demand["count"] = (water_demand["date"].dt.month != date_range[0].month) | (
+        water_demand["date"].dt.day != date_range[0].day
+    )
+    water_demand["count"] = water_demand["count"].cumsum()
 
-    for i in water_demand["count"]:
-        if i > 363:
-            J = 52
-        else:
-            J = int(i / 7) + 1
-        week_number.append(J)
-    water_demand["Week_num"] = week_number
+    # Compute 'Week_num' directly
+    water_demand["Week_num"] = water_demand["count"].floordiv(7).add(1)
+    water_demand.loc[water_demand["count"] > 363, "Week_num"] = 52  # Cap at 52
 
-    daily_demand = []
-    for i in water_demand["Week_num"]:
-        demand = ((data.Weekly_dmd[f'C{config["code"]}'].iloc[i - 1]) / 7) * (
-            config["multiplier"] / 100
-        )
-        daily_demand.append(demand)
-    water_demand["Daily_demand"] = daily_demand
+    # Compute 'Daily_demand' using vectorized operations
+    weekly_demand = data.Weekly_dmd[f'C{config["code"]}']
+    water_demand["Daily_demand"] = (
+        weekly_demand.iloc[water_demand["Week_num"] - 1].values / 7
+    ) * (config["multiplier"] / 100)
 
     return water_demand
 
@@ -1675,18 +1881,20 @@ def _define_start_and_end_dates(config: dict) -> tuple:
     return startdate, begdateCS, enddate
 
 
-def _create_dectree_df(date_range_5: pd.DatetimeIndex, tc_lonino_df: pd.DataFrame) -> pd.DataFrame:
+def _create_dectree_df(
+    daily_date_range: pd.DatetimeIndex, tc_lonino_df: pd.DataFrame
+) -> pd.DataFrame:
     """
     Create the dectree DataFrame with the given date range and TC Lonino DataFrame.
 
     Args:
-        date_range_5 (pd.DatetimeIndex): The date range.
+        daily_date_range (pd.DatetimeIndex): The date range.
         tc_lonino_df (pd.DataFrame): The TC Lonino DataFrame.
 
     Returns:
         pd.DataFrame: The decision tree DataFrame.
     """
-    dec_tree_df = pd.DataFrame(date_range_5, columns=["Date"])
+    dec_tree_df = pd.DataFrame(daily_date_range, columns=["Date"])
     dec_tree_df["Zone_B_MetFcast"] = tc_lonino_df["LONINO_Seasonal_Classes"]
     return dec_tree_df
 
@@ -1713,8 +1921,13 @@ def _calculate_pulse_averages(data: object, config: dict) -> dict:
     return pulse_averages
 
 
-def _initialize_model_variables_stage_levels_flags(model_variables: object, config: dict, startdate: pd.Timestamp,
-                                                   lo_model: pd.DataFrame, begdateCS: pd.Timestamp) -> None:
+def _initialize_model_variables_stage_levels_flags(
+    model_variables: object,
+    config: dict,
+    startdate: pd.Timestamp,
+    lo_model: pd.DataFrame,
+    begdateCS: pd.Timestamp,
+) -> None:
     """
     Initialize the model variables with the given configuration and start date.
 
@@ -1735,17 +1948,21 @@ def _initialize_model_variables_stage_levels_flags(model_variables: object, conf
     model_variables.DayFlags[2] = _determine_day_flags(startdate, lo_model, begdateCS)
 
 
-def LOONE_Q(workspace: str, p1: float, p2: float, s77_dv: float, s308_dv: float, tp_lake_s: float, sensitivity_analysis_params: List[float] = []) -> None:
+def LOONE_Q(
+    workspace: str,
+    sensitivity_analysis_params: List[float] = [],
+    optimization_params: dict[float] = None,
+    forecast: bool = False,
+) -> None:
     """This function runs the LOONE Q module.
 
     Args:
         workspace (str): The path to the workspace directory.
-        p1 (float): Parameter 1.
-        p2 (float): Parameter 2.
-        s77_dv (float): s77_dv value.
-        s308_dv (float): s308_dv value.
-        tp_lake_s (float): tp_lake_s value.
-        sensitivity_analysis_params (List[float], optional): Holds a release rate for each month of the year. Required when sim_type is 3. Defaults to [].
+        sensitivity_analysis_params (List[float], optional): Holds a release rate for each month of the year.
+            Required when sim_type is 3. Defaults to [].
+        optimization_params (dict[float], optional): Holds the optimization parameters,
+            including p1, p2, s77_dv, s308_dv, and tp_lake_s. Required when sim_type is 2. Defaults to None.
+        forecast (bool, optional): Whether to run in forecast mode. Defaults to False.
 
     Returns:
         None
@@ -1753,8 +1970,17 @@ def LOONE_Q(workspace: str, p1: float, p2: float, s77_dv: float, s308_dv: float,
     os.chdir(workspace)
     config = load_config(workspace)
 
+    if optimization_params:
+        p1 = optimization_params["p1"]
+        p2 = optimization_params["p2"]
+        s77_dv = optimization_params["s77_dv"]
+        s308_dv = optimization_params["s308_dv"]
+        tp_lake_s = optimization_params["tp_lake_s"]
+    else:
+        p1 = p2 = s77_dv = s308_dv = tp_lake_s = 0
+
     data = DClass(workspace)
-    model_variables = MVarClass(config)
+    model_variables = MVarClass(config, forecast)
     print("LOONE Q Module is Running!")
     # Based on the defined Start and End year, month, and day on the
     # Pre_defined_Variables File, Startdate and enddate are defined.
@@ -1762,7 +1988,7 @@ def LOONE_Q(workspace: str, p1: float, p2: float, s77_dv: float, s308_dv: float,
 
     ###################################################################
     if config["sim_type"] in [0, 1, 3]:
-        df_wsms.WSMs(workspace)
+        df_wsms.WSMs(workspace, forecast)
 
     df_WSMs = pd.read_csv("df_WSMs.csv")
 
@@ -1770,39 +1996,71 @@ def LOONE_Q(workspace: str, p1: float, p2: float, s77_dv: float, s308_dv: float,
     # data for 6 differnet datasets where the user defines the LOSA
     # demand that will be used based on a Code (1:6).
     # Set time frame for model run
-    date_range_2 = pd.date_range(start=startdate, end=enddate, freq="D")
-    water_demand = _calculate_daily_water_demand(date_range_2, startdate, data, config)
+    if forecast:
+        today_date = datetime.today()
+        future_date = today_date + timedelta(days=15)
+        daily_date_range = pd.date_range(start=today_date, end=future_date, freq="D")
+    else:
+        daily_date_range = pd.date_range(start=startdate, end=enddate, freq="D")
+
+    # date_range_2 = pd.date_range(start=startdate, end=enddate, freq="D")
+    # water_demand = _calculate_daily_water_demand(date_range_2, startdate, data, config)
+    water_demand = _calculate_daily_water_demand(
+        daily_date_range, startdate, data, config
+    )
 
     ###################################################################
     # Determine Tributary Hydrologic Conditions
-    tc_lonino_df = trib_hc.Trib_HC(workspace)
+    tc_lonino_df = trib_hc.Trib_HC(workspace, forecast)
     # Determine WCA Stages
-    wca_stages_df = WCA_Stages_Cls(workspace, tc_lonino_df)
+    wca_stages_df = WCA_Stages_Cls(workspace, tc_lonino_df, forecast)
     # A dataframe to determine eachday's season (Months 11,12,1,2 are
     # Season 1, Months 3,4,5 are season 2, Months 6,7 are season 3,
     # Months 8,9,10 are season 4 )
-    date_range_5 = pd.date_range(start=startdate, end=enddate, freq="D")
-    seasons = _determine_seasons(date_range_5, model_variables)
+    # date_range_5 = pd.date_range(start=startdate, end=enddate, freq="D")
+    # seasons = _determine_seasons(date_range_5, model_variables)
+    seasons = _determine_seasons(daily_date_range, model_variables)
 
     ###################################################################
     # This following Script runs the main model daily simulations.
-    date_range_6 = pd.date_range(
-        start=startdate - timedelta(days=1),
-        end=enddate,
-        freq="D",
-    )
-    lo_model = _initialize_lo_model(date_range_6, data, config)
+    if forecast:
+        date_range_one_day = pd.date_range(
+            start=today_date - timedelta(days=1),
+            end=future_date,
+            freq="D",
+        )
+    else:
+        date_range_one_day = pd.date_range(
+            start=startdate - timedelta(days=1),
+            end=enddate,
+            freq="D",
+        )
+    lo_model = _initialize_lo_model(date_range_one_day, data, config)
     n_rows = len(lo_model.index)
 
     ##################################
-    dec_tree_df = _create_dectree_df(date_range_5, tc_lonino_df)
+    # dec_tree_df = _create_dectree_df(date_range_5, tc_lonino_df)
+    dec_tree_df = _create_dectree_df(daily_date_range, tc_lonino_df)
 
     # Create a dataframe that includes Monthly Mean Basin Runoff &
-    # BaseFlow-Runoff & Runoff-Baseflow (cfs)
-    date_range_11 = pd.date_range(start=startdate, end=enddate, freq="MS")
-    date_range_11d = pd.date_range(start=startdate, end=enddate, freq="D")
-    date_range_11d.name = "Date"
-    basin_ro = pd.DataFrame(date_range_11, columns=["date"])
+    ##  BaseFlow-Runoff & Runoff-Baseflow (cfs)
+    if forecast:
+        new_startdate = today_date
+        if new_startdate.day > 1:
+            new_startdate = startdate.replace(day=1)
+        monthly_date_range = pd.date_range(
+            start=new_startdate, end=future_date, freq="MS"
+        )
+    else:
+        monthly_date_range = pd.date_range(start=startdate, end=enddate, freq="MS")
+    if monthly_date_range.empty:
+        monthly_date_range = pd.DatetimeIndex(
+            [pd.to_datetime(startdate).replace(day=1)]
+        )
+    # date_range_11 = pd.date_range(start=startdate, end=enddate, freq="MS")
+    # date_range_11d = pd.date_range(start=startdate, end=enddate, freq="D")
+    # date_range_11d.name = "Date"
+    basin_ro = pd.DataFrame(monthly_date_range, columns=["date"])
     # Baseflows
     outlet1_baseflow = data.S77_RegRelRates["Zone_D0"].iloc[0]
     outlet2_baseflow = data.S80_RegRelRates["Zone_D0"].iloc[0]
@@ -1817,25 +2075,31 @@ def LOONE_Q(workspace: str, p1: float, p2: float, s77_dv: float, s308_dv: float,
     s77avg_l3 = pulse_averages["s77avg_l3"]
     basin_ro = basin_ro.set_index(["date"])
     basin_ro.index = pd.to_datetime(basin_ro.index)
-    basin_ro_daily = basin_ro.reindex(date_range_11d, method="ffill")
+    # basin_ro_daily = basin_ro.reindex(date_range_11d, method="ffill")
+    basin_ro_daily = basin_ro.reindex(daily_date_range, method="ffill")
     basin_ro = basin_ro.reset_index()
     vlookup1 = basin_ro_daily["BS-C44RO"]
     vlookup1_c = [x for x in vlookup1 if ~np.isnan(x)]
     ###################################################################
     # This following script contains the logic and calculations for
     # the proposed Lake Okeechobee Adaptive Protocol.
-    adaptive_protocol_df = pd.DataFrame(date_range_5, columns=["date"])
+    # adaptive_protocol_df = pd.DataFrame(date_range_5, columns=["date"])
+    adaptive_protocol_df = pd.DataFrame(daily_date_range, columns=["date"])
     _calculate_late_dry_season(adaptive_protocol_df, tc_lonino_df)
 
-    # Define "Low Chance" 6/1 stg<11'
-    targ_stg_df = _calculate_targ_stg_df(config, data, date_range_5, model_variables)
+    # targ_stg_df = _calculate_targ_stg_df(config, data, date_range_5, model_variables)
+    targ_stg_df = _calculate_targ_stg_df(
+        config, data, daily_date_range, model_variables
+    )
 
     # Outlet1_baseflow = Data.S77_RegRelRates['Zone_D0'].iloc[0]
     outlet1_baseflow = 450  # cfs
     vlookup2 = basin_ro_daily["BS-C43RO"]
     vlookup2_c = [x for x in vlookup2 if ~np.isnan(x)]
     ###################################################################
-    _initialize_model_variables_stage_levels_flags(model_variables, config, startdate, lo_model, begdateCS)
+    _initialize_model_variables_stage_levels_flags(
+        model_variables, config, startdate, lo_model, begdateCS
+    )
     start_storage = stg_sto_ar.stg2sto(config["start_stage"], 0)
     _set_starting_storage(model_variables, start_storage)
     # Flood = np.zeros(n_rows, dtype = object)
@@ -1859,31 +2123,102 @@ def LOONE_Q(workspace: str, p1: float, p2: float, s77_dv: float, s308_dv: float,
         _calculate_demand_not_supplied(i, model_variables, lo_model)
         _calculate_zone_code(i, model_variables, lo_functions, df_WSMs)
         _generate_zone_column(i, model_variables, lo_functions)
-        _calculate_decision_tree_variables(i, model_variables, dec_tree_functions, tc_lonino_df, config, seasons,
-                                           dec_tree_df, df_WSMs)
-        _calculate_release_levels(i, startdate, lo_model, model_variables, lo_functions, config, tc_lonino_df)
+        _calculate_decision_tree_variables(
+            i,
+            model_variables,
+            dec_tree_functions,
+            tc_lonino_df,
+            config,
+            seasons,
+            dec_tree_df,
+            df_WSMs,
+        )
+        _calculate_release_levels(
+            i, startdate, lo_model, model_variables, lo_functions, config, tc_lonino_df
+        )
         _calculate_zone_codes(i, model_variables, lo_functions, df_WSMs)
         _calculate_release_level_codes(i, model_variables, lo_functions, config)
-        _calculate_outlet2ds_mult(i, lo_model, model_variables, lo_functions, seasons, config)
-        _calculate_outlet2dsrs(i, lo_model, model_variables, lo_functions, data, s80avg_l1, s80avg_l2, s80avg_l3, config)
-        _calculate_outlet2dsbs(i, model_variables, lo_functions, vlookup1_c, outlet2_baseflow, config)
-        _calculate_outlet2usbk(i, model_variables, lo_functions, df_WSMs, lo_model, data, config)
-        _calculate_outlet2usrg_code(i, model_variables, lo_functions, data, config, date_range_6)
+        _calculate_outlet2ds_mult(
+            i, lo_model, model_variables, lo_functions, seasons, config
+        )
+        _calculate_outlet2dsrs(
+            i,
+            lo_model,
+            model_variables,
+            lo_functions,
+            data,
+            s80avg_l1,
+            s80avg_l2,
+            s80avg_l3,
+            config,
+        )
+        _calculate_outlet2dsbs(
+            i, model_variables, lo_functions, vlookup1_c, outlet2_baseflow, config
+        )
+        _calculate_outlet2usbk(
+            i, model_variables, lo_functions, df_WSMs, lo_model, data, config
+        )
+        _calculate_outlet2usrg_code(
+            i,
+            model_variables,
+            lo_functions,
+            data,
+            config,
+            p1,
+            p2,
+            s308_dv,
+            tp_lake_s,
+            date_range_one_day,
+        )
         _calculate_outlet2ds(i, model_variables, lo_functions, data, config)
         _calculate_relevel_code_3_s77(i, model_variables, lo_functions, config)
         _calculate_outlet1us_mult(i, model_variables, lo_functions, seasons, config)
         _calculate_outlet1us_mult_2(i, model_variables, lo_functions, lo_model, config)
-        _calculate_outlet1usrs(i, model_variables, lo_functions, lo_model, data, config, s77avg_l1, s77avg_l2, s77avg_l3)
+        _calculate_outlet1usrs(
+            i,
+            model_variables,
+            lo_functions,
+            lo_model,
+            data,
+            config,
+            s77avg_l1,
+            s77avg_l2,
+            s77avg_l3,
+        )
         _calculate_sum_outlet1usrs(i, model_variables, lo_functions, lo_model)
         _calculate_outlet1usbk(i, model_variables, lo_functions, lo_model, data, config)
         _calculate_rowest(i, model_variables, lo_model)
-        _calculate_outlet1dsbs(i, model_variables, lo_functions, vlookup2_c, outlet1_baseflow, config)
+        _calculate_outlet1dsbs(
+            i, model_variables, lo_functions, vlookup2_c, outlet1_baseflow, config
+        )
         _calculate_outlet1usbs(i, model_variables, lo_functions, config)
-        _define_thc_class_normal_or_above(i, n_rows, model_variables, config, adaptive_protocol_df, df_WSMs,
-                                          targ_stg_df, data, choose_1)
+        _define_thc_class_normal_or_above(
+            i,
+            n_rows,
+            model_variables,
+            config,
+            adaptive_protocol_df,
+            df_WSMs,
+            targ_stg_df,
+            data,
+            choose_1,
+        )
         _calculate_outlet1usbsap(i, model_variables, lo_functions, config)
         _calculate_outlet1usews(i, model_variables, lo_functions, data, config)
-        _calculate_outlet1usreg(i, model_variables, lo_functions, data, config, tp_lake_s, s77_dv, date_range_6, lo_model, sensitivity_analysis_params)
+        _calculate_outlet1usreg(
+            i,
+            model_variables,
+            lo_functions,
+            data,
+            config,
+            p1,
+            p2,
+            s77_dv,
+            tp_lake_s,
+            date_range_one_day,
+            lo_model,
+            sensitivity_analysis_params,
+        )
         _calculate_outlet1ds(i, model_variables, lo_functions, data, config)
         _calculate_tot_reg_ew(i, model_variables)
         _calculate_choose_wca(i, model_variables, lo_functions, data, config)
@@ -1891,9 +2226,22 @@ def LOONE_Q(workspace: str, p1: float, p2: float, s77_dv: float, s308_dv: float,
         _calculate_tot_reg_so(i, model_variables)
         _calculate_stage2ar_and_stage2marsh(i, model_variables, stg_sto_ar)
         _calculate_rf_and_et(i, model_variables, lo_functions, data, config)
-        _calculate_wsa(i, model_variables, lo_functions, df_WSMs, wca_stages_df, tc_lonino_df, data, config)
-        _calculate_dsto_and_storage(i, model_variables, lo_functions, storage_deviation, start_storage)
-        _calculate_lake_stage(i, model_variables, lo_functions, stg_sto_ar, data, config)
+        _calculate_wsa(
+            i,
+            model_variables,
+            lo_functions,
+            df_WSMs,
+            wca_stages_df,
+            tc_lonino_df,
+            data,
+            config,
+        )
+        _calculate_dsto_and_storage(
+            i, model_variables, lo_functions, storage_deviation, start_storage
+        )
+        _calculate_lake_stage(
+            i, model_variables, lo_functions, stg_sto_ar, data, config
+        )
         _update_lo_model(lo_model, model_variables)
 
     # Write out the results to a file - Needed because
@@ -1902,13 +2250,15 @@ def LOONE_Q(workspace: str, p1: float, p2: float, s77_dv: float, s308_dv: float,
     lo_model.to_csv("LOONE_Q_Outputs.csv")
 
     # Add scenario data to output df
-    df_stage = pd.DataFrame(data = model_variables.Lake_Stage, columns = ['Outputs'])
-    df_caloosahatchee = pd.DataFrame(data = model_variables.Outlet1USREG, columns = ['Outputs'])
-    df_saint_lucie = pd.DataFrame(data = model_variables.Outlet2USRG, columns = ['Outputs'])
-    df_south = pd.DataFrame(data = model_variables.TotRegSo/1.9835, columns = ['Outputs'])
+    df_stage = pd.DataFrame(data=model_variables.Lake_Stage, columns=["Outputs"])
+    df_caloosahatchee = pd.DataFrame(
+        data=model_variables.Outlet1USREG, columns=["Outputs"]
+    )
+    df_saint_lucie = pd.DataFrame(data=model_variables.Outlet2USRG, columns=["Outputs"])
+    df_south = pd.DataFrame(data=model_variables.TotRegSo / 1.9835, columns=["Outputs"])
     df_out = pd.concat([df_stage, df_caloosahatchee, df_saint_lucie, df_south])
-    
-    return [lo_model, df_out.T.loc['Outputs']]
+
+    return [lo_model, df_out.T.loc["Outputs"]]
 
 
 if __name__ == "__main__":
@@ -1918,16 +2268,37 @@ if __name__ == "__main__":
         nargs=1,
         help="The path to the working directory.",
     )
-    argparser.add_argument("--p1", nargs=1)
-    argparser.add_argument("--p2", nargs=1)
-    argparser.add_argument("--s77_dv", nargs=1)
-    argparser.add_argument("--s308_dv", nargs=1)
-    argparser.add_argument("--tp_lake_s", nargs=1)
+    argparser.add_argument(
+        "--sensitivity_analysis_params",
+        nargs="*",
+        type=float,
+        help="Optional sensitivity analysis parameters: release rates for each month of the year",
+    )
+
+    argparser.add_argument(
+        "--optimization_params",
+        nargs="*",
+        type=float,
+        default=[0, 0, 0, 0, 0],
+        help="Optional optimization parameters: p1, p2, s77_dv, s308_dv, tp_lake_s",
+    )
+
     args = argparser.parse_args()
     workspace = args.workspace[0]
-    p1 = args.p1[0] if args.p1 else 0
-    p2 = args.p2[0] if args.p2 else 0
-    s77_dv = args.s77_dv[0] if args.s77_dv else 0
-    s308_dv = args.s308_dv[0] if args.s308_dv else 0
-    tp_lake_s = args.tp_lake_s[0] if args.tp_lake_s else 0
-    LOONE_Q(workspace, p1, p2, s77_dv, s308_dv, tp_lake_s)
+    all_args = [workspace]
+
+    if args.sensitivity_analysis_params:
+        sensitivity_analysis_params = args.sensitivity_analysis_params
+        all_args.append(sensitivity_analysis_params)
+
+    if args.optimization_params and len(args.optimization_params) == 5:
+        optimization_params = {
+            "p1": args.optimization_params[0],
+            "p2": args.optimization_params[1],
+            "s77_dv": args.optimization_params[2],
+            "s308_dv": args.optimization_params[3],
+            "tp_lake_s": args.optimization_params[4],
+        }
+        all_args.append(optimization_params)
+
+    LOONE_Q(*all_args)

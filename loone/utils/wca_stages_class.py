@@ -1,12 +1,12 @@
 import os
 import numpy as np
 import pandas as pd
-from datetime import datetime
+from datetime import datetime, timedelta
 from loone.utils import load_config, leap_year
 
 
 # This following section calculates the parameter states (trib conds, stage tests, seasonal & multi-seasonal LONINO) and sets a 4-digit code for the branch.  The branch code is used with the Routing sheet to determine release rates.
-def WCA_Stages_Cls(workspace: str, TC_LONINO_df: pd.DataFrame | None):
+def WCA_Stages_Cls(workspace: str, TC_LONINO_df: pd.DataFrame | None, forecast: bool = False):
     """
     Reads in the WCA Stage data and WCA3A_REG inputs, sets up a daily date range for the simulation period,
     and generates a WCA Stage dataframe. It also generates a daily date range for one year (2020), assigns
@@ -23,13 +23,17 @@ def WCA_Stages_Cls(workspace: str, TC_LONINO_df: pd.DataFrame | None):
     """
     os.chdir(workspace)
     config = load_config(workspace)
+    if forecast == True:
+        today = datetime.today().date()
+        startdate = today
+        enddate = today + timedelta(days=15)
+    else:
+         year, month, day = map(int, config["start_date_entry"])
+         startdate = datetime(year, month, day).date()
+         year, month, day = map(int, config["end_date_entry"])
+         enddate = datetime(year, month, day).date()
 
-    year, month, day = map(int, config["start_date_entry"])
-    startdate = datetime(year, month, day).date()
-    year, month, day = map(int, config["end_date_entry"])
-    enddate = datetime(year, month, day).date()
-
-    date_rng_5 = pd.date_range(start=startdate, end=enddate, freq="D")
+    daily_date_range = pd.date_range(start=startdate, end=enddate, freq="D")
 
     # Read the WCA Stage data
     WCA_Stages = pd.read_csv(os.path.join(workspace, config["wca_stages_inputs"]))
@@ -39,7 +43,7 @@ def WCA_Stages_Cls(workspace: str, TC_LONINO_df: pd.DataFrame | None):
     WCA3A_REG = pd.read_csv(os.path.join(workspace, "WCA3A_REG_Inputs.csv"))
 
     # generate WCA Stage dataframe
-    WCA_Stages_df = pd.DataFrame(date_rng_5, columns=["Date"])
+    WCA_Stages_df = pd.DataFrame(daily_date_range, columns=["Date"])
     WCA_Stages_df["3A-NW"] = WCA_Stages["3A-NW"]
     WCA_Stages_df["2A-17"] = WCA_Stages["2A-17"]
     WCA_Stages_df["3A-3"] = WCA_Stages["3A-3"]
@@ -49,8 +53,7 @@ def WCA_Stages_Cls(workspace: str, TC_LONINO_df: pd.DataFrame | None):
         WCA_Stages_df["3A-3"] + WCA_Stages_df["3A-4"] + WCA_Stages_df["3A-28"]
     ) / 3
     # Generate a daily date range for one year (2020)
-    date_rng_10 = pd.date_range(start="1/1/2020", end="12/31/2020", freq="D")
-    WCA3A_REG["Date"] = date_rng_10
+    WCA3A_REG["Date"] = pd.date_range(start="1/1/2020", end="12/31/2020", freq="D")
     Simperioddays = len(WCA_Stages_df.index)
     Oneyeardays = len(WCA3A_REG.index)
 

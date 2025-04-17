@@ -8,28 +8,32 @@ from loone.data import Data as DClass
 from loone.utils import load_config
 
 
-def WSMs(workspace: str):
+def WSMs(workspace: str, forecast: bool = False):
     """Generate WSMs (Weather State Modifiers) based on the given workspace.
 
-    Args:
-        workspace (str): The path to the workspace.
+        Args:
+            workspace (str): The path to the workspace.
+    
+        Returns:
+            None
 
-    Returns:
-        None
-
-    Raises:
-        None
+        Raises:
+            None
     """
 
     os.chdir(workspace)
     config = load_config(workspace)
     data = DClass(workspace)
-    year, month, day = map(int, config["start_date_entry"])
-    start_date = datetime(year, month, day).date()
-    year, month, day = map(int, config["start_date_entry"])
-    year, month, day = map(int, config["end_date_entry"])
-    # Config end date + 1 day
-    end_date = datetime(year, month, day).date() + timedelta(days=1)
+    if forecast:
+        today = datetime.today().date()
+        start_date = today
+        end_date = today + timedelta(days=16)
+    else:
+        year, month, day = map(int, config["start_date_entry"])
+        start_date = datetime(year, month, day).date()
+        year, month, day = map(int, config["end_date_entry"])
+        # Config end date + 1 day
+        end_date = datetime(year, month, day).date() + timedelta(days=1)
 
     date_rng_1 = pd.date_range(start=start_date, end=end_date, freq="D")
     # Create a data frame with a date column
