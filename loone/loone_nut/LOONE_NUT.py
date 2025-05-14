@@ -29,6 +29,7 @@ def LOONE_NUT(
     input_data: str | None = None,
     forecast_mode: bool = False,
     simulation_data: dict = {},
+    ensemble: int = None,
 ) -> pd.DataFrame:
     """Simulates nutrient (phosphorus) dynamics in the water column.
 
@@ -52,7 +53,7 @@ def LOONE_NUT(
 
     if not loone_q_path:
         loone_q_path = os.path.join(workspace, "LOONE_Q_Outputs.csv")
-    Data = DClass(workspace)
+    Data = DClass(workspace, forecast_mode, ensemble)
     print("LOONE Nut Module is Running!")
 
     # Read in config values
@@ -75,20 +76,20 @@ def LOONE_NUT(
     date_rng_0 = pd.date_range(start=startdate, end=enddate, freq="D")
     load_ext = pd.read_csv(os.path.join(data_dir, loads_external_filename))
     if forecast_mode:
-        q_in = pd.read_csv(os.path.join(data_dir, "LO_Inflows_BK_forecast.csv"))
+        q_in = pd.read_csv(os.path.join(data_dir, f"LO_Inflows_BK_forecast_{ensemble:02}.csv"))
     else:
         q_in = pd.read_csv(os.path.join(data_dir, config["lo_inflows_bk"]))
     flow_df = pd.read_csv(os.path.join(data_dir, flow_df_filename))
     q_o = flow_df["Outflows"].values
     s77_q = loone_q["S77_Q"].values if 's77_q' not in simulation_data else simulation_data['s77_q']
     s308_q = loone_q["S308_Q"].values if 's308_q' not in simulation_data else simulation_data['s308_q']
-    
-    if 'tot_reg_so' in simulation_data:
-        tot_reg_so = simulation_data['tot_reg_so']
-    else:
-        tot_reg_so = flow_df[["S351_Out", "S352_Out", "S354_Out"]].sum(axis=1) * (
-            70.0456 / SECONDS_IN_DAY
-        )
+    if not forecast_mode:
+        if 'tot_reg_so' in simulation_data:
+            tot_reg_so = simulation_data['tot_reg_so']
+        else:
+            tot_reg_so = flow_df[["S351_Out", "S352_Out", "S354_Out"]].sum(axis=1) * (
+                70.0456 / SECONDS_IN_DAY
+            )
     sto_stage = pd.read_csv(
         os.path.join(data_dir, config["sto_stage"])
     )
@@ -105,7 +106,10 @@ def LOONE_NUT(
         os.path.join(data_dir, config["wind_shear_stress"])
     )
     w_ss = wind_shear_str["ShearStress"]  # Dyne/cm2
-    nu_ts = pd.read_csv(os.path.join(data_dir, config["nu"]))
+    if forecast_mode:
+        nu_ts = pd.read_csv(os.path.join(data_dir, f"nu_predicted.csv"))
+    else:
+        nu_ts = pd.read_csv(os.path.join(data_dir, config["nu"]))
     LO_BL = 0.5  # m (Bed Elevation of LO)
     g = 9.8  # m/s2 gravitational acceleration
     cal_res = pd.read_csv(os.path.join(data_dir, "nondominated_Sol_var.csv"))
@@ -248,6 +252,7 @@ def LOONE_NUT(
     ##Initial Values##
     # S.A. is calculated based on the Lake's previous time step Stage, but for
     # the S.A. at i=0 I used same time step Stage!
+    # TODO: Does this need to be fixed in forecast mode?
     start_storage = stg_sto_ar.stg2sto(config["start_stage"], 0)
     stage_2_ar[0] = stg_sto_ar.stg2ar(stage_lo[0], 0)
     stage_2_ar[1] = stg_sto_ar.stg2ar(stage_lo[1], 0)
@@ -1182,9 +1187,10 @@ def LOONE_NUT(
             * HOURS_IN_DAY
             * tp_lake_s[i]
         )  # mg/d P
-        p_load_south[i] = (
-            tot_reg_so[i] * CUBIC_METERS_IN_ACRE_FOOT * tp_lake_s[i]
-        )  # mg/d P
+        if not forecast_mode:
+            p_load_south[i] = (
+                tot_reg_so[i] * CUBIC_METERS_IN_ACRE_FOOT * tp_lake_s[i]
+            )  # mg/d P
 
     # Create the dataframes for the phosphorus loads and the total phosphorus in the lake
     p_loads_df = pd.DataFrame(

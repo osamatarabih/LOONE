@@ -49,8 +49,12 @@ class M_var:
         LONINO_Count = len(monthly_date_range)
         self.Seas = np.zeros(LONINO_Count)
         self.M_Seas = np.zeros(LONINO_Count)
-        self.LONINO_Seas_cls = np.zeros(config["month_n"])
-        self.LONINO_M_Seas_cls = np.zeros(config["month_n"])
+        if forecast:
+            self.LONINO_Seas_cls = np.zeros(LONINO_Count)
+            self.LONINO_M_Seas_cls = np.zeros(LONINO_Count)
+        else:
+            self.LONINO_Seas_cls = np.zeros(config["month_n"])
+            self.LONINO_M_Seas_cls = np.zeros(config["month_n"])
 
         daily_date_range = pd.date_range(start=startdate, end=enddate, freq="D")
         Seas_Count = len(daily_date_range)

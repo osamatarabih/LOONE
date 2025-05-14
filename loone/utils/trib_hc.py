@@ -9,7 +9,7 @@ from loone.data import Data as DClass
 
 # I determine daily values for the Tributary conditions and Seasonal/Multi-Seasonal LONINO classes
 # using a weekly Trib. Condition data and Monthly LONINO data.
-def Trib_HC(workspace: str, forecast: bool = False):
+def Trib_HC(workspace: str, forecast: bool = False, ensemble: int = None) -> pd.DataFrame:
     """
     This function generates daily values for the Tributary conditions and Seasonal/Multi-Seasonal LONINO classes
     using a weekly Trib. Condition data and Monthly LONINO data.
@@ -27,7 +27,7 @@ def Trib_HC(workspace: str, forecast: bool = False):
     """
     os.chdir(workspace)
     config = load_config(workspace)
-    Data = DClass(workspace)
+    Data = DClass(workspace, forecast, ensemble)
     M_var = MVarClass(config, forecast)
     # Generate weekly time step date column where frequency is 'W-Fri' to start on 01/01/2008.
     # FIXME: Always check here for start date, end date, and frequency to match with the Trib. Condition weekly data obtained.
@@ -50,15 +50,13 @@ def Trib_HC(workspace: str, forecast: bool = False):
     TC_Count = len(Trib_Cond_df.index)
 
     for i in range(TC_Count):
-        M_var.RF_Cls[i] = lonino_functions.RF_Cls(Data.Wkly_Trib_Cond["NetRF"].iloc[i])
-        if forecast:
-            M_var.MainTrib_Cls[i] = lonino_functions.MainTrib_Cls(
-                Data.Wkly_Trib_Cond["flow_avg_m^3/d_S65E"].iloc[i]
-            )
+        if i < len(M_var.RF_Cls):
+            M_var.RF_Cls[i] = lonino_functions.RF_Cls(Data.Wkly_Trib_Cond["NetRF"].iloc[i])
         else:
-            M_var.MainTrib_Cls[i] = lonino_functions.MainTrib_Cls(
-                Data.Wkly_Trib_Cond["S65E"].iloc[i]
-            )
+            continue
+        M_var.MainTrib_Cls[i] = lonino_functions.MainTrib_Cls(
+            Data.Wkly_Trib_Cond["S65E"].iloc[i]
+        )
         M_var.Palmer_Cls[i] = lonino_functions.Palmer_Cls(
             Data.Wkly_Trib_Cond["Palmer"].iloc[i]
         )
@@ -68,7 +66,9 @@ def Trib_HC(workspace: str, forecast: bool = False):
         M_var.Max_RF_MainTrib[i] = max(M_var.RF_Cls[i], M_var.MainTrib_Cls[i])
         M_var.Max_Palmer_NetInf[i] = max(M_var.Palmer_Cls[i], M_var.NetInflow_Cls[i])
     if config["tci"] == 1:  # Tributary Condition Index
+        Trib_Cond_df = Trib_Cond_df.iloc[:len(M_var.Max_Palmer_NetInf)].copy()
         Trib_Cond_df["TCI"] = M_var.Max_Palmer_NetInf
+
     else:
         Trib_Cond_df["TCI"] = M_var.Max_RF_MainTrib
     # Generate a monthly time step date column
@@ -87,13 +87,22 @@ def Trib_HC(workspace: str, forecast: bool = False):
         ].iloc[LONINO_df["date"].iloc[i].year - config["start_year"]]
     LONINO_df["LONINO_Seas"] = M_var.Seas
     LONINO_df["LONINO_Mult_Seas"] = M_var.M_Seas
-    for i in range(config["month_n"]):
-        M_var.LONINO_Seas_cls[i] = lonino_functions.LONINO_Seas_cls(
-            LONINO_df["LONINO_Seas"].iloc[i]
-        )
-        M_var.LONINO_M_Seas_cls[i] = lonino_functions.LONINO_M_Seas_cls(
-            LONINO_df["LONINO_Mult_Seas"].iloc[i]
-        )
+    if forecast:
+        for i in range(LONINO_Count):
+            M_var.LONINO_Seas_cls[i] = lonino_functions.LONINO_Seas_cls(
+                LONINO_df["LONINO_Seas"].iloc[i]
+            )
+            M_var.LONINO_M_Seas_cls[i] = lonino_functions.LONINO_M_Seas_cls(
+                LONINO_df["LONINO_Mult_Seas"].iloc[i]
+            )
+    else:
+        for i in range(config["month_n"]):
+            M_var.LONINO_Seas_cls[i] = lonino_functions.LONINO_Seas_cls(
+                LONINO_df["LONINO_Seas"].iloc[i]
+            )
+            M_var.LONINO_M_Seas_cls[i] = lonino_functions.LONINO_M_Seas_cls(
+                LONINO_df["LONINO_Mult_Seas"].iloc[i]
+            )
     LONINO_df["LONINO_Seasonal_Cls"] = M_var.LONINO_Seas_cls
     LONINO_df["LONINO_Mult_Seasonal_Cls"] = M_var.LONINO_M_Seas_cls
     # Generate a daily date range

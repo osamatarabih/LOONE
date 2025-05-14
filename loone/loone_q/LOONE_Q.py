@@ -576,6 +576,13 @@ def _calculate_outlet2dsrs(
     Returns:
         None
     """
+    year_index = lo_model.at[i + 2, "date"].year - config["start_year"]
+
+    if year_index in data.CE_SLE_turns.index:
+        sle_turn = data.CE_SLE_turns.at[year_index, "SLEturn"]
+    else:
+        #TODO not sure that this should be hard coded like this, but this is because of the forecast things
+        sle_turn = 1
     model_variables.Outlet2DSRS[i + 2] = lo_functions.Outlet2DSRS(
         model_variables.Release_Level[i + 2],
         data.S80_RegRelRates.at[0, "Zone_D1"],
@@ -586,13 +593,10 @@ def _calculate_outlet2dsrs(
                 if model_variables.PlsDay[i + 2] - 1 >= 0
                 else len(data.Pulses) - 1
             ),
-            f'S-80_L1_{config["schedule"]}',
+            f'S-80_L1',
         ],
         model_variables.Outlet2DS_Mult_2[i + 2],
-        data.CE_SLE_turns.at[
-            lo_model.at[i + 2, "date"].year - config["start_year"],
-            "SLEturn",
-        ],
+        sle_turn,
         data.S80_RegRelRates.at[0, "Zone_D2"],
         s80avg_l2,
         data.Pulses.at[
@@ -601,7 +605,7 @@ def _calculate_outlet2dsrs(
                 if model_variables.PlsDay[i + 2] - 1 >= 0
                 else len(data.Pulses) - 1
             ),
-            f'S-80_L2_{config["schedule"]}',
+            f'S-80_L2',
         ],
         data.S80_RegRelRates.at[0, "Zone_D3"],
         s80avg_l3,
@@ -611,7 +615,7 @@ def _calculate_outlet2dsrs(
                 if model_variables.PlsDay[i + 2] - 1 >= 0
                 else len(data.Pulses) - 1
             ),
-            f'S-80_L3_{config["schedule"]}',
+            f'S-80_L3',
         ],
         data.S80_RegRelRates.at[0, "Zone_C"],
         data.S80_RegRelRates.at[0, "Zone_B"],
@@ -890,50 +894,55 @@ def _calculate_outlet1usrs(
     Returns:
         None
     """
+
+    target_year = lo_model.at[i + 2, "date"].year
+
+    available_years = data.CE_SLE_turns["Year"].values
+    closest_year = available_years[np.argmin(np.abs(available_years - target_year))]
+
+    CEturn_value = data.CE_SLE_turns.loc[data.CE_SLE_turns["Year"] == closest_year, "CEturn"].values[0]
+
     model_variables.Outlet1USRS[i + 2] = lo_functions.Outlet1USRS(
-        model_variables.Release_Level[i + 2],
-        data.S77_RegRelRates.at[0, "Zone_D1"],
-        s77avg_l1,
-        data.Pulses.at[
-            (
-                model_variables.PlsDay[i + 2] - 1
-                if model_variables.PlsDay[i + 2] - 1 >= 0
-                else len(data.Pulses) - 1
-            ),
-            f'S-77_L1_{config["schedule"]}',
-        ],
-        model_variables.Outlet1US_Mult_2[i + 2],
-        lo_model.at[i + 2, "C43RO"],
-        data.CE_SLE_turns.at[
-            lo_model.at[i + 2, "date"].year - config["start_year"],
-            "CEturn",
-        ],
-        data.S77_RegRelRates.at[0, "Zone_D2"],
-        s77avg_l2,
-        data.Pulses.at[
-            (
-                model_variables.PlsDay[i + 2] - 1
-                if model_variables.PlsDay[i + 2] - 1 >= 0
-                else len(data.Pulses) - 1
-            ),
-            f'S-77_L2_{config["schedule"]}',
-        ],
-        model_variables.Zone_Code[i + 1],
-        data.S77_RegRelRates.at[0, "Zone_D3"],
-        s77avg_l3,
-        data.Pulses.at[
-            (
-                model_variables.PlsDay[i + 2] - 1
-                if model_variables.PlsDay[i + 2] - 1 >= 0
-                else len(data.Pulses) - 1
-            ),
-            f'S-77_L3_{config["schedule"]}',
-        ],
-        data.S77_RegRelRates.at[0, "Zone_C"],
-        data.S77_RegRelRates.at[0, "Zone_B"],
-        data.S77_RegRelRates.at[0, "Zone_A"],
-        config["opt_outlet1_dsrg"],
-    )
+    model_variables.Release_Level[i + 2],
+    data.S77_RegRelRates.at[0, "Zone_D1"],
+    s77avg_l1,
+    data.Pulses.at[
+        (
+            model_variables.PlsDay[i + 2] - 1
+            if model_variables.PlsDay[i + 2] - 1 >= 0
+            else len(data.Pulses) - 1
+        ),
+        f'S-77_L1',
+    ],
+    model_variables.Outlet1US_Mult_2[i + 2],
+    lo_model.at[i + 2, "C43RO"],
+    CEturn_value,
+    data.S77_RegRelRates.at[0, "Zone_D2"],
+    s77avg_l2,
+    data.Pulses.at[
+        (
+            model_variables.PlsDay[i + 2] - 1
+            if model_variables.PlsDay[i + 2] - 1 >= 0
+            else len(data.Pulses) - 1
+        ),
+        f'S-77_L2',
+    ],
+    model_variables.Zone_Code[i + 1],
+    data.S77_RegRelRates.at[0, "Zone_D3"],
+    s77avg_l3,
+    data.Pulses.at[
+        (
+            model_variables.PlsDay[i + 2] - 1
+            if model_variables.PlsDay[i + 2] - 1 >= 0
+            else len(data.Pulses) - 1
+        ),
+        f'S-77_L3',
+    ],
+    data.S77_RegRelRates.at[0, "Zone_C"],
+    data.S77_RegRelRates.at[0, "Zone_B"],
+    data.S77_RegRelRates.at[0, "Zone_A"],
+    config["opt_outlet1_dsrg"],
+)
 
 
 def _calculate_sum_outlet1usrs(
@@ -1732,6 +1741,7 @@ def _calculate_basin_runoff(
     data: object,
     outlet1_baseflow: float,
     outlet2_baseflow: float,
+    forecast: bool = False,
 ) -> None:
     """
     Calculate the basin runoff and update the basin runoff DataFrame.
@@ -1751,12 +1761,15 @@ def _calculate_basin_runoff(
     # Compute number of days in each month (vectorized)
     basin_ro["Ndays"] = basin_ro["date"].apply(lambda d: monthrange(d.year, d.month)[1])
 
-    # Compute baseflow shortfalls (vectorized)
+    # Compute baseflow shortfalls (vectorized) 
+    #TODO: keep the date in the monthly flow so that we can compare and make sure it is correct
     basin_ro["BS-C43RO"] = np.maximum(0, outlet1_baseflow - data.C43RO["C43RO"])
     basin_ro["BS-C44RO"] = np.maximum(0, outlet2_baseflow - data.C44RO["C44RO"])
 
     # Compute C44RO_SLTrib (vectorized)
-    basin_ro["C44RO_SLTRIB"] = basin_ro["BS-C44RO"] + data.SLTRIB["SLTRIB_cfs"]
+    # Only keeping SLTRIB if forecast is false
+    if not forecast:
+        basin_ro["C44RO_SLTRIB"] = basin_ro["BS-C44RO"] + data.SLTRIB["SLTRIB_cfs"]
 
     # Compute baseflow contribution for C44 (vectorized)
     basin_ro["C44RO-BS"] = (
@@ -1766,7 +1779,8 @@ def _calculate_basin_runoff(
     # Assign direct column values from data
     basin_ro["C43RO"] = data.C43RO["C43RO"]
     basin_ro["C44RO"] = data.C44RO["C44RO"]
-    basin_ro["SLTRIB"] = data.SLTRIB["SLTRIB_cfs"]
+    if not forecast:
+        basin_ro["SLTRIB"] = data.SLTRIB["SLTRIB_cfs"]
 
 
 def _initialize_lo_model(
@@ -1911,12 +1925,12 @@ def _calculate_pulse_averages(data: object, config: dict) -> dict:
         dict: A dictionary containing the pulse averages for S-80 and S-77.
     """
     pulse_averages = {
-        "s80avg_l1": data.Pulses[f"S-80_L1_{config['schedule']}"].mean(),
-        "s80avg_l2": data.Pulses[f"S-80_L2_{config['schedule']}"].mean(),
-        "s80avg_l3": data.Pulses[f"S-80_L3_{config['schedule']}"].mean(),
-        "s77avg_l1": data.Pulses[f"S-77_L1_{config['schedule']}"].mean(),
-        "s77avg_l2": data.Pulses[f"S-77_L2_{config['schedule']}"].mean(),
-        "s77avg_l3": data.Pulses[f"S-77_L3_{config['schedule']}"].mean(),
+        "s80avg_l1": data.Pulses[f"S-80_L1"].mean(),
+        "s80avg_l2": data.Pulses[f"S-80_L2"].mean(),
+        "s80avg_l3": data.Pulses[f"S-80_L3"].mean(),
+        "s77avg_l1": data.Pulses[f"S-77_L1"].mean(),
+        "s77avg_l2": data.Pulses[f"S-77_L2"].mean(),
+        "s77avg_l3": data.Pulses[f"S-77_L3"].mean(),
     }
     return pulse_averages
 
@@ -1953,6 +1967,7 @@ def LOONE_Q(
     sensitivity_analysis_params: List[float] = [],
     optimization_params: dict[float] = None,
     forecast: bool = False,
+    ensemble: int = None,
 ) -> None:
     """This function runs the LOONE Q module.
 
@@ -1963,6 +1978,7 @@ def LOONE_Q(
         optimization_params (dict[float], optional): Holds the optimization parameters,
             including p1, p2, s77_dv, s308_dv, and tp_lake_s. Required when sim_type is 2. Defaults to None.
         forecast (bool, optional): Whether to run in forecast mode. Defaults to False.
+        ensemble (int, optional): The ensemble number. Defaults to None. Only necesary for forecast mode.
 
     Returns:
         None
@@ -1979,7 +1995,7 @@ def LOONE_Q(
     else:
         p1 = p2 = s77_dv = s308_dv = tp_lake_s = 0
 
-    data = DClass(workspace)
+    data = DClass(workspace, forecast, ensemble)
     model_variables = MVarClass(config, forecast)
     print("LOONE Q Module is Running!")
     # Based on the defined Start and End year, month, and day on the
@@ -1988,7 +2004,7 @@ def LOONE_Q(
 
     ###################################################################
     if config["sim_type"] in [0, 1, 3]:
-        df_wsms.WSMs(workspace, forecast)
+        df_wsms.WSMs(workspace, forecast, ensemble)
 
     df_WSMs = pd.read_csv("df_WSMs.csv")
 
@@ -2011,7 +2027,7 @@ def LOONE_Q(
 
     ###################################################################
     # Determine Tributary Hydrologic Conditions
-    tc_lonino_df = trib_hc.Trib_HC(workspace, forecast)
+    tc_lonino_df = trib_hc.Trib_HC(workspace, forecast, ensemble)
     # Determine WCA Stages
     wca_stages_df = WCA_Stages_Cls(workspace, tc_lonino_df, forecast)
     # A dataframe to determine eachday's season (Months 11,12,1,2 are
@@ -2047,7 +2063,7 @@ def LOONE_Q(
     if forecast:
         new_startdate = today_date
         if new_startdate.day > 1:
-            new_startdate = startdate.replace(day=1)
+            new_startdate = new_startdate.replace(day=1)
         monthly_date_range = pd.date_range(
             start=new_startdate, end=future_date, freq="MS"
         )
@@ -2064,7 +2080,7 @@ def LOONE_Q(
     # Baseflows
     outlet1_baseflow = data.S77_RegRelRates["Zone_D0"].iloc[0]
     outlet2_baseflow = data.S80_RegRelRates["Zone_D0"].iloc[0]
-    _calculate_basin_runoff(basin_ro, data, outlet1_baseflow, outlet2_baseflow)
+    _calculate_basin_runoff(basin_ro, data, outlet1_baseflow, outlet2_baseflow, forecast)
     lo_model["C43RO"] = data.C43RO_Daily["C43RO"]
     pulse_averages = _calculate_pulse_averages(data, config)
     s80avg_l1 = pulse_averages["s80avg_l1"]
@@ -2247,7 +2263,10 @@ def LOONE_Q(
     # Write out the results to a file - Needed because
     # execute_loone.py calls this script as a subprocess and can't get
     # this data.
-    lo_model.to_csv("LOONE_Q_Outputs.csv")
+    if forecast:
+        lo_model.to_csv(f"LOONE_Q_Outputs_{ensemble:02d}.csv")
+    else:
+        lo_model.to_csv("LOONE_Q_Outputs.csv")
 
     # Add scenario data to output df
     df_stage = pd.DataFrame(data=model_variables.Lake_Stage, columns=["Outputs"])

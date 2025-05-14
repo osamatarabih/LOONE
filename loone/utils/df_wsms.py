@@ -8,7 +8,7 @@ from loone.data import Data as DClass
 from loone.utils import load_config
 
 
-def WSMs(workspace: str, forecast: bool = False):
+def WSMs(workspace: str, forecast: bool = False, ensemble: int = None) -> None:
     """Generate WSMs (Weather State Modifiers) based on the given workspace.
 
         Args:
@@ -23,7 +23,7 @@ def WSMs(workspace: str, forecast: bool = False):
 
     os.chdir(workspace)
     config = load_config(workspace)
-    data = DClass(workspace)
+    data = DClass(workspace, forecast, ensemble)
     if forecast:
         today = datetime.today().date()
         start_date = today
