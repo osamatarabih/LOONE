@@ -90,9 +90,12 @@ def LOONE_NUT(
             tot_reg_so = flow_df[["S351_Out", "S352_Out", "S354_Out"]].sum(axis=1) * (
                 70.0456 / SECONDS_IN_DAY
             )
-    sto_stage = pd.read_csv(
-        os.path.join(data_dir, config["sto_stage"])
-    )
+    if forecast_mode:
+        sto_stage = pd.read_csv(os.path.join(data_dir, f"Average_LO_Storage_3MLag_{ensemble:02}.csv"))
+    else:
+        sto_stage = pd.read_csv(
+            os.path.join(data_dir, config["sto_stage"])
+        )
     stage_lo = sto_stage["Stage_ft"].values if 'stage_lo' not in simulation_data else simulation_data['stage_lo']
     storage = sto_stage["Storage_acft"].values
     n_rows = len(q_in.index)
@@ -102,9 +105,14 @@ def LOONE_NUT(
     atm_dep_s = TP_Variables.southern_percentage * load_ext["Atm_Loading_mg"]
 
     # Read Shear Stress driven by Wind Speed
-    wind_shear_str = pd.read_csv(
-        os.path.join(data_dir, config["wind_shear_stress"])
-    )
+    if forecast_mode:
+        wind_shear_str = pd.read_csv(
+            os.path.join(data_dir, f"WindShearStress_{ensemble:02}.csv")
+        )
+    else:
+        wind_shear_str = pd.read_csv(
+            os.path.join(data_dir, config["wind_shear_stress"])
+        )
     w_ss = wind_shear_str["ShearStress"]  # Dyne/cm2
     if forecast_mode:
         nu_ts = pd.read_csv(os.path.join(data_dir, f"nu_predicted.csv"))
