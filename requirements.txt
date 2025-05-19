@@ -1,0 +1,6 @@
+matplotlib
+numpy
+pandas
+platypus-opt == 1.0.4
+scipy
+pyyaml

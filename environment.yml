@@ -1,0 +1,12 @@
+name: loone
+
+channels:
+  - conda-forge
+
+dependencies:
+  - matplotlib
+  - numpy
+  - pandas
+  - platypus-opt=1.0.4
+  - scipy
+  - pyyaml
