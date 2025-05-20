@@ -775,18 +775,18 @@ def LOONE_WQ(workspace: str, photo_period_filename: str = 'PhotoPeriod', forecas
 
     temperature = temperature_data['Water_T'].astype(float)
     dissolved_oxygen = dissolved_oxygen['Mean_DO'].astype(float)
-    external_nitrite_nitrate = external_nitrate_loadings['External_NO_Ld_mg'].astype(float)  # mg
-    s65e_nitrite_nitrate = (s65e_nitrate_data[s65e_nitrate_data['date'] >= date_start]['Data'] * 1000).astype(float).tolist()  # mg/m3
+    # external_nitrite_nitrate = external_nitrate_loadings['External_NO_Ld_mg'].astype(float)  # mg
+    # s65e_nitrite_nitrate = (s65e_nitrate_data[s65e_nitrate_data['date'] >= date_start]['Data'] * 1000).astype(float).tolist()  # mg/m3
 
-    external_chlorophyll_a = chlorophyll_a_loads_in['Chla_Loads'].astype(float) * 3  # mg
-    s65e_chlorophyll_a = s65e_chlorophyll_a_data[s65e_chlorophyll_a_data['date'] >= date_start]['Data'].astype(float).tolist()
+    # external_chlorophyll_a = chlorophyll_a_loads_in['Chla_Loads'].astype(float) * 3  # mg
+    # s65e_chlorophyll_a = s65e_chlorophyll_a_data[s65e_chlorophyll_a_data['date'] >= date_start]['Data'].astype(float).tolist()
 
     # N-S Procedure
     N_Per = 0.43
     S_Per = 0.57
 
     storage_dev = data.Storage_dev_df['DS_dev'].astype(float)  # acft
-    q_i = inflows['Inflows_cmd'].astype(float)  # m3
+    # q_i = inflows['Inflows_cmd'].astype(float)  # m3
 
     # Simulated Q
     # S77_Q = LOONE_Q_Outputs['S77_Q'] * 0.0283168 * 86400  # cfs to cubic meters per day
@@ -812,7 +812,7 @@ def LOONE_WQ(workspace: str, photo_period_filename: str = 'PhotoPeriod', forecas
     volume_north = volume * N_Per
     volume_south = volume * S_Per
 
-    q_o = s77_outflow + s308_outflow + total_regional_outflow_south * 1233.48  # cmd
+    # q_o = s77_outflow + s308_outflow + total_regional_outflow_south * 1233.48  # cmd
 
     #TODO: This is reading in mostly just historical values
     observed_values = _calculate_observed_values(lo_dissolved_inorganic_nitrogen_north_data, lo_dissolved_inorganic_nitrogen_south_data, chlorophyll_a_north_data, chlorophyll_a_south_data, lo_orthophosphate_north_data, lo_orthophosphate_south_data)
@@ -1042,7 +1042,42 @@ def LOONE_WQ(workspace: str, photo_period_filename: str = 'PhotoPeriod', forecas
     nitro_model_output = pd.DataFrame(inflows['date'], columns=['date'])
     nitro_model_output['date'] = pd.to_datetime(nitro_model_output['date'])
     print("LOONE Nitrogen Module is Running!")
-    for i in range(X - 1):
+    # Filter all datasets by date_start
+    datasets = [s65e_nitrate_data, s65e_chlorophyll_a_data, chlorophyll_a_loads_in, inflows, outflows_observed, external_nitrate_loadings]
+    for df in datasets:
+        df.drop(df[df['date'] < date_start].index, inplace=True)
+
+    # Merge all data on date - this ensures that the dates will line up
+    merged = inflows[['date', 'Inflows_cmd']].merge(
+        chlorophyll_a_loads_in[['date', 'Chla_Loads']], on='date'
+    ).merge(
+        s65e_chlorophyll_a_data[['date', 'Data']], on='date', suffixes=('', '_s65e_chla')
+    ).merge(
+        s65e_nitrate_data[['date', 'Data']], on='date', suffixes=('', '_s65e_nitrate')
+    ).merge(
+        outflows_observed[['date', 'S77_Out', 'S308_Out', 'S351_Out', 'S354_Out', 'S352_Out', 'L8_Out']], on='date'
+    ).merge(
+        external_nitrate_loadings[['date', 'External_NO_Ld_mg']], on='date'
+    )
+
+    # Rename for clarity
+    merged.rename(columns={
+        'Data': 'S65E_Chla',
+        'Data_s65e_nitrate': 'S65E_NO'
+    }, inplace=True)
+
+    # Compute q_o (outflows in m³/day)
+    merged['total_regional_outflow_south'] = merged[['S351_Out', 'S354_Out', 'S352_Out', 'L8_Out']].sum(axis=1) / 1233.48
+    merged['q_o'] = merged['S77_Out'] + merged['S308_Out'] + merged['total_regional_outflow_south'] * 1233.48
+
+    # Prepare input lists
+    q_i = merged['Inflows_cmd'].astype(float).tolist()
+    q_o = merged['q_o'].astype(float).tolist()
+    s65e_nitrite_nitrate = (merged['S65E_NO'] * 1000).astype(float).tolist()
+    s65e_chlorophyll_a = merged['S65E_Chla'].astype(float).tolist()
+    external_chlorophyll_a = (merged['Chla_Loads'].astype(float) * 3).tolist()
+    external_nitrite_nitrate = merged['External_NO_Ld_mg'].astype(float).tolist()
+    for i in range(len(merged.index) - 1):
         # print(Nitro_Model_Output['date'].iloc[i])
 
         Q_I_M[i], Q_O_M[i], External_NO_M[i], External_Chla_M[i] = _calculate_inflows_and_outflows(i, storage_dev,
