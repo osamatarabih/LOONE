@@ -7,16 +7,16 @@ Created on Thu Oct 15 12:29:27 2020
 #A Class contains all the pre-defined variables
 #I will include different values for variables in this class.
 class Pre_defined_Variables:
-    Schedule = 'LORS20082023'
+    Schedule = 'LOSOM'
     startyear = 2008
     endyear = 2023
     startdate_entry = startyear,1,1 
     begdateCS_entry = startyear,1,1 
-    enddate_entry = endyear,3,31
-    # enddate_TC = endyear+1,1,1
-    enddate_TC = endyear,4,1
-    # Month_N = (endyear-startyear+1)*12
-    Month_N = (endyear-startyear)*12 + 3
+    enddate_entry = endyear,12,31
+    enddate_TC = endyear+1,1,1
+    # enddate_TC = endyear,7,1
+    Month_N = (endyear-startyear+1)*12
+    # Month_N = (endyear-startyear)*12 + 6
 
     Opt_NewTree = 1 #if New Tree Decision is used enter 1 else enter 0.
     Code = 6
@@ -24,7 +24,7 @@ class Pre_defined_Variables:
     TCI = 1
     Opt_NetInflow = 2
     NetInf_const = 0
-    startstage = 10.268 #ft
+    startstage = 10.30 #ft
     begstageCS = startstage
     Opt_LOSAdmd = 1
     Mult_LOSA = 100

@@ -24,8 +24,8 @@ year, month, day = map(int, Pre_defined_Variables.enddate_entry)
 enddate = datetime(year, month, day).date()
 def WSMs():
     #Set time frame for model run such that it starts on the defined startdate but ends on 1/1/(endyear+1)
-    # date_rng_1 = pd.date_range(start = startdate, end = '1/1/%d'%(Pre_defined_Variables.endyear+1), freq= 'D')
-    date_rng_1 = pd.date_range(start = startdate, end = '4/1/%d'%(Pre_defined_Variables.endyear), freq= 'D')
+    date_rng_1 = pd.date_range(start = startdate, end = '1/1/%d'%(Pre_defined_Variables.endyear+1), freq= 'D')
+    # date_rng_1 = pd.date_range(start = startdate, end = '9/1/%d'%(Pre_defined_Variables.endyear), freq= 'D')
     #Create a data frame with a date column
     df_WSMs = pd.DataFrame(date_rng_1, columns =['date'])
     #Generate an annual cumulative day count
