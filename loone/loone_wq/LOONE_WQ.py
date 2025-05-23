@@ -129,6 +129,7 @@ def _load_data(workspace: str, flow_path: str, forecast_mode: bool, photo_period
     """
     data = {}
     data['inflows'] = pd.read_csv(os.path.join(workspace, flow_path))
+
     if forecast_mode:
         data['temperature_data'] = pd.read_csv(os.path.join(workspace, 'Filled_WaterT_predicted.csv'))
         #TODO: Predict this
@@ -1141,7 +1142,7 @@ def LOONE_WQ(workspace: str, photo_period_filename: str = 'PhotoPeriod', forecas
     # Summer month loads
     Smr_Mnth_NOx_StL_arr, Smr_Mnth_Chla_StL_arr, Smr_Mnth_NOx_Cal_arr, Smr_Mnth_Chla_Cal_arr = _calculate_summer_month_loads(constit_loads_m)
 
-    if config['sim_type'] in [0, 1]:
+    if config['sim_type'] in [0, 1, 3]:
         variables_dict = {
             'Constit_Loads': constit_loads_df,
             'Nitro_Model_Output': nitro_model_output,
@@ -1158,6 +1159,8 @@ def LOONE_WQ(workspace: str, photo_period_filename: str = 'PhotoPeriod', forecas
     else:
         return_list = [Smr_Mnth_NOx_StL_arr, Smr_Mnth_Chla_StL_arr, Smr_Mnth_NOx_Cal_arr, Smr_Mnth_Chla_Cal_arr,
                        nitro_model_output]
+    
+    return return_list
 
     # Algae_Opt_Mnth_NOx_StL = []
     # Algae_Opt_Mnth_NOx_Cal = []
