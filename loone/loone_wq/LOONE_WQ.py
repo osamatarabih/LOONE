@@ -112,7 +112,7 @@ def _update_nitro_model_output(nitro_model_output: pd.DataFrame, NO_N: pd.Series
     return nitro_model_output, nitro_mod_out_m
 
 
-def _load_data(workspace: str, flow_path: str, forecast_mode: bool, photo_period_filename: str, ensemble_member: int = None) -> dict:
+def _load_data(workspace: str, flow_path: str, forecast_mode: bool, photo_period_filename: str, config: dict, ensemble_member: int = None) -> dict:
     """
     Load the necessary data files from the workspace.
 
@@ -121,6 +121,7 @@ def _load_data(workspace: str, flow_path: str, forecast_mode: bool, photo_period
         flow_path (str): The path to the flow data file.
         forecast_mode (bool): Whether to use forecast mode.
         photo_period_filename (str): The filename for the photo period data.
+        config (dict): The configuration dictionary that holds the contents of config.yaml.
         ensemble_member (int): The ensemble member number.
 
     Returns:
@@ -141,7 +142,7 @@ def _load_data(workspace: str, flow_path: str, forecast_mode: bool, photo_period
         data['temperature_data'] = pd.read_csv(os.path.join(workspace, 'Filled_WaterT.csv'))
         data['dissolved_oxygen'] = pd.read_csv(os.path.join(workspace, 'LO_DO_Clean_daily.csv'))
         data['radiation_data'] = pd.read_csv(os.path.join(workspace, 'LO_RADT_data.csv'))
-        data['storage_data'] = pd.read_csv(os.path.join(workspace, 'Average_LO_Storage_3MLag.csv'))
+        data['storage_data'] = pd.read_csv(os.path.join(workspace, config['sto_stage']))
         data['chlorophyll_a_north_data'] = pd.read_csv(os.path.join(workspace, 'N_Merged_Chla.csv'))  # microgram/L
         data['chlorophyll_a_south_data'] = pd.read_csv(os.path.join(workspace, 'S_Merged_Chla.csv'))  # microgram/L
         data['external_nitrate_loadings'] = pd.read_csv(os.path.join(workspace, 'LO_External_Loadings_NO.csv'))  # mg
@@ -750,7 +751,7 @@ def LOONE_WQ(workspace: str, photo_period_filename: str = 'PhotoPeriod', forecas
     # Read Required Data
     flow_path = os.path.join(workspace, f'LO_Inflows_BK_forecast_{ensemble_number:02}.csv' if forecast_mode else 'LO_Inflows_BK.csv')
 
-    data_dict = _load_data(workspace, flow_path, forecast_mode, photo_period_filename, ensemble_number)
+    data_dict = _load_data(workspace, flow_path, forecast_mode, photo_period_filename, config, ensemble_number)
 
     inflows = data_dict['inflows']
     temperature_data = data_dict['temperature_data']
@@ -800,7 +801,7 @@ def LOONE_WQ(workspace: str, photo_period_filename: str = 'PhotoPeriod', forecas
 
     # Observed S77 S308 South
     # TODO: This should have ensembles
-    outflows_observed = pd.read_csv(os.path.join(workspace, 'Flow_df_3MLag.csv'))
+    outflows_observed = pd.read_csv(os.path.join(workspace, config['outflows_observed']))
     s77_outflow = outflows_observed['S77_Out']
     s308_outflow = outflows_observed['S308_Out']
     total_regional_outflow_south = outflows_observed[['S351_Out', 'S354_Out', 'S352_Out', 'L8_Out']].sum(axis=1) / 1233.48    # m3/day to acft
