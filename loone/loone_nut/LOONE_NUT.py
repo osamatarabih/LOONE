@@ -59,7 +59,7 @@ def LOONE_NUT(
     # Read in config values
 
     data_dir = input_data if input_data else workspace
-    loone_q = pd.read_csv(loone_q_path)
+    loone_q = pd.read_csv(loone_q_path) #this is in cubic feet
     # Based on the defined Start and End year, month, and day on the
     # Pre_defined_Variables File, Startdate and enddate are defined.
     if forecast_mode:
@@ -76,29 +76,32 @@ def LOONE_NUT(
     date_rng_0 = pd.date_range(start=startdate, end=enddate, freq="D")
     load_ext = pd.read_csv(os.path.join(data_dir, loads_external_filename))
     if forecast_mode:
-        q_in = pd.read_csv(os.path.join(data_dir, f"LO_Inflows_BK_forecast_{ensemble:02}.csv"))
+        q_in = pd.read_csv(os.path.join(data_dir, f"LO_Inflows_BK_forecast_{ensemble:02}.csv")) #cmd
     else:
         q_in = pd.read_csv(os.path.join(data_dir, config["lo_inflows_bk"]))
-    flow_df = pd.read_csv(os.path.join(data_dir, flow_df_filename))
-    q_o = flow_df["Outflows"].values
-    s77_q = loone_q["S77_Q"].values if 's77_q' not in simulation_data else simulation_data['s77_q']
-    s308_q = loone_q["S308_Q"].values if 's308_q' not in simulation_data else simulation_data['s308_q']
-    if not forecast_mode:
-        if 'tot_reg_so' in simulation_data:
-            tot_reg_so = simulation_data['tot_reg_so']
-        else:
-            tot_reg_so = flow_df[["S351_Out", "S352_Out", "S354_Out"]].sum(axis=1) * (
-                70.0456 / SECONDS_IN_DAY
-            )
+    flow_df = pd.read_csv(os.path.join(data_dir, flow_df_filename)) #cubic meters per day
+    # q_o = flow_df["Outflows"].values #cmd - this is wrong, this should come from LOONE_Q, not from geoglows
+    s77_q = loone_q["S77_Q"].values if 's77_q' not in simulation_data else simulation_data['s77_q'] #cfs
+    s308_q = loone_q["S308_Q"].values if 's308_q' not in simulation_data else simulation_data['s308_q'] #cfs
+    #tot_reg_so should be coming from LOONE_Q, not from flow_df - these units are acft/day
+    if 'tot_reg_so' in simulation_data:
+        tot_reg_so = simulation_data['tot_reg_so']
+    #TODO check with Osama
+    else:
+        tot_reg_so = loone_q["TotRegSo"]
+    #New way to calculate q_o  - add s77_q, s308_q, and tot_reg_so - this should be converted to cmd - convert all of them to cmd, then add them together
+    q_o = s308_q * CUBIC_METERS_IN_CUBIC_FOOT * SECONDS_IN_DAY + s77_q * CUBIC_METERS_IN_CUBIC_FOOT * SECONDS_IN_DAY + tot_reg_so * CUBIC_METERS_IN_ACRE_FOOT #cmd
     if forecast_mode:
-        sto_stage = pd.read_csv(os.path.join(data_dir, f"Average_LO_Storage_3MLag_{ensemble:02}.csv"))
+        sto_stage = pd.read_csv(os.path.join(data_dir, f"Average_LO_Storage_3MLag_{ensemble:02}.csv")) #acft
     else:
         sto_stage = pd.read_csv(
             os.path.join(data_dir, config["sto_stage"])
         )
-    stage_lo = sto_stage["Stage_ft"].values if 'stage_lo' not in simulation_data else simulation_data['stage_lo']
+    #TODO - we should get the dates for this
+    stage_lo = sto_stage["Stage_ft"].values if 'stage_lo' not in simulation_data else simulation_data['stage_lo'] #feet
     storage = sto_stage["Storage_acft"].values
     n_rows = len(q_in.index)
+    #TODO - storage dev should be 0 in forecast mode
     storage_dev = Data.Storage_dev_df["DS_dev"]
     l_ext = load_ext["TP_Loads_In_mg"]  # mg
     atm_dep_n = TP_Variables.northern_percentage * load_ext["Atm_Loading_mg"]
@@ -247,7 +250,7 @@ def LOONE_NUT(
 
     q_i = q_in["Inflows_cmd"]
     q_i_m = np.zeros(n_rows, dtype=object)
-    q_o = np.zeros(n_rows, dtype=object)
+    # q_o = np.zeros(n_rows, dtype=object) - this should not be initialized here, it should come from LOONE_Q
     q_o_m = np.zeros(n_rows, dtype=object)
 
     p_load_cal = np.zeros(n_rows, dtype=object)
@@ -260,10 +263,11 @@ def LOONE_NUT(
     ##Initial Values##
     # S.A. is calculated based on the Lake's previous time step Stage, but for
     # the S.A. at i=0 I used same time step Stage!
-    # TODO: Does this need to be fixed in forecast mode?
-    start_storage = stg_sto_ar.stg2sto(config["start_stage"], 0)
-    stage_2_ar[0] = stg_sto_ar.stg2ar(stage_lo[0], 0)
+    # TODO: Does this need to be fixed in forecast mode? - come from dbhydro to get the stage for that day
+    # In forecast mode does not read from the config file - make sure this is in feet
+    start_storage = stg_sto_ar.stg2sto(config["start_stage"], 0) 
     stage_2_ar[1] = stg_sto_ar.stg2ar(stage_lo[1], 0)
+    # TODO - not sure that this part is correct
     storage[0] = start_storage  # ac-ft
     storage[1] = stg_sto_ar.stg2sto(stage_lo[1], 0)  # ac-ft
     # TP_MassBalanceModel Initial Values.
@@ -380,10 +384,13 @@ def LOONE_NUT(
     )
 
     for i in range(n_rows - 2):
+        if forecast_mode:
+            storage_dev[i] = 0  # in forecast mode storage_dev is 0
         if storage_dev[i] >= 0:
             q_i_m[i] = (
-                q_i[i] + storage_dev[i] * CUBIC_METERS_IN_ACRE_FOOT
+                q_i[i] + storage_dev[i] * CUBIC_METERS_IN_ACRE_FOOT #in forecast mode storage_dev is 0
             )  # m3/d
+            
             q_o_m[i] = q_o[i]
             l_ext_m[i] = l_ext[i] + q_i_m[i] * tp_lake_n[i]
         else:
@@ -395,14 +402,15 @@ def LOONE_NUT(
         q_n2s[i] = (q_i_m[i] + q_o_m[i]) / 2
         stage_2_ar[i + 2] = stg_sto_ar.stg2ar(stage_lo[i + 2], 0)
         lo_wd[i] = stage_lo[i] * METERS_IN_FOOT - LO_BL
+        # TODO - are these the right values for volume in the lake
         lake_o_storage_n[i] = (
-            storage[i]
+            storage[i] #reads in acft
             * TP_Variables.northern_percentage
             * SQUARE_METERS_IN_ACRE
             * METERS_IN_FOOT_3
         )  # m3
         lake_o_storage_s[i] = (
-            storage[i]
+            storage[i]  # reads in acft
             * TP_Variables.southern_percentage
             * SQUARE_METERS_IN_ACRE
             * METERS_IN_FOOT_3
@@ -673,7 +681,7 @@ def LOONE_NUT(
         )
         sed_resusp_m_s[i] = _calculate_sediment_resuspension(
             E_0, td, E_1, E_2, w_ss[i], crtcl_sh_str, lo_wd[i], p_sed_m_s[i]
-        )
+        ) #mg
         sed_resusp_s_s[i] = _calculate_sediment_resuspension(
             E_0, td, E_1, E_2, w_ss[i], crtcl_sh_str, lo_wd[i], p_sed_s_s[i]
         )
@@ -696,7 +704,7 @@ def LOONE_NUT(
             v_settle_n[i],
             sed_resusp_m_n[i],
             lake_o_storage_n[i],
-        )
+        ) #units are correct. It is okay staying as just mg
         p_sed_s_n[i + 1] = _calculate_next_sediment(
             lake_o_a_s_n[i],
             tp_lake_n[i],
@@ -1143,10 +1151,10 @@ def LOONE_NUT(
             TP_Variables.diffusion_velocity_rock,
             TP_Variables.diffusion_velocity_peat,
             v_settle_n[i],
-            sed_resusp_m_n[i],
-            sed_resusp_s_n[i],
-            sed_resusp_r_n[i],
-            sed_resusp_p_n[i],
+            sed_resusp_m_n[i]/lake_o_storage_n[i],
+            sed_resusp_s_n[i]/lake_o_storage_n[i],
+            sed_resusp_r_n[i]/lake_o_storage_n[i],
+            sed_resusp_p_n[i]/lake_o_storage_n[i],
         )
 
         tp_lake_s[i + 1] = _calculate_next_total_phosphorus_concentration(
@@ -1171,10 +1179,10 @@ def LOONE_NUT(
             TP_Variables.diffusion_velocity_rock,
             TP_Variables.diffusion_velocity_peat,
             v_settle_s[i],
-            sed_resusp_m_s[i],
-            sed_resusp_s_s[i],
-            sed_resusp_r_s[i],
-            sed_resusp_p_s[i],
+            sed_resusp_m_s[i]/lake_o_storage_s[i], #mg - in the equation make sure this gets converted to mg/m3
+            sed_resusp_s_s[i]/lake_o_storage_s[i],
+            sed_resusp_r_s[i]/lake_o_storage_s[i],
+            sed_resusp_p_s[i]/lake_o_storage_s[i],
         )
 
         # Calculate the average total phosphorus in the lake for the next time step
@@ -1195,10 +1203,9 @@ def LOONE_NUT(
             * HOURS_IN_DAY
             * tp_lake_s[i]
         )  # mg/d P
-        if not forecast_mode:
-            p_load_south[i] = (
-                tot_reg_so[i] * CUBIC_METERS_IN_ACRE_FOOT * tp_lake_s[i]
-            )  # mg/d P
+        p_load_south[i] = (
+            tot_reg_so[i] * CUBIC_METERS_IN_ACRE_FOOT * tp_lake_s[i]
+        )  # mg/d P
 
     # Create the dataframes for the phosphorus loads and the total phosphorus in the lake
     p_loads_df = pd.DataFrame(
@@ -1471,7 +1478,7 @@ def _calculate_next_sediment(
     decomposition_constant: float,
     settling_velocity: float,
     sediment_resuspension: float,
-    lake_oxygen_storage: float,
+    lake_oxygen_storage: float, #we do not need this value
 ) -> float:
     """
     Calculate the next sediment value based on various parameters.
@@ -1486,7 +1493,7 @@ def _calculate_next_sediment(
         decomposition_constant (float): The decomposition constant.
         settling_velocity (float): The settling velocity.
         sediment_resuspension (float): The sediment resuspension.
-        lake_oxygen_storage (float): The current lake oxygen storage.
+        lake_oxygen_storage (float): The current lake oxygen storage. We do not need this here because we do not need to multiply by the volume
 
     Returns:
         float: The next sediment value. If the calculated value is negative, it returns 0.
@@ -1502,7 +1509,8 @@ def _calculate_next_sediment(
         settling_velocity,
     )
     sediment -= (
-        sediment_resuspension * lake_oxygen_storage / current_sediment_mass
+        # sediment_resuspension * lake_oxygen_storage / current_sediment_mass
+        sediment_resuspension / current_sediment_mass
     )
     return sediment if sediment > 0 else 0
 
@@ -1625,10 +1633,10 @@ def _calculate_next_total_phosphorus_concentration(
             vertical_diffusion_P,
             vertical_settling,
         )
-        + sediment_resuspension_M
-        + sediment_resuspension_S
-        + sediment_resuspension_R
-        + sediment_resuspension_P
+        + sediment_resuspension_M # these need to be divided by the volume of the lake in cubic meters
+        + sediment_resuspension_S # these need to be divided by the volume of the lake in cubic meters
+        + sediment_resuspension_R # these need to be divided by the volume of the lake in cubic meters
+        + sediment_resuspension_P # these need to be divided by the volume of the lake in cubic meters
     )
 
     return tp_lake_result if tp_lake_result > 0 else 0

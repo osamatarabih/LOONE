@@ -2120,6 +2120,7 @@ def LOONE_Q(
     _set_starting_storage(model_variables, start_storage)
     # Flood = np.zeros(n_rows, dtype = object)
     ##Here, I will insert the Storage Deviaiton Values as Input!
+    #TODO: storage deviation is always 0 in forecast mode
     storage_deviation = data.Storage_dev_df["DS_dev"]
     # Create a Choose Function for AP Post Baseflow
     # if Pre_defined_Variables.Opt_AdapProt == 0:
@@ -2264,6 +2265,7 @@ def LOONE_Q(
     # execute_loone.py calls this script as a subprocess and can't get
     # this data.
     if forecast:
+        #these should be in cfs or acft depending on the column
         lo_model.to_csv(f"LOONE_Q_Outputs_{ensemble:02d}.csv")
     else:
         lo_model.to_csv("LOONE_Q_Outputs.csv")

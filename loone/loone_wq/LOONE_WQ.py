@@ -135,10 +135,11 @@ def _load_data(workspace: str, flow_path: str, forecast_mode: bool, photo_period
         #TODO: Predict this
         data['dissolved_oxygen'] = pd.read_csv(os.path.join(workspace, 'LO_DO_Clean_daily.csv'))
         data['radiation_data'] = pd.read_csv(os.path.join(workspace, 'LO_RADT_data.csv'))
-        data['storage_data'] = pd.read_csv(os.path.join(workspace, f'Average_LO_Storage_3MLag_{ensemble_member:02d}.csv'))
-        data['chlorophyll_a_north_data'] = pd.read_csv(os.path.join(workspace, 'N_Merged_Chla.csv'))  # microgram/L
-        data['chlorophyll_a_south_data'] = pd.read_csv(os.path.join(workspace, 'S_Merged_Chla.csv'))  # microgram/L
-        data['external_nitrate_loadings'] = pd.read_csv(os.path.join(workspace, 'LO_External_Loadings_NO.csv'))
+        data['storage_data'] = pd.read_csv(os.path.join(workspace, f'Average_LO_Storage_3MLag_{ensemble_member:02d}.csv')) # FIXME
+        data['chlorophyll_a_north_data'] = pd.read_csv(os.path.join(workspace, 'N_Merged_Chla_predicted.csv'))  # microgram/L
+        data['chlorophyll_a_south_data'] = pd.read_csv(os.path.join(workspace, 'S_Merged_Chla_predicted.csv'))  # microgram/L
+        data['external_nitrate_loadings'] = pd.read_csv(os.path.join(workspace, f'LO_External_Loadings_NO_ens_{ensemble_member:02d}_predicted.csv'))
+        data['chlorophyll_a_loads_in'] = pd.read_csv(os.path.join(workspace, 'Chla_Loads_In_forecast.csv'))
     else:
         data['temperature_data'] = pd.read_csv(os.path.join(workspace, 'Filled_WaterT.csv'))
         data['dissolved_oxygen'] = pd.read_csv(os.path.join(workspace, 'LO_DO_Clean_daily.csv'))
@@ -147,11 +148,11 @@ def _load_data(workspace: str, flow_path: str, forecast_mode: bool, photo_period
         data['chlorophyll_a_north_data'] = pd.read_csv(os.path.join(workspace, 'N_Merged_Chla.csv'))  # microgram/L
         data['chlorophyll_a_south_data'] = pd.read_csv(os.path.join(workspace, 'S_Merged_Chla.csv'))  # microgram/L
         data['external_nitrate_loadings'] = pd.read_csv(os.path.join(workspace, 'LO_External_Loadings_NO.csv'))  # mg
+        data['chlorophyll_a_loads_in'] = pd.read_csv(os.path.join(workspace, 'Chla_Loads_In.csv'))
 
     s65e_basename = 'water_quality_S65E_NITRATE+NITRITE-N_Interpolated_forecast.csv' if forecast_mode else 'water_quality_S65E_NITRATE+NITRITE-N_Interpolated.csv'
     data['s65e_nitrate_data'] = pd.read_csv(os.path.join(workspace, s65e_basename))  # mg/m3
-
-    data['chlorophyll_a_loads_in'] = pd.read_csv(os.path.join(workspace, 'Chla_Loads_In.csv'))  # mg
+  # mg
 
     s65e_chlorophyll_a_basename = 'S65E_Chla_Merged_forecast.csv' if forecast_mode else 'S65E_Chla_Merged.csv'
     data['s65e_chlorophyll_a_data'] = pd.read_csv(os.path.join(workspace, s65e_chlorophyll_a_basename))  # mg/m3
@@ -635,7 +636,7 @@ def _calculate_nitrogen_oxide(i: int, loone_nchla_fns: object, temperature: list
 
 
 def _calculate_no_loads(i: int, NO_S: list, s77_outflow: list, s308_outflow: list,
-                        total_regional_outflow_south: list) -> tuple:
+                        total_regional_outflow_south: list, forecast) -> tuple:
     """
     Calculate the NO loads for the given index.
 
@@ -651,9 +652,11 @@ def _calculate_no_loads(i: int, NO_S: list, s77_outflow: list, s308_outflow: lis
     """
     NO_Load_Cal = s77_outflow[i] * NO_S[i]  # mg/d P
     NO_Load_StL = s308_outflow[i] * NO_S[i]  # mg/d P
-    NO_Load_South = total_regional_outflow_south[i] * 1233.48 * NO_S[i]  # mg/d P
-
-    return NO_Load_Cal, NO_Load_StL, NO_Load_South
+    if not forecast:
+        NO_Load_South = total_regional_outflow_south[i] * 1233.48 * NO_S[i]  # mg/d P
+        return NO_Load_Cal, NO_Load_StL, NO_Load_South
+    else:
+        return NO_Load_Cal, NO_Load_StL, None  # No South load in forecast mode
 
 
 def _calculate_chlorophyll_a(i: int, loone_nchla_fns: object, temperature: list, T_opt_Chla: float, T_min_Chla: float,
@@ -710,7 +713,7 @@ def _calculate_chlorophyll_a(i: int, loone_nchla_fns: object, temperature: list,
 
 
 def _calculate_chla_loads(i: int, Sim_Chla_S: list, s77_outflow: list, s308_outflow: list,
-                          total_regional_outflow_south: list) -> tuple:
+                          total_regional_outflow_south: list, forecast) -> tuple:
     """
     Calculate the chlorophyll-a loads for the given index.
 
@@ -726,9 +729,11 @@ def _calculate_chla_loads(i: int, Sim_Chla_S: list, s77_outflow: list, s308_outf
     """
     Chla_Load_Cal = s77_outflow[i] * Sim_Chla_S[i]  # mg/d P
     Chla_Load_StL = s308_outflow[i] * Sim_Chla_S[i]  # mg/d P
-    Chla_Load_South = total_regional_outflow_south[i] * 1233.48 * Sim_Chla_S[i]  # mg/d P
-
-    return Chla_Load_Cal, Chla_Load_StL, Chla_Load_South
+    if not forecast:
+        Chla_Load_South = total_regional_outflow_south[i] * 1233.48 * Sim_Chla_S[i]  # mg/d P
+        return Chla_Load_Cal, Chla_Load_StL, Chla_Load_South
+    else:
+        return Chla_Load_Cal, Chla_Load_StL, None
 
 
 def LOONE_WQ(workspace: str, photo_period_filename: str = 'PhotoPeriod', forecast_mode: bool = False, ensemble_number: int = None) -> list:
@@ -787,6 +792,7 @@ def LOONE_WQ(workspace: str, photo_period_filename: str = 'PhotoPeriod', forecas
     N_Per = 0.43
     S_Per = 0.57
 
+    # TODO: storage dev is always 0 in forecast mode
     storage_dev = data.Storage_dev_df['DS_dev'].astype(float)  # acft
     # q_i = inflows['Inflows_cmd'].astype(float)  # m3
 
@@ -802,10 +808,18 @@ def LOONE_WQ(workspace: str, photo_period_filename: str = 'PhotoPeriod', forecas
 
     # Observed S77 S308 South
     # TODO: This should have ensembles
-    outflows_observed = pd.read_csv(os.path.join(workspace, config['outflows_observed']))
+    # Should these be read from the output file of loone_q instead of from the geoglows data?
+    if forecast_mode:
+        outflows_observed = pd.read_csv(os.path.join(workspace, f'geoglows_flow_df_ens_{ensemble_number:02}_predicted.csv'))
+    else:
+        outflows_observed = pd.read_csv(os.path.join(workspace, config['outflows_observed']))
     s77_outflow = outflows_observed['S77_Out']
     s308_outflow = outflows_observed['S308_Out']
-    total_regional_outflow_south = outflows_observed[['S351_Out', 'S354_Out', 'S352_Out', 'L8_Out']].sum(axis=1) / 1233.48    # m3/day to acft
+    if not forecast_mode:
+        total_regional_outflow_south = outflows_observed[['S351_Out', 'S354_Out', 'S352_Out', 'L8_Out']].sum(axis=1) / 1233.48    # m3/day to acft
+    else:
+        #TODO: If we convert this to use loone_q outputs instead of geoglows data then we will have a value here
+        total_regional_outflow_south = None
 
     # Observed Stage and Storage
     stage = storage_data['Stage_ft'].astype(float) * 0.3048  # m
@@ -1057,10 +1071,16 @@ def LOONE_WQ(workspace: str, photo_period_filename: str = 'PhotoPeriod', forecas
     ).merge(
         s65e_nitrate_data[['date', 'Data']], on='date', suffixes=('', '_s65e_nitrate')
     ).merge(
-        outflows_observed[['date', 'S77_Out', 'S308_Out', 'S351_Out', 'S354_Out', 'S352_Out', 'L8_Out']], on='date'
-    ).merge(
         external_nitrate_loadings[['date', 'External_NO_Ld_mg']], on='date'
     )
+    if not forecast_mode:
+        merged.merge(
+            outflows_observed[['date', 'S77_Out', 'S308_Out', 'S351_Out', 'S354_Out', 'S352_Out', 'L8_Out']], on='date'
+        )
+    else:
+        merged = merged.merge(
+            outflows_observed[['date', 'S77_Out', 'S308_Out']], on='date'
+        )
 
     # Rename for clarity
     merged.rename(columns={
@@ -1069,9 +1089,11 @@ def LOONE_WQ(workspace: str, photo_period_filename: str = 'PhotoPeriod', forecas
     }, inplace=True)
 
     # Compute q_o (outflows in m³/day)
-    merged['total_regional_outflow_south'] = merged[['S351_Out', 'S354_Out', 'S352_Out', 'L8_Out']].sum(axis=1) / 1233.48
-    merged['q_o'] = merged['S77_Out'] + merged['S308_Out'] + merged['total_regional_outflow_south'] * 1233.48
-
+    if not forecast_mode:
+        merged['total_regional_outflow_south'] = merged[['S351_Out', 'S354_Out', 'S352_Out', 'L8_Out']].sum(axis=1) / 1233.48
+        merged['q_o'] = merged['S77_Out'] + merged['S308_Out'] + merged['total_regional_outflow_south'] * 1233.48
+    else:
+        merged['q_o'] = merged['S77_Out'] + merged['S308_Out']
     # Prepare input lists
     q_i = merged['Inflows_cmd'].astype(float).tolist()
     q_o = merged['q_o'].astype(float).tolist()
@@ -1117,7 +1139,7 @@ def LOONE_WQ(workspace: str, photo_period_filename: str = 'PhotoPeriod', forecas
                                   Sim_Chla_S, Area_S, NO_MEAN, f_P_S_NO, f_N_S_NO)
 
         NO_Load_Cal[i], NO_Load_StL[i], NO_Load_South[i] = _calculate_no_loads(i, NO_S, s77_outflow, s308_outflow,
-                                                                               total_regional_outflow_south)
+                                                                               total_regional_outflow_south, forecast_mode)
 
         ##### Chla
         _calculate_chlorophyll_a(i, loone_nchla_fns, temperature, T_opt_Chla, T_min_Chla, T_max_Chla,
@@ -1128,7 +1150,7 @@ def LOONE_WQ(workspace: str, photo_period_filename: str = 'PhotoPeriod', forecas
 
         Chla_Load_Cal[i], Chla_Load_StL[i], Chla_Load_South[i] = _calculate_chla_loads(i, Sim_Chla_S, s77_outflow,
                                                                                        s308_outflow,
-                                                                                       total_regional_outflow_south)
+                                                                                       total_regional_outflow_south, forecast_mode)
 
     print("Exporting Module Outputs!")
 
