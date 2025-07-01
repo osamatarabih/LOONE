@@ -903,45 +903,45 @@ def _calculate_outlet1usrs(
     CEturn_value = data.CE_SLE_turns.loc[data.CE_SLE_turns["Year"] == closest_year, "CEturn"].values[0]
 
     model_variables.Outlet1USRS[i + 2] = lo_functions.Outlet1USRS(
-    model_variables.Release_Level[i + 2],
-    data.S77_RegRelRates.at[0, "Zone_D1"],
-    s77avg_l1,
-    data.Pulses.at[
-        (
-            model_variables.PlsDay[i + 2] - 1
-            if model_variables.PlsDay[i + 2] - 1 >= 0
-            else len(data.Pulses) - 1
-        ),
-        f'S-77_L1',
-    ],
-    model_variables.Outlet1US_Mult_2[i + 2],
-    lo_model.at[i + 2, "C43RO"],
-    CEturn_value,
-    data.S77_RegRelRates.at[0, "Zone_D2"],
-    s77avg_l2,
-    data.Pulses.at[
-        (
-            model_variables.PlsDay[i + 2] - 1
-            if model_variables.PlsDay[i + 2] - 1 >= 0
-            else len(data.Pulses) - 1
-        ),
-        f'S-77_L2',
-    ],
-    model_variables.Zone_Code[i + 1],
-    data.S77_RegRelRates.at[0, "Zone_D3"],
-    s77avg_l3,
-    data.Pulses.at[
-        (
-            model_variables.PlsDay[i + 2] - 1
-            if model_variables.PlsDay[i + 2] - 1 >= 0
-            else len(data.Pulses) - 1
-        ),
-        f'S-77_L3',
-    ],
-    data.S77_RegRelRates.at[0, "Zone_C"],
-    data.S77_RegRelRates.at[0, "Zone_B"],
-    data.S77_RegRelRates.at[0, "Zone_A"],
-    config["opt_outlet1_dsrg"],
+        model_variables.Release_Level[i + 2],
+        data.S77_RegRelRates.at[0, "Zone_D1"],
+        s77avg_l1,
+        data.Pulses.at[
+            (
+                model_variables.PlsDay[i + 2] - 1
+                if model_variables.PlsDay[i + 2] - 1 >= 0
+                else len(data.Pulses) - 1
+            ),
+            f'S-77_L1',
+        ],
+        model_variables.Outlet1US_Mult_2[i + 2],
+        lo_model.at[i + 2, "C43RO"],
+        CEturn_value,
+        data.S77_RegRelRates.at[0, "Zone_D2"],
+        s77avg_l2,
+        data.Pulses.at[
+            (
+                model_variables.PlsDay[i + 2] - 1
+                if model_variables.PlsDay[i + 2] - 1 >= 0
+                else len(data.Pulses) - 1
+            ),
+            f'S-77_L2',
+        ],
+        model_variables.Zone_Code[i + 1],
+        data.S77_RegRelRates.at[0, "Zone_D3"],
+        s77avg_l3,
+        data.Pulses.at[
+            (
+                model_variables.PlsDay[i + 2] - 1
+                if model_variables.PlsDay[i + 2] - 1 >= 0
+                else len(data.Pulses) - 1
+            ),
+            f'S-77_L3',
+        ],
+        data.S77_RegRelRates.at[0, "Zone_C"],
+        data.S77_RegRelRates.at[0, "Zone_B"],
+        data.S77_RegRelRates.at[0, "Zone_A"],
+        config["opt_outlet1_dsrg"],
 )
 
 
@@ -1955,6 +1955,7 @@ def _initialize_model_variables_stage_levels_flags(
     Returns:
         None
     """
+    # TODO - is this where the stage should be fixed?
     model_variables.Lake_Stage[0] = config["beg_stage_cs"]
     model_variables.Lake_Stage[1] = config["beg_stage_cs"]
     model_variables.DecTree_Relslevel[0] = np.nan
@@ -2120,8 +2121,11 @@ def LOONE_Q(
     _set_starting_storage(model_variables, start_storage)
     # Flood = np.zeros(n_rows, dtype = object)
     ##Here, I will insert the Storage Deviaiton Values as Input!
-    #TODO: storage deviation is always 0 in forecast mode
-    storage_deviation = data.Storage_dev_df["DS_dev"]
+    # storage deviation is always 0 in forecast mode
+    if forecast:
+        storage_deviation = [0] * n_rows
+    else:
+        storage_deviation = data.Storage_dev_df["DS_dev"]
     # Create a Choose Function for AP Post Baseflow
     # if Pre_defined_Variables.Opt_AdapProt == 0:
     #     C = 450

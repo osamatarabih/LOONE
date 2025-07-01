@@ -91,18 +91,22 @@ def LOONE_NUT(
         tot_reg_so = loone_q["TotRegSo"]
     #New way to calculate q_o  - add s77_q, s308_q, and tot_reg_so - this should be converted to cmd - convert all of them to cmd, then add them together
     q_o = s308_q * CUBIC_METERS_IN_CUBIC_FOOT * SECONDS_IN_DAY + s77_q * CUBIC_METERS_IN_CUBIC_FOOT * SECONDS_IN_DAY + tot_reg_so * CUBIC_METERS_IN_ACRE_FOOT #cmd
+    #TODO: Should it read the loone_q outputs for historical data as well?
     if forecast_mode:
-        sto_stage = pd.read_csv(os.path.join(data_dir, f"Average_LO_Storage_3MLag_{ensemble:02}.csv")) #acft
+        sto_stage = pd.read_csv(os.path.join(data_dir, f"LOONE_Q_Outputs_{ensemble:02}.csv")) #acft
+        stage_lo = sto_stage["Stage"].values if 'stage_lo' not in simulation_data else simulation_data['stage_lo'] #feet
+        storage = sto_stage["Storage"].values
+        # storage dev is 0 in forecast mode
+        storage_dev = np.zeros(len(storage), dtype=float)  # ac-ft
     else:
         sto_stage = pd.read_csv(
             os.path.join(data_dir, config["sto_stage"])
         )
-    #TODO - we should get the dates for this
-    stage_lo = sto_stage["Stage_ft"].values if 'stage_lo' not in simulation_data else simulation_data['stage_lo'] #feet
-    storage = sto_stage["Storage_acft"].values
+        #TODO - we should get the dates for this
+        stage_lo = sto_stage["Stage_ft"].values if 'stage_lo' not in simulation_data else simulation_data['stage_lo'] #feet
+        storage = sto_stage["Storage_acft"].values
+        storage_dev = Data.Storage_dev_df["DS_dev"]
     n_rows = len(q_in.index)
-    #TODO - storage dev should be 0 in forecast mode
-    storage_dev = Data.Storage_dev_df["DS_dev"]
     l_ext = load_ext["TP_Loads_In_mg"]  # mg
     atm_dep_n = TP_Variables.northern_percentage * load_ext["Atm_Loading_mg"]
     atm_dep_s = TP_Variables.southern_percentage * load_ext["Atm_Loading_mg"]
