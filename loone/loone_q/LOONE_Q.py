@@ -719,6 +719,7 @@ def _calculate_outlet2usrg_code(
     p2: float,
     s308_dv: float,
     tp_lake_s: float,
+    lo_model: pd.DataFrame,
     date_range_one_day: pd.date_range,
 ) -> None:
     """
@@ -776,9 +777,57 @@ def _calculate_outlet2usrg_code(
     elif config["sim_type"] == 3:
         if model_variables.Lake_Stage[i + 1] >= 18:
             model_variables.Outlet2USRG[i + 2] = 7200
-        else:
+        elif model_variables.Lake_Stage[i + 1] <= 8:
             model_variables.Outlet2USRG[i + 2] = 0
+        elif lo_model.at[i + 2, "date"].month == 1:
+            model_variables.Outlet2USRG[i + 2] = lo_functions.Outlet_Rel_Sim(
+                model_variables.Release_Level[i + 2], sensitivity_analysis_params[0]
+            )
+        elif lo_model.at[i + 2, "date"].month == 2:
+            model_variables.Outlet2USRG[i + 2] = lo_functions.Outlet_Rel_Sim(
+                model_variables.Release_Level[i + 2], sensitivity_analysis_params[1]
+            )
+        elif lo_model.at[i + 2, "date"].month == 3:
+            model_variables.Outlet2USRG[i + 2] = lo_functions.Outlet_Rel_Sim(
+                model_variables.Release_Level[i + 2], sensitivity_analysis_params[2]
+            )
+        elif lo_model.at[i + 2, "date"].month == 4:
+            model_variables.Outlet2USRG[i + 2] = lo_functions.Outlet_Rel_Sim(
+                model_variables.Release_Level[i + 2], sensitivity_analysis_params[3]
+            )
+        elif lo_model.at[i + 2, "date"].month == 5:
+            model_variables.Outlet2USRG[i + 2] = lo_functions.Outlet_Rel_Sim(
+                model_variables.Release_Level[i + 2], sensitivity_analysis_params[4]
+            )
+        elif lo_model.at[i + 2, "date"].month == 6:
+            model_variables.Outlet2USRG[i + 2] = lo_functions.Outlet_Rel_Sim(
+                model_variables.Release_Level[i + 2], sensitivity_analysis_params[5]
+            )
 
+        elif lo_model.at[i + 2, "date"].month == 7:
+            model_variables.Outlet2USRG[i + 2] = lo_functions.Outlet_Rel_Sim(
+                model_variables.Release_Level[i + 2], sensitivity_analysis_params[6]
+            )
+        elif lo_model.at[i + 2, "date"].month == 8:
+            model_variables.Outlet2USRG[i + 2] = lo_functions.Outlet_Rel_Sim(
+                model_variables.Release_Level[i + 2], sensitivity_analysis_params[7]
+            )
+        elif lo_model.at[i + 2, "date"].month == 9:
+            model_variables.Outlet2USRG[i + 2] = lo_functions.Outlet_Rel_Sim(
+                model_variables.Release_Level[i + 2], sensitivity_analysis_params[8]
+            )
+        elif lo_model.at[i + 2, "date"].month == 10:
+            model_variables.Outlet2USRG[i + 2] = lo_functions.Outlet_Rel_Sim(
+                model_variables.Release_Level[i + 2], sensitivity_analysis_params[9]
+            )
+        elif lo_model.at[i + 2, "date"].month == 11:
+            model_variables.Outlet2USRG[i + 2] = lo_functions.Outlet_Rel_Sim(
+                model_variables.Release_Level[i + 2], sensitivity_analysis_params[10]
+            )
+        elif lo_model.at[i + 2, "date"].month == 12:
+            model_variables.Outlet2USRG[i + 2] = lo_functions.Outlet_Rel_Sim(
+                model_variables.Release_Level[i + 2], sensitivity_analysis_params[11]
+            )
 
 def _calculate_outlet2ds(
     i: int, model_variables: object, lo_functions: object, data: object, config: dict
@@ -1257,56 +1306,56 @@ def _calculate_outlet1usreg(
             model_variables.Outlet1USREG[i + 2] = 0
     elif config["sim_type"] == 3:
         if model_variables.Lake_Stage[i + 1] >= 18:
-            model_variables.Outlet1USREG[i + 2] = 7200
+            model_variables.Outlet1USREG[i + 2] = 7800
         elif model_variables.Lake_Stage[i + 1] <= 8:
             model_variables.Outlet1USREG[i + 2] = 0
         elif lo_model.at[i + 2, "date"].month == 1:
             model_variables.Outlet1USREG[i + 2] = lo_functions.Outlet_Rel_Sim(
-                model_variables.Release_Level[i + 2], sensitivity_analysis_params[0]
+                model_variables.Release_Level[i + 2], sensitivity_analysis_params[12]
             )
         elif lo_model.at[i + 2, "date"].month == 2:
             model_variables.Outlet1USREG[i + 2] = lo_functions.Outlet_Rel_Sim(
-                model_variables.Release_Level[i + 2], sensitivity_analysis_params[1]
+                model_variables.Release_Level[i + 2], sensitivity_analysis_params[13]
             )
         elif lo_model.at[i + 2, "date"].month == 3:
             model_variables.Outlet1USREG[i + 2] = lo_functions.Outlet_Rel_Sim(
-                model_variables.Release_Level[i + 2], sensitivity_analysis_params[2]
+                model_variables.Release_Level[i + 2], sensitivity_analysis_params[14]
             )
         elif lo_model.at[i + 2, "date"].month == 4:
             model_variables.Outlet1USREG[i + 2] = lo_functions.Outlet_Rel_Sim(
-                model_variables.Release_Level[i + 2], sensitivity_analysis_params[3]
+                model_variables.Release_Level[i + 2], sensitivity_analysis_params[15]
             )
         elif lo_model.at[i + 2, "date"].month == 5:
             model_variables.Outlet1USREG[i + 2] = lo_functions.Outlet_Rel_Sim(
-                model_variables.Release_Level[i + 2], sensitivity_analysis_params[4]
+                model_variables.Release_Level[i + 2], sensitivity_analysis_params[16]
             )
         elif lo_model.at[i + 2, "date"].month == 6:
             model_variables.Outlet1USREG[i + 2] = lo_functions.Outlet_Rel_Sim(
-                model_variables.Release_Level[i + 2], sensitivity_analysis_params[5]
+                model_variables.Release_Level[i + 2], sensitivity_analysis_params[17]
             )
         elif lo_model.at[i + 2, "date"].month == 7:
             model_variables.Outlet1USREG[i + 2] = lo_functions.Outlet_Rel_Sim(
-                model_variables.Release_Level[i + 2], sensitivity_analysis_params[6]
+                model_variables.Release_Level[i + 2], sensitivity_analysis_params[18]
             )
         elif lo_model.at[i + 2, "date"].month == 8:
             model_variables.Outlet1USREG[i + 2] = lo_functions.Outlet_Rel_Sim(
-                model_variables.Release_Level[i + 2], sensitivity_analysis_params[7]
+                model_variables.Release_Level[i + 2], sensitivity_analysis_params[19]
             )
         elif lo_model.at[i + 2, "date"].month == 9:
             model_variables.Outlet1USREG[i + 2] = lo_functions.Outlet_Rel_Sim(
-                model_variables.Release_Level[i + 2], sensitivity_analysis_params[8]
+                model_variables.Release_Level[i + 2], sensitivity_analysis_params[20]
             )
         elif lo_model.at[i + 2, "date"].month == 10:
             model_variables.Outlet1USREG[i + 2] = lo_functions.Outlet_Rel_Sim(
-                model_variables.Release_Level[i + 2], sensitivity_analysis_params[9]
+                model_variables.Release_Level[i + 2], sensitivity_analysis_params[21]
             )
         elif lo_model.at[i + 2, "date"].month == 11:
             model_variables.Outlet1USREG[i + 2] = lo_functions.Outlet_Rel_Sim(
-                model_variables.Release_Level[i + 2], sensitivity_analysis_params[10]
+                model_variables.Release_Level[i + 2], sensitivity_analysis_params[22]
             )
         elif lo_model.at[i + 2, "date"].month == 12:
             model_variables.Outlet1USREG[i + 2] = lo_functions.Outlet_Rel_Sim(
-                model_variables.Release_Level[i + 2], sensitivity_analysis_params[11]
+                model_variables.Release_Level[i + 2], sensitivity_analysis_params[23]
             )
 
 
@@ -1941,6 +1990,8 @@ def _initialize_model_variables_stage_levels_flags(
     startdate: pd.Timestamp,
     lo_model: pd.DataFrame,
     begdateCS: pd.Timestamp,
+    forecast: bool = False,
+    workspace: str = "",
 ) -> None:
     """
     Initialize the model variables with the given configuration and start date.
@@ -1951,13 +2002,19 @@ def _initialize_model_variables_stage_levels_flags(
         startdate (pd.Timestamp): The start date.
         lo_model (pd.DataFrame): The LOONE model DataFrame.
         begdateCS (pd.Timestamp): The beginning date for CS.
-
+        forecast (bool, optional): Whether to run in forecast mode. Defaults to False.
+        workspace (str, optional): The path to the workspace directory. Needed in forecast mode Defaults to "".
     Returns:
         None
     """
     # TODO - is this where the stage should be fixed?
-    model_variables.Lake_Stage[0] = config["beg_stage_cs"]
-    model_variables.Lake_Stage[1] = config["beg_stage_cs"]
+    if forecast:
+        stage = pd.read_csv(os.path.join(workspace, "LO_Stage.csv"))
+        model_variables.Lake_Stage[0] = stage["Average_Stage"].iloc[-1]
+        model_variables.Lake_Stage[1] = stage["Average_Stage"].iloc[-1]
+    else:
+        model_variables.Lake_Stage[0] = config["beg_stage_cs"]
+        model_variables.Lake_Stage[1] = config["beg_stage_cs"]
     model_variables.DecTree_Relslevel[0] = np.nan
     model_variables.DecTree_Relslevel[1] = np.nan
     model_variables.DayFlags[2] = _determine_day_flags(startdate, lo_model, begdateCS)
@@ -2115,9 +2172,14 @@ def LOONE_Q(
     vlookup2_c = [x for x in vlookup2 if ~np.isnan(x)]
     ###################################################################
     _initialize_model_variables_stage_levels_flags(
-        model_variables, config, startdate, lo_model, begdateCS
+        model_variables, config, startdate, lo_model, begdateCS, forecast, workspace
     )
-    start_storage = stg_sto_ar.stg2sto(config["start_stage"], 0)
+    if forecast:
+        stage = pd.read_csv(os.path.join(workspace, "LO_Stage.csv"))
+        start_stage = stage["Average_Stage"].iloc[-1]
+        start_storage = stg_sto_ar.stg2sto(start_stage, 0)
+    else:
+        start_storage = stg_sto_ar.stg2sto(config["start_stage"], 0)
     _set_starting_storage(model_variables, start_storage)
     # Flood = np.zeros(n_rows, dtype = object)
     ##Here, I will insert the Storage Deviaiton Values as Input!
@@ -2189,6 +2251,7 @@ def LOONE_Q(
             p2,
             s308_dv,
             tp_lake_s,
+            lo_model,
             date_range_one_day,
         )
         _calculate_outlet2ds(i, model_variables, lo_functions, data, config)

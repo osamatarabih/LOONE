@@ -106,6 +106,10 @@ def LOONE_NUT(
         stage_lo = sto_stage["Stage_ft"].values if 'stage_lo' not in simulation_data else simulation_data['stage_lo'] #feet
         storage = sto_stage["Storage_acft"].values
         storage_dev = Data.Storage_dev_df["DS_dev"]
+        start_storage = stg_sto_ar.stg2sto(config["start_stage"], 0) 
+        stage_2_ar[1] = stg_sto_ar.stg2ar(stage_lo[1], 0)
+        storage[0] = start_storage  # ac-ft
+        storage[1] = stg_sto_ar.stg2sto(stage_lo[1], 0)  # ac-ft
     n_rows = len(q_in.index)
     l_ext = load_ext["TP_Loads_In_mg"]  # mg
     atm_dep_n = TP_Variables.northern_percentage * load_ext["Atm_Loading_mg"]
@@ -269,11 +273,11 @@ def LOONE_NUT(
     # the S.A. at i=0 I used same time step Stage!
     # TODO: Does this need to be fixed in forecast mode? - come from dbhydro to get the stage for that day
     # In forecast mode does not read from the config file - make sure this is in feet
-    start_storage = stg_sto_ar.stg2sto(config["start_stage"], 0) 
+    # start_storage = stg_sto_ar.stg2sto(config["start_stage"], 0) 
     stage_2_ar[1] = stg_sto_ar.stg2ar(stage_lo[1], 0)
-    # TODO - not sure that this part is correct
-    storage[0] = start_storage  # ac-ft
-    storage[1] = stg_sto_ar.stg2sto(stage_lo[1], 0)  # ac-ft
+    # This is not needed in this case
+    # storage[0] = start_storage  # ac-ft
+    # storage[1] = stg_sto_ar.stg2sto(stage_lo[1], 0)  # ac-ft
     # TP_MassBalanceModel Initial Values.
     tp_lake_n[0] = 225  # mg/m3
     tp_lake_s[0] = 275  # mg/m3

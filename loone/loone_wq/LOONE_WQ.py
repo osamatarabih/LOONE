@@ -135,7 +135,6 @@ def _load_data(workspace: str, flow_path: str, forecast_mode: bool, photo_period
         #TODO: Predict this
         data['dissolved_oxygen'] = pd.read_csv(os.path.join(workspace, 'LO_DO_Clean_daily_forecast.csv'))
         data['radiation_data'] = pd.read_csv(os.path.join(workspace, 'LO_RADT_data.csv'))
-        data['storage_data'] = pd.read_csv(os.path.join(workspace, f'Average_LO_Storage_3MLag_{ensemble_member:02d}.csv')) # FIXME
         data['chlorophyll_a_north_data'] = pd.read_csv(os.path.join(workspace, 'N_Merged_Chla_predicted.csv'))  # microgram/L
         data['chlorophyll_a_south_data'] = pd.read_csv(os.path.join(workspace, 'S_Merged_Chla_predicted.csv'))  # microgram/L
         data['external_nitrate_loadings'] = pd.read_csv(os.path.join(workspace, f'LO_External_Loadings_NO_ens_{ensemble_member:02d}_predicted.csv'))
@@ -1093,7 +1092,7 @@ def LOONE_WQ(workspace: str, photo_period_filename: str = 'PhotoPeriod', forecas
         external_nitrate_loadings[['date', 'External_NO_Ld_mg']], on='date'
     )
     if not forecast_mode:
-        merged.merge(
+        merged = merged.merge(
             outflows_observed[['date', 'S77_Out', 'S308_Out', 'S351_Out', 'S354_Out', 'S352_Out', 'L8_Out']], on='date'
         )
     else:
