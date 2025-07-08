@@ -143,6 +143,7 @@ def _load_data(workspace: str, flow_path: str, forecast_mode: bool, photo_period
         data['lo_orthophosphate_south_data'] = pd.read_csv(os.path.join(workspace, 'S_OP_forecast.csv'))  # mg/m3
         data['lo_dissolved_inorganic_nitrogen_north_data'] = pd.read_csv(os.path.join(workspace, 'N_DIN_forecast.csv'))  # mg/m3
         data['lo_dissolved_inorganic_nitrogen_south_data'] = pd.read_csv(os.path.join(workspace, 'S_DIN_forecast.csv'))  # mg/m3
+        data['storage_data'] = pd.read_csv(os.path.join(workspace, config['sto_stage'])) # This won't be used in forecast mode, but needs to be read in to not throw and error
     else:
         data['temperature_data'] = pd.read_csv(os.path.join(workspace, 'Filled_WaterT.csv'))
         data['dissolved_oxygen'] = pd.read_csv(os.path.join(workspace, 'LO_DO_Clean_daily.csv'))
